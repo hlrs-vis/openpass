@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Agents>
+    <Agent id="0" priority="0">
+        <Channels>
+            <Channel id="0" /> <!-- distance2NextAgent -->
+			<Channel id="1" /> <!-- VelocityX -->
+			<Channel id="2" /> <!-- desiredAcceleration -->
+			<Channel id="3" /> <!-- coastingAcceleration -->
+        </Channels>
+        <Components>
+            <Component id="0" init="false" priority="200" library="Sensor_Distance" offsetTime="0" responseTime="0" cycleTime="100">
+                <ComponentInputs/>
+                <ComponentOutputs>
+                    <ComponentOutput id="0" name="distance2NextAgent" channelRef="0" /> 
+					<ComponentOutput id="1" name="VelocityX" channelRef="1" />
+                </ComponentOutputs>
+                <ComponentParameters/>
+			<ComponentObservations/>
+            </Component>
+            <Component id="1" init="false" priority="100" library="Algorithm_CruiseControlByDistance" offsetTime="0" responseTime="0" cycleTime="100">
+                <ComponentInputs>
+                    <ComponentInput id="0" name="distance2NextAgent" channelRef="0" />
+					<ComponentInput id="1" name="VelocityX" channelRef="1" />
+                </ComponentInputs>
+                <ComponentOutputs>
+					<ComponentOutput id="0" name="desiredAcceleration" channelRef="2" />
+					<ComponentOutput id="1" name="coastingAcceleration" channelRef="3" />
+				</ComponentOutputs>
+                <ComponentParameters>
+					<Double id="0" name="desiredVelocity" value="0"/>
+					<Double id="1" name="reactionTime" value="0.2"/>
+				</ComponentParameters>
+				<ComponentObservations/>
+            </Component>
+			<Component id="2" init="false" priority="1" library="Action_BrakeLight_Basic" offsetTime="0" responseTime="0" cycleTime="100">
+                <ComponentInputs>
+                    <ComponentInput id="0" name="desiredAcceleration" channelRef="2" />
+					<ComponentInput id="1" name="desiredAcceleration" channelRef="3" />
+                </ComponentInputs>
+                <ComponentOutputs/>
+                <ComponentParameters/>
+				<ComponentObservations/>
+            </Component>
+			<Component id="3" init="false" priority="0" library="Dynamics_Longitudinal_Basic" offsetTime="0" responseTime="0" cycleTime="100">
+                <ComponentInputs>
+                    <ComponentInput id="0" name="desiredAcceleration" channelRef="2" />
+                </ComponentInputs>
+                <ComponentOutputs/>
+                <ComponentParameters/>
+				<ComponentObservations/>
+            </Component>
+        </Components>
+    </Agent>
+</Agents>
