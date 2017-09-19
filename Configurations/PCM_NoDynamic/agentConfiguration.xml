@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Agents>
+    <Agent id="0" priority="0">
+        <Channels>
+            <Channel id="0"/>
+            <Channel id="1"/>
+            <Channel id="2"/>
+            <Channel id="3"/>
+			<Channel id="4"/>
+			<Channel id="5"/>
+			<Channel id="6"/>
+			<Channel id="7"/>
+        </Channels>
+        <Components>
+            <Component id="1" init="false" priority="201" offsetTime="0" responseTime="0" cycleTime="10" library="EgoSensor">
+                <ComponentInputs/>
+                <ComponentOutputs>
+                    <ComponentOutput id="0" name="EgoPositionX" channelRef="0"/>
+                    <ComponentOutput id="1" name="EgoPositionY" channelRef="1"/>
+                    <ComponentOutput id="10" name="EgoYawAngle" channelRef="2"/>
+                    <ComponentOutput id="2" name="EgoVelocity" channelRef="3"/>
+                </ComponentOutputs>
+                <ComponentParameters/>
+                <ComponentObservations/>
+            </Component>
+            <Component id="3" init="false" priority="200" offsetTime="0" responseTime="0" cycleTime="10" library="Action_ScopeLogger">
+                <ComponentInputs>
+                    <ComponentInput id="0" name="PositionX" channelRef="0"/>
+                    <ComponentInput id="1" name="PositionY" channelRef="1"/>
+                    <ComponentInput id="2" name="YawAngle" channelRef="2"/>
+                    <ComponentInput id="3" name="Velocity" channelRef="3"/>
+                    <ComponentInput id="4" name="GasPedal" channelRef="4"/>
+                    <ComponentInput id="5" name="BrakePedal" channelRef="5"/>
+                    <ComponentInput id="6" name="FrontWheelAngle" channelRef="6"/>
+                    <ComponentInput id="7" name="CollisionOccured" channelRef="7"/>
+                </ComponentInputs>
+                <ComponentOutputs/>
+                <ComponentParameters>
+                    <String id="0" name="folder" value="."/>
+                    <String id="1" name="tmpFileName" value="log.tmp"/>
+                    <String id="2" name="prefix" value="dataLog"/>
+                    <String id="3" name="suffix" value=".csv"/>
+                </ComponentParameters>
+                <ComponentObservations/>
+            </Component>
+            <Component id="0" init="false" priority="0" offsetTime="0" responseTime="0" cycleTime="10" library="Dynamics_CopyTrajectory">
+                <ComponentInputs/>
+                <ComponentOutputs/>
+                <ComponentParameters/>
+                <ComponentObservations/>
+            </Component>
+        </Components>
+    </Agent>
+    <Agent id="1" priority="1">
+        <Channels>
+            <Channel id="0"/>
+            <Channel id="1"/>
+            <Channel id="2"/>
+            <Channel id="3"/>
+			<Channel id="4"/>
+			<Channel id="5"/>
+			<Channel id="6"/>
+			<Channel id="7"/>
+        </Channels>
+        <Components>
+            <Component id="1" init="false" priority="201" offsetTime="0" responseTime="0" cycleTime="10" library="EgoSensor">
+                <ComponentInputs/>
+                <ComponentOutputs>
+                    <ComponentOutput id="0" name="EgoPositionX" channelRef="0"/>
+                    <ComponentOutput id="1" name="EgoPositionY" channelRef="1"/>
+                    <ComponentOutput id="10" name="EgoYawAngle" channelRef="2"/>
+                    <ComponentOutput id="2" name="EgoVelocity" channelRef="3"/>
+                </ComponentOutputs>
+                <ComponentParameters/>
+                <ComponentObservations/>
+            </Component>
+            <Component id="3" init="false" priority="200" offsetTime="0" responseTime="0" cycleTime="10" library="Action_ScopeLogger">
+                <ComponentInputs>
+                    <ComponentInput id="0" name="PositionX" channelRef="0"/>
+                    <ComponentInput id="1" name="PositionY" channelRef="1"/>
+                    <ComponentInput id="2" name="YawAngle" channelRef="2"/>
+                    <ComponentInput id="3" name="Velocity" channelRef="3"/>
+                    <ComponentInput id="4" name="GasPedal" channelRef="4"/>
+                    <ComponentInput id="5" name="BrakePedal" channelRef="5"/>
+                    <ComponentInput id="6" name="FrontWheelAngle" channelRef="6"/>
+                    <ComponentInput id="7" name="CollisionOccured" channelRef="7"/>
+                </ComponentInputs>
+                <ComponentOutputs/>
+                <ComponentParameters>
+                    <String id="0" name="folder" value="."/>
+                    <String id="1" name="tmpFileName" value="log.tmp"/>
+                    <String id="2" name="prefix" value="dataLog"/>
+                    <String id="3" name="suffix" value=".csv"/>
+                </ComponentParameters>
+                <ComponentObservations/>
+            </Component>
+            <Component id="0" init="false" priority="0" offsetTime="0" responseTime="0" cycleTime="10" library="Dynamics_CopyTrajectory">
+                <ComponentInputs/>
+                <ComponentOutputs/>
+                <ComponentParameters/>
+                <ComponentObservations/>
+            </Component>
+        </Components>
+    </Agent>
+</Agents>
