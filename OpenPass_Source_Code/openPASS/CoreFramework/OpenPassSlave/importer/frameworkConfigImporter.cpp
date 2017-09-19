@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -107,7 +107,7 @@ FrameworkConfig *FrameworkConfigImporter::Import(const std::string &filename)
     if(!SimulationCommon::ParseString(documentRoot, "LogFile", logFile) || logFile.empty())
     {
         ss.str(std::string());
-        ss << QCoreApplication::applicationDirPath().toStdString() << "/logSlave.txt";
+        ss << QCoreApplication::applicationDirPath().toStdString() << "/OpenPassSlave.log";
         logFile = ss.str();
     }
 
@@ -215,7 +215,7 @@ FrameworkConfig *FrameworkConfigImporter::Import(QCoreApplication &application)
 
     QString logFile = cmdLineParser.value(logFileCommand);
     if((logFile == "") || (logFile == "working_directory")){
-        logFile = QCoreApplication::applicationDirPath() + "/logSlave.txt";
+        logFile = QCoreApplication::applicationDirPath() + "/OpenPassSlave.log";
     }
 
     QString logLevelString = cmdLineParser.value(logLevelCommand);

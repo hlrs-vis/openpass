@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -22,6 +22,7 @@ namespace SimulationCommon
 {
 
 extern bool ImportParameters(QDomElement &parametersElement, Parameters &parameters);
+extern bool ImportSystemParameters(QDomElement &parametersElement, Parameters &parameters);
 
 } // namespace SimulationCommon
 

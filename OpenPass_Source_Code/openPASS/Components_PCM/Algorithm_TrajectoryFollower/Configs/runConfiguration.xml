@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<RunConfiguration>
+  <StartTime>0</StartTime>
+  <EndTime>7000</EndTime>
+  <NumberInvocations>1</NumberInvocations>
+  <Weekday>Monday</Weekday>
+  <TimeOfDay>15</TimeOfDay>
+  <WorldLibrary>World</WorldLibrary>
+  <Stochastics>Stochastics</Stochastics>
+  <CollisionDetection>CollisionDetection</CollisionDetection>
+  <RandomSeed>527344739</RandomSeed>
+  <SpawnPoints>
+    <SpawnPoint id="0" library="SpawnPoint_4Cases2015">
+      <AgentRefs>
+        <AgentRef>0</AgentRef>
+      </AgentRefs>
+      <SpawnPointParameters>
+        <!-- number of spawned cars -->
+        <Int id="0" value="1" />
+        <!-- lane of ego vehicle -->
+        <Int id="1" value="0" />
+        <!-- situation type -->
+        <Int id="2" value="0" />
+        <!-- velocity at end of traffic jam -->
+        <Double id="0" value="2.7777777777777777" />
+        <!-- demand of highway -->
+        <Double id="1" value="900" />
+        <!-- velocity standard deviation -->
+        <Double id="2" value="2.7777777777777777" />
+        <!-- platoon rate -->
+        <Double id="3" value="0.3" />
+        <!-- visibility distance -->
+        <Double id="4" value="100" />
+        <!-- approximate distance from start to ego vehicle -->
+        <Double id="5" value="-1" />
+        <!-- fraction of iBrake vehicles -->
+        <Double id="6" value="0" />
+        <!-- position of obstacle -->
+        <Double id="7" value="1400" />
+        <!-- mean velocity per lane -->
+        <DoubleVector id="0" value="33.333333333333336, -1, -1" />
+      </SpawnPointParameters>
+    </SpawnPoint>
+  </SpawnPoints>
+  <Agents>
+    <Agent id="0">
+      <AgentTypeRef>0</AgentTypeRef>
+      <Type>Car</Type>
+      <Width>2.1</Width>
+      <Length>5</Length>
+      <DistanceCOGtoFrontAxle>0</DistanceCOGtoFrontAxle>
+      <Weight>100</Weight>
+      <HeightCOG>0</HeightCOG>
+      <Wheelbase>2.89</Wheelbase>
+      <MomentInertiaRoll>0</MomentInertiaRoll>
+      <MomentInertiaPitch>0</MomentInertiaPitch>
+      <MomentInertiaYaw>0</MomentInertiaYaw>
+      <FrictionCoeff>0</FrictionCoeff>
+      <TrackWidth>1.8</TrackWidth>
+      <!-- = 5- (l+b) = 5-2.97-1.14 -->
+      <DistanceCOGtoLeadingEdge>0.89</DistanceCOGtoLeadingEdge>
+    </Agent>
+  </Agents>
+  <Observations>
+    <Observation id="0" library="Observation_Log">
+      <ObservationParameters>
+        <!-- folder -->
+        <String id="0" value="." />
+        <!-- temporary filename -->
+        <String id="1" value="simulationOutput.tmp" />
+        <!-- final filename -->
+        <String id="2" value="simulationOutput.xml" />
+        <!-- time after crash -->
+        <Double id="0" value="-1" />
+        <!-- time after activation -->
+        <Double id="1" value="-1" />
+        <!-- time after deactivation -->
+        <Double id="2" value="-1" />
+        <!-- situation type -->
+        <Int id="0" value="0" />
+        <!-- write visualization data -->
+        <Bool id="0" value="True" />
+      </ObservationParameters>
+    </Observation>
+  </Observations>
+</RunConfiguration>

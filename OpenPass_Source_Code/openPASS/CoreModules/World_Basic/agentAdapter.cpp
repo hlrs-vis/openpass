@@ -15,10 +15,6 @@ AgentAdapter::AgentAdapter(WorldInterface *world, const CallbackInterface *callb
     callbacks(callbacks)
 {}
 
-AgentAdapter::~AgentAdapter()
-{
-}
-
 bool AgentAdapter::InitAgentParameter(int id,
                                       int agentTypeId,
                                       int spawnTime,

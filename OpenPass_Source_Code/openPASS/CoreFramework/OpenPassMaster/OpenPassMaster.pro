@@ -3,14 +3,14 @@
 # \brief This file contains the information for the QtCreator-project of the
 #        OpenPass Master
 #
-# Copyright (c) 2016 ITK Engineering AG.
+# Copyright (c) 2017 ITK Engineering GmbH.
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Eclipse Public License v1.0
 # which accompanies this distribution, and is available at
 # http://www.eclipse.org/legal/epl-v10.html
 #-----------------------------------------------------------------------------/
 
-include(../../Global.pri)
+include(../../../Global.pri)
 QT       += core xml
 QT       -= gui
 

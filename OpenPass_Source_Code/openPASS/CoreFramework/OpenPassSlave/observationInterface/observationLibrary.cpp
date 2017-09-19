@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -54,7 +54,7 @@ bool ObservationLibrary::Init()
     createInstanceFunc = (ObservationInterface_CreateInstanceType)library->resolve(DllCreateInstanceId.c_str());
     if(!createInstanceFunc)
     {
-        return nullptr;
+        return false;
     }
 
     destroyInstanceFunc = (ObservationInterface_DestroyInstanceType)library->resolve(DllDestroyInstanceId.c_str());
@@ -67,49 +67,49 @@ bool ObservationLibrary::Init()
     masterPreHookFunc = (ObservationInterface_MasterPreHook)library->resolve(DllMasterPreHookId.c_str());
     if(!masterPreHookFunc)
     {
-        return nullptr;
+        return false;
     }
 
     masterPostHookFunc = (ObservationInterface_MasterPostHook)library->resolve(DllMasterPostHookId.c_str());
     if(!masterPostHookFunc)
     {
-        return nullptr;
+        return false;
     }
 
     slavePreHookFunc = (ObservationInterface_SlavePreHook)library->resolve(DllSlavePreHookId.c_str());
     if(!slavePreHookFunc)
     {
-        return nullptr;
+        return false;
     }
 
     slavePreRunHookFunc = (ObservationInterface_SlavePreRunHook)library->resolve(DllSlavePreRunHookId.c_str());
     if(!slavePreRunHookFunc)
     {
-        return nullptr;
+        return false;
     }
 
     slaveUpdateHookFunc = (ObservationInterface_SlaveUpdateHook)library->resolve(DllSlaveUpdateHookId.c_str());
     if(!slaveUpdateHookFunc)
     {
-        return nullptr;
+        return false;
     }
 
     slavePostRunHookFunc = (ObservationInterface_SlavePostRunHook)library->resolve(DllSlavePostRunHookId.c_str());
     if(!slavePostRunHookFunc)
     {
-        return nullptr;
+        return false;
     }
 
     slavePostHookFunc = (ObservationInterface_SlavePostHook)library->resolve(DllSlavePostHookId.c_str());
     if(!slavePostHookFunc)
     {
-        return nullptr;
+        return false;
     }
 
     slaveResultFileFunc = (ObservationInterface_SlaveResultFile)library->resolve(DllSlaveResultFileId.c_str());
     if(!slaveResultFileFunc)
     {
-        return nullptr;
+        return false;
     }
 
     try

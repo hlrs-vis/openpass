@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -7,7 +7,7 @@
 ******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  algorithm_trajectoryFollower_implementation.h
+//! @file  evaluation_pcm_implementation.h
 //! @brief This file contains the specialised model implementation interface
 //!        used by the simulation framework.
 //-----------------------------------------------------------------------------
@@ -22,68 +22,42 @@
 #include "observationInterface.h"
 #include "agent.h"
 #include "runResult.h"
+#include "componentPorts.h"
 
+/**
+* \addtogroup CoreModules openPASS CoreModules
+* @{
+* \addtogroup Evaluation_Pcm
+*
+* \brief Observation module to evaluate a dynamic model
+*
+* This module was used in a pre openPASS version to evaluate a FMU with a two track model inside.\n
+* It was only adjusted to fit with the current version of openPASS.\n
+* Its functionality may be deprecated.
+*
+* @see ObservationInterface
+* @}
+*/
 
-//-----------------------------------------------------------------------------
-//! Observer interface used for exchange with component model
-//! avoids the need to include evaluation implementation during compilation of
-//! component model -> component model only casts to intermediate interface and
-//! calls functions of evaluation implementation by polymorphism
-//! -- Only needed if extra output from the trajectory follower is requested
-//-----------------------------------------------------------------------------
-class Evaluation_Pcm_ObserverInterface : public ObservationInterface
+/*!
+ * \copydoc Evaluation_Pcm
+ * \ingroup Evaluation_Pcm
+ */
+class Evaluation_Pcm_Implementation : public ObservationInterface
 {
 public:
-    using ObservationInterface::ObservationInterface;
-    // removing operators
-    Evaluation_Pcm_ObserverInterface(const Evaluation_Pcm_ObserverInterface&) = delete;
-    Evaluation_Pcm_ObserverInterface(Evaluation_Pcm_ObserverInterface&&) = delete;
-    Evaluation_Pcm_ObserverInterface& operator=(const Evaluation_Pcm_ObserverInterface&) = delete;
-    Evaluation_Pcm_ObserverInterface& operator=(Evaluation_Pcm_ObserverInterface&&) = delete;
-    //-----------------------------------------------------------------------------
-    //! Standard destructor
-    //-----------------------------------------------------------------------------
-    virtual ~Evaluation_Pcm_ObserverInterface() = default;
+    const std::string COMPONENTNAME = "Evaluation_Pcm";
 
-#ifdef TEST_VELOCITY_CONTROLLER
-    void SetDriverValues(double gas, double brake, double lowPassValue)
-    {
-        _gasPedalVec.push_back(gas);
-        _brakePedalVec.push_back(brake);
-        _lowPassValueVec.push_back(lowPassValue);
-    }
-
-protected:
-    std::vector<double> _errorVel2Vec;
-    std::vector<double> _gasPedalVec;
-    std::vector<double> _brakePedalVec;
-    std::vector<double> _lowPassValueVec;
-
-    void resetObserver()
-    {
-        _errorVel2Vec.clear();
-        _gasPedalVec.clear();
-        _brakePedalVec.clear();
-        _lowPassValueVec.clear();
-    }
-#endif
-
-};
-
-
-//-----------------------------------------------------------------------------
-//! Implementation interface class for the module Evaluation_Pcm
-//-----------------------------------------------------------------------------
-class Evaluation_Pcm_Implementation : public Evaluation_Pcm_ObserverInterface
-{
-public:
-    using Evaluation_Pcm_ObserverInterface::Evaluation_Pcm_ObserverInterface;
+    Evaluation_Pcm_Implementation(StochasticsInterface *stochastics,
+                                  WorldInterface *world,
+                                  const ParameterInterface *parameters,
+                                  const CallbackInterface *callbacks);
 
     // removing operators
-    Evaluation_Pcm_Implementation(const Evaluation_Pcm_Implementation&) = delete;
-    Evaluation_Pcm_Implementation(Evaluation_Pcm_Implementation&&) = delete;
-    Evaluation_Pcm_Implementation& operator=(const Evaluation_Pcm_Implementation&) = delete;
-    Evaluation_Pcm_Implementation& operator=(Evaluation_Pcm_Implementation&&) = delete;
+    Evaluation_Pcm_Implementation(const Evaluation_Pcm_Implementation &) = delete;
+    Evaluation_Pcm_Implementation(Evaluation_Pcm_Implementation &&) = delete;
+    Evaluation_Pcm_Implementation &operator=(const Evaluation_Pcm_Implementation &) = delete;
+    Evaluation_Pcm_Implementation &operator=(Evaluation_Pcm_Implementation &&) = delete;
 
     //-----------------------------------------------------------------------------
     //! Standard destructor
@@ -166,7 +140,7 @@ private:
     //-----------------------------------------------------------------------------
     double calc2norm(double x, double y)
     {
-        return sqrt(x*x+y*y);
+        return sqrt(x * x + y * y);
     }
 
 
@@ -210,29 +184,47 @@ private:
     //-----------------------------------------------------------------------------
     void dumpVec(std::ofstream &file, std::vector<double> vec);
 
-    int _supposedCollisionTime;             //!< the time of the collision according to the pcm
-    const std::vector<int>*    _timeVec;    //!< vector of the time steps
-    const std::vector<double>* _xPosVec1;   //!< vector of the x-coordinates for the first agent
-    const std::vector<double>* _yPosVec1;   //!< vector of the y-coordinates for the first agent
-    const std::vector<double>* _uVelVec1;   //!< vector of the lateral velocities for the first agent
-    const std::vector<double>* _vVelVec1;   //!< vector of the vertical velocities for the first agent
-    const std::vector<double>* _psiVec1;    //!< vector of the yaw angle for the first agent
-    const std::vector<double>* _xPosVec2;   //!< vector of the x-coordinates for the second agent
-    const std::vector<double>* _yPosVec2;   //!< vector of the y-coordinates for the second agent
-    const std::vector<double>* _uVelVec2;   //!< vector of the lateral velocities for the second agent
-    const std::vector<double>* _vVelVec2;   //!< vector of the vertical velocities for the second agent
-    const std::vector<double>* _psiVec2;    //!< vector of the yaw angle for the second agent
+    std::map<int, externalParameter<int>*> parameterMapInt;
+    std::map<int, externalParameter<const std::vector<int> *>*> parameterMapIntVector;
+    std::map<int, externalParameter<const std::vector<double> *>*> parameterMapDoubleVector;
+    std::map<int, externalParameter<std::string>*> parameterMapString;
+    /** \addtogroup Evaluation_Pcm
+     *  @{
+     *      \name External Parameter
+     *      Parameter which are set externally in runConfiguration file.
+     *      @{
+     */
+    externalParameter<int> supposedCollisionTime {0, &parameterMapInt };               //!< the time of the collision according to the pcm
 
-    const AgentInterface* _agent1;          //!< class with all information on the first agent
-    const AgentInterface* _agent2;          //!< class with all information on the second agent
+    externalParameter<const std::vector<int> *> timeVec {1, &parameterMapIntVector };  //!< vector of the time steps
 
-    int _counter;                           //!< counts the time steps
-    double _errorSum_Participant1;          //!< summing up the errors of the positions of agent 1
-    double _errorSum_Participant2;          //!< summing up the errors of the positions of agent 2
+    externalParameter<const std::vector<double> *> xPosVec1 {2, &parameterMapDoubleVector };   //!< vector of the x-coordinates for the first agent
+    externalParameter<const std::vector<double> *> yPosVec1 {3, &parameterMapDoubleVector };   //!< vector of the y-coordinates for the first agent
+    externalParameter<const std::vector<double> *> uVelVec1 {4, &parameterMapDoubleVector };   //!< vector of the lateral velocities for the first agent
+    externalParameter<const std::vector<double> *> vVelVec1 {5, &parameterMapDoubleVector };   //!< vector of the vertical velocities for the first agent
+    externalParameter<const std::vector<double> *> psiVec1 {6, &parameterMapDoubleVector };    //!< vector of the yaw angle for the first agent
 
-    std::string _resultFolderName;          //!< foldername for the result file
-    std::string _runID;                     //!< id for the run
-    std::string _PCMCaseNumber;             //!< name / number of the PCM case
+    externalParameter<const std::vector<double> *> xPosVec2 {7, &parameterMapDoubleVector };   //!< vector of the x-coordinates for the second agent
+    externalParameter<const std::vector<double> *> yPosVec2 {8, &parameterMapDoubleVector };   //!< vector of the y-coordinates for the second agent
+    externalParameter<const std::vector<double> *> uVelVec2 {9, &parameterMapDoubleVector };   //!< vector of the lateral velocities for the second agent
+    externalParameter<const std::vector<double> *> vVelVec2 {10, &parameterMapDoubleVector };  //!< vector of the vertical velocities for the second agent
+    externalParameter<const std::vector<double> *> psiVec2 {11, &parameterMapDoubleVector };   //!< vector of the yaw angle for the second agent
+
+    externalParameter<std::string> resultFolderName {12, &parameterMapString }; //!< foldername for the result file
+    externalParameter<std::string> runID {13, &parameterMapString };            //!< id for the run
+    externalParameter<std::string> PCMCaseNumber {14, &parameterMapString };    //!< name / number of the PCM case
+
+    /**
+     *      @}
+     *  @}
+     */
+
+    const AgentInterface *agent1;          //!< class with all information on the first agent
+    const AgentInterface *agent2;          //!< class with all information on the second agent
+
+    unsigned int counter;                  //!< counts the time steps
+    double errorSum_Participant1;          //!< summing up the errors of the positions of agent 1
+    double errorSum_Participant2;          //!< summing up the errors of the positions of agent 2
 
     std::vector<RunResultInterface::Collision> collisions; //!< vector to safe collisions
 };

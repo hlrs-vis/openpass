@@ -1,0 +1,46 @@
+<?xml version="1.0" ?>
+<OpenDRIVE>
+  <header revMajor="1" revMinor="1" name="Testfile" version="1" date="Thu Feb 8 14:24:06 2007" north="2.0000000000000000e+003" south="-2.0000000000000000e+003" east="2.0000000000000000e+003" west="-2.0000000000000000e+003" />
+  <road name="" length="5139.7188686309819" id="0" junction="-1">
+    <link />
+    <planView>
+      <geometry s="0.0000000000000000e+000" x="0" y="22" hdg="0" length="4000">
+        <line />
+      </geometry>
+      <geometry s="4000" x="4000" y="11.25" hdg="0" length="285">
+        <spiral curvStart="0.0000000000000000e+000" curvEnd="-0.0028500000000000066" />
+      </geometry>
+      <geometry s="4285" x="4280.3350391612494" y="-26.879710830536482" hdg="-0.40612500000000096" length="183.7188686309816">
+        <arc curvature="-0.0028500000000000066" />
+      </geometry>
+      <geometry s="4468.7188686309819" x="4422.9323279193268" y="-139.37204699500416" hdg="-0.92972377559829977" length="571">
+        <spiral curvStart="-0.0028500000000000066" curvEnd="0.0000000000000000e+000" />
+      </geometry>
+      <geometry s="5039.7188686309819" x="4476.6651848689908" y="-691.13624436808436" hdg="-1.7453292519943295" length="100">
+        <line />
+      </geometry>
+    </planView>
+    <elevationProfile />
+    <lateralProfile />
+    <lanes>
+      <laneSection s="0.0000000000000000e+000">
+        <left />
+        <center>
+          <lane id="0" type="driving" level="true">
+            <link>
+              <successor id="0" />
+            </link>
+            <width sOffset="0.0000000000000000e+000" a="0.0000000000000000e+000" b="0.0000000000000000e+000" c="0.0000000000000000e+000" d="0.0000000000000000e+000" />
+          </lane>
+        </center>
+        <right>
+          <lane id="-1" type="driving" level="true"><link><successor id="-1" /></link><width sOffset="0.0000000000000000e+000" a="3.75" b="0.0000000000000000e+000" c="0.0000000000000000e+000" d="0.0000000000000000e+000" /></lane>
+<lane id="-2" type="driving" level="true"><link><successor id="-2" /></link><width sOffset="0.0000000000000000e+000" a="3.75" b="0.0000000000000000e+000" c="0.0000000000000000e+000" d="0.0000000000000000e+000" /></lane>
+<lane id="-3" type="driving" level="true"><link><successor id="-3" /></link><width sOffset="0.0000000000000000e+000" a="3.75" b="0.0000000000000000e+000" c="0.0000000000000000e+000" d="0.0000000000000000e+000" /></lane>
+        </right>
+      </laneSection>
+    </lanes>
+    <objects />
+    <signals />
+  </road>
+</OpenDRIVE>

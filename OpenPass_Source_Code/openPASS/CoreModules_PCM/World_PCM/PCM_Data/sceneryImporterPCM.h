@@ -1,0 +1,148 @@
+/******************************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH.
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
+******************************************************************************/
+
+//-----------------------------------------------------------------------------
+//! @file  sceneryImporterPCM.h
+//! @brief This file contains the importer of the scenery configuration.
+//-----------------------------------------------------------------------------
+
+#ifndef SCENERYIMPORTERPCM_H
+#define SCENERYIMPORTERPCM_H
+
+#include <QFile>
+#include <QDomDocument>
+#include <sstream>
+#include "callbackInterface.h"
+#include "pcm_data.h"
+#include "externalTrajectory.h"
+#include "globalDefinitions.h"
+#include "pcm_helper.h"
+
+/*!
+ * \brief The SceneryImporterPCM class
+ * This class is responsible to import pcm data from a given scnenery configuration file.
+ */
+class SceneryImporterPCM
+{
+public:
+    SceneryImporterPCM(const CallbackInterface *callbacks);
+    SceneryImporterPCM(const SceneryImporterPCM &) = delete;
+    SceneryImporterPCM(SceneryImporterPCM &&) = delete;
+    SceneryImporterPCM &operator=(const SceneryImporterPCM &) = delete;
+    SceneryImporterPCM &operator=(SceneryImporterPCM &&) = delete;
+    virtual ~SceneryImporterPCM() = default;
+
+    //-----------------------------------------------------------------------------
+    //! Imports data structures from the scenery configuration PCM file
+    //!
+    //! @param[in]  filename       path to PCM file
+    //! @param[in]  pcmData        pcmData object to fill with data from pcm file
+    //! @return                    true on success
+    //-----------------------------------------------------------------------------
+    bool Import(const std::string &filename,
+                PCM_Data &pcmData,
+                std::map<int, Trajectory> &trajectories);
+
+protected:
+    //-----------------------------------------------------------------------------
+    //! Provides callback to LOG() macro
+    //!
+    //! @param[in]     logLevel    Importance of log
+    //! @param[in]     file        Name of file where log is called
+    //! @param[in]     line        Line within file where log is called
+    //! @param[in]     message     Message to log
+    //-----------------------------------------------------------------------------
+    void Log(CbkLogLevel logLevel,
+             const char *file,
+             int line,
+             const std::string &message)
+    {
+        if (callbacks) {
+            callbacks->Log(logLevel,
+                           file,
+                           line,
+                           message);
+        }
+    }
+
+private:
+
+    //! Parse all global data.
+    //!
+    //! \param[in] rootNode     rootNode
+    //! \param[in,out] pcmData  pcmData object to be filled
+    //! \return true for success
+    bool ParseGlobalData(QDomNode rootNode, PCM_Data &pcmData);
+
+    //! Parse all marks.
+    //!
+    //! \param[in] rootNode     rootNode
+    //! \param[in,out] pcmData  pcmData object to be filled
+    //! \return true for success
+    bool ParseMarks(QDomNode rootNode, PCM_Data &pcmData);
+
+    //! Parse all objects.
+    //!
+    //! \param[in] rootNode     rootNode
+    //! \param[in,out] pcmData  pcmData object to be filled
+    //! \return true for success
+    bool ParseObjects(QDomNode rootNode, PCM_Data &pcmData);
+
+    //! Parse all viewObjects.
+    //!
+    //! \param[in] rootNode     rootNode
+    //! \param[in,out] pcmData  pcmData object to be filled
+    //! \return true for success
+    bool ParseViewObjects(QDomNode rootNode, PCM_Data &pcmData);
+
+    //! Parse all intendedCourses.
+    //!
+    //! \param[in] rootNode     rootNode
+    //! \param[in,out] pcmData  pcmData object to be filled
+    //! \return true for success
+    bool ParseIntendedCourses(QDomNode rootNode, PCM_Data &pcmData);
+
+    //! Parse all lines.
+    //!
+    //! \param[in] lineContainerNode  node with lineContainer
+    //! \param[in,out] lineContainer  lineContainer object to be filled
+    //! \return true for success
+    bool ParseLines(QDomNode lineContainerNode, PCM_LineContainer *lineContainer);
+
+    //! Parse all points.
+    //!
+    //! \param[in] pointContainerNode  node with pointContainer
+    //! \param[in,out] pointContainer  pointContainer object to be filled
+    //! \return true for success
+    bool ParsePoints(QDomNode pointContainerNode, PCM_PointContainer *pointContainer);
+
+    //! Parse all trajectories.
+    //!
+    //! \param[in] trajectoryNode    node with trajectory
+    //! \param[in,out] trajectories  trajectories map to be filled
+    //! \return true for success
+    bool ParseTrajectories(QDomNode trajectoryNode, std::map<int, Trajectory> &trajectories);
+
+    //! Parse int vector.
+    //!
+    //! \param[in] rootNode       rootNode
+    //! \param[in,out] intVector  int vector to be filled
+    //! \return true for success
+    bool ParseIntVector(QDomNode rootNode, std::vector<int> *intVector);
+
+    //! Parse double vector.
+    //!
+    //! \param[in] rootNode          rootNode
+    //! \param[in,out] doubleVector  double vector to be filled
+    //! \return true for success
+    bool ParseDoubleVector(QDomNode rootNode, std::vector<double> *doubleVector);
+
+    const CallbackInterface *callbacks = nullptr; //!< CallbackInterface for logging
+};
+
+#endif // SCENERYIMPORTERPCM_H

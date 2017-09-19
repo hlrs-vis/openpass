@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -33,17 +33,17 @@ public:
     CollisionDetection() = default;
 
     // removing operators
-    CollisionDetection(const CollisionDetection&) = delete;
-    CollisionDetection(CollisionDetection&&) = delete;
-    CollisionDetection& operator=(const CollisionDetection&) = delete;
-    CollisionDetection& operator=(CollisionDetection&&) = delete;
+    CollisionDetection(const CollisionDetection &) = delete;
+    CollisionDetection(CollisionDetection &&) = delete;
+    CollisionDetection &operator=(const CollisionDetection &) = delete;
+    CollisionDetection &operator=(CollisionDetection &&) = delete;
 
     //-----------------------------------------------------------------------------
     //! Standard destructor
     //-----------------------------------------------------------------------------
     virtual ~CollisionDetection() = default;
 
-   //-----------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------
     //! Stores collision parameters (using separating axes theorem)
     //!
     //! @param[in]  agent                   pointer to agent

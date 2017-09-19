@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -9,8 +9,7 @@
 #include <cmath>
 #include "vector2d.h"
 
-namespace Common
-{
+namespace Common {
 
 Vector2d::Vector2d(double x, double y) : x(x), y(y)
 {}
@@ -19,6 +18,12 @@ void Vector2d::Translate(double x, double y)
 {
     this->x += x;
     this->y += y;
+}
+
+void Vector2d::Translate(Vector2d translationVector)
+{
+    this->x += translationVector.x;
+    this->y += translationVector.y;
 }
 
 void Vector2d::Rotate(double angle)
@@ -53,11 +58,15 @@ double Vector2d::Dot(const Vector2d &in)
     return x * in.x + y * in.y;
 }
 
+double Vector2d::Cross(const Vector2d &in)
+{
+    return x * in.y - y * in.x;
+}
+
 bool Vector2d::Norm()
 {
-    double length = std::sqrt(x*x + y*y);
-    if(0 == length)
-    {
+    double length = std::sqrt(x * x + y * y);
+    if (0 == length) {
         return false;
     }
 
@@ -69,7 +78,12 @@ bool Vector2d::Norm()
 
 double Vector2d::Length() const
 {
-    return std::sqrt(x*x + y*y);
+    return std::sqrt(x * x + y * y);
+}
+
+double Vector2d::Angle() const
+{
+    return atan2(y, x);
 }
 
 Vector2d Vector2d::operator-(const Vector2d &in)
@@ -89,7 +103,7 @@ Vector2d Vector2d::operator*(double in)
 
 bool Vector2d::operator==(const Vector2d &in) const
 {
-    return x==in.x && y==in.y;
+    return x == in.x && y == in.y;
 }
 
 } // namespace Common

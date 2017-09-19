@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -640,11 +640,15 @@ bool SceneryImporter::Import(const std::string &filename,
         return false;
     }
 
-    // parse roads
-    ParseRoads(documentRoot, scenery);
+    if(documentRoot.tagName().toLower() == "opendrive"){
+        // parse roads
+        ParseRoads(documentRoot, scenery);
 
-    // let the world create its scenery
-    return world->CreateScenery(scenery);
+        // let the world create its scenery
+        return world->CreateScenery(scenery);
+    }
+
+    return world->CreateWorldScenery(filename);
 }
 
 } // namespace SimulationSlave

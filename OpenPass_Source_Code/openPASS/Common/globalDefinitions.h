@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -19,8 +19,7 @@
 //-----------------------------------------------------------------------------
 //! @brief Containing the three possible states regarding lane change
 //-----------------------------------------------------------------------------
-enum class LaneChangeState
-{
+enum class LaneChangeState {
     NoLaneChange = 0,
     LaneChangeLeft,
     LaneChangeRight
@@ -29,8 +28,7 @@ enum class LaneChangeState
 //-----------------------------------------------------------------------------
 //! weekday type
 //-----------------------------------------------------------------------------
-enum class Weekday
-{
+enum class Weekday {
     Undefined = 0,
     Monday,
     Tuesday,
@@ -44,8 +42,7 @@ enum class Weekday
 //-----------------------------------------------------------------------------
 //! Agent type classification
 //-----------------------------------------------------------------------------
-enum class AgentVehicleType
-{
+enum class AgentVehicleType {
     Undefined = 0,
     Car,
     Pedestrian,
@@ -68,7 +65,7 @@ enum class IndicatorState {
     IndicatorState_Warn = 3
 };
 
-struct Position{
+struct Position {
     double xPos;
     double yPos;
     double yawAngle;
@@ -78,8 +75,7 @@ struct Position{
 //! @brief Areas of interest for surrounding data.
 //! \details "Downstream" is a gaze state, but not an area of interest for surrounding data.
 //! The downstream gaze state is used to obtain data for anticipation.
-enum class AreaOfInterest
-{
+enum class AreaOfInterest {
     LEFT_FRONT = 0,
     RIGHT_FRONT,
     LEFT_REAR,
@@ -88,8 +84,30 @@ enum class AreaOfInterest
     EGO_REAR,
     LEFT_SIDE,
     RIGHT_SIDE,
-    //	DOWNSTREAM
+    //  DOWNSTREAM
     NumberOfAreaOfInterests
+};
+
+//! Enum of potential types of marks.
+//! If MarkType is modified, convertMarkTypeToDBString() and convertStringToMarkType()
+//! in commonTools.h has to be modified too to stay consistent.
+enum class MarkType {
+    NONE,
+    CONTINUOUS,
+    INTERRUPTED_LONG,
+    INTERRUPTED_SHORT,
+    ROADSIDE,
+    NumberOfMarkTypes
+};
+
+//! Possibile direction of view angle with agent in center.
+enum class AgentViewDirection {
+    none,
+    front,
+    left,
+    back,
+    right,
+    NumberOfCarViewDirections
 };
 
 class WorldParameter
@@ -102,10 +120,10 @@ public:
         timeOfDay(timeOfDay),
         libraryName(libraryName)
     {}
-    WorldParameter(const WorldParameter&) = delete;
-    WorldParameter(WorldParameter&&) = delete;
-    WorldParameter& operator=(const WorldParameter&) = delete;
-    WorldParameter& operator=(WorldParameter&&) = delete;
+    WorldParameter(const WorldParameter &) = delete;
+    WorldParameter(WorldParameter &&) = delete;
+    WorldParameter &operator=(const WorldParameter &) = delete;
+    WorldParameter &operator=(WorldParameter &&) = delete;
     virtual ~WorldParameter() = default;
 
     Weekday GetWeekday()
@@ -139,10 +157,10 @@ public:
         id(id),
         reference(reference)
     {}
-    AgentSpawnItem(const AgentSpawnItem&) = delete;
-    AgentSpawnItem(AgentSpawnItem&&) = delete;
-    AgentSpawnItem& operator=(const AgentSpawnItem&) = delete;
-    AgentSpawnItem& operator=(AgentSpawnItem&&) = delete;
+    AgentSpawnItem(const AgentSpawnItem &) = delete;
+    AgentSpawnItem(AgentSpawnItem &&) = delete;
+    AgentSpawnItem &operator=(const AgentSpawnItem &) = delete;
+    AgentSpawnItem &operator=(AgentSpawnItem &&) = delete;
     virtual ~AgentSpawnItem() = default;
 
     int GetId() const
@@ -311,4 +329,3 @@ private:
 };
 
 #endif // GLOBALDEFINITIONS
-

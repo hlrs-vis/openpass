@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -76,8 +76,8 @@ public:
             double l1 = opponent1.velocity.Length();
             double l2 = opponent2.velocity.Length();
 
-            relativeAngle = (l1!=0 && l2!=0)? ::acos(vVector1.Dot(vVector2) / l1 / l2):
-                                              ::abs(opponent1.agent->GetYawAngle() - opponent2.agent->GetYawAngle());
+            relativeAngle = (l1 != 0 && l2 != 0) ? ::acos(vVector1.Dot(vVector2) / l1 / l2) :
+                            ::abs(opponent1.agent->GetYawAngle() - opponent2.agent->GetYawAngle());
         }
 
         OpponentItem opponent1;
@@ -88,10 +88,10 @@ public:
     };
 
     RunResultInterface() = default;
-    RunResultInterface(const RunResultInterface&) = delete;
-    RunResultInterface(RunResultInterface&&) = delete;
-    RunResultInterface& operator=(const RunResultInterface&) = delete;
-    RunResultInterface& operator=(RunResultInterface&&) = delete;
+    RunResultInterface(const RunResultInterface &) = delete;
+    RunResultInterface(RunResultInterface &&) = delete;
+    RunResultInterface &operator=(const RunResultInterface &) = delete;
+    RunResultInterface &operator=(RunResultInterface &&) = delete;
     virtual ~RunResultInterface() = default;
 
     //-----------------------------------------------------------------------------
@@ -115,7 +115,7 @@ public:
     //!
     //! @return                Mapping of agents to x-/y-coordinates
     //-----------------------------------------------------------------------------
-    virtual const std::map<const AgentInterface*, std::tuple<double, double>> *GetPositions() const
+    virtual const std::map<const AgentInterface *, std::tuple<double, double>> *GetPositions() const
     {
         return nullptr;
     }
@@ -125,7 +125,7 @@ public:
     //!
     //! @return                Mapping of agents to forward-/sideward-velocities
     //-----------------------------------------------------------------------------
-    virtual const std::map<const AgentInterface*, std::tuple<double, double>> *GetVelocities() const
+    virtual const std::map<const AgentInterface *, std::tuple<double, double>> *GetVelocities() const
     {
         return nullptr;
     }
@@ -135,7 +135,7 @@ public:
     //!
     //! @return                Mapping of agents to yaw angles
     //-----------------------------------------------------------------------------
-    virtual const std::map<const AgentInterface*, double> *GetYawAngles() const
+    virtual const std::map<const AgentInterface *, double> *GetYawAngles() const
     {
         return nullptr;
     }
@@ -147,7 +147,7 @@ public:
     //!
     //! @return                Mapping of agents to
     //-----------------------------------------------------------------------------
-    virtual const std::map<const AgentInterface*, double> *GetDistances() const
+    virtual const std::map<const AgentInterface *, double> *GetDistances() const
     {
         return nullptr;
     }
@@ -189,12 +189,12 @@ public:
     //!
     //! @return                True if successful
     //-----------------------------------------------------------------------------
-    virtual bool AddCollision(const AgentInterface* agent,
-                      Common::Vector2d &positionAgent,
-                      double distanceOnBorderAgent,
-                      const AgentInterface* other,
-                      Common::Vector2d &positionOther,
-                      double distanceOnBorderOther) = 0;
+    virtual bool AddCollision(const AgentInterface *agent,
+                              Common::Vector2d &positionAgent,
+                              double distanceOnBorderAgent,
+                              const AgentInterface *other,
+                              Common::Vector2d &positionOther,
+                              double distanceOnBorderOther) = 0;
 
     //-----------------------------------------------------------------------------
     //! Sets a collision flag.
@@ -203,4 +203,3 @@ public:
 };
 
 #endif // RUNRESULTINTERFACE
-

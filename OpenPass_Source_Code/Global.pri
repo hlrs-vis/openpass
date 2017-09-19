@@ -1,2 +1,2 @@
-DIR_DEBUG = "C:\Arbeitsordner\qt_builds\OpenPASS\Debug"
-DIR_RELEASE = "C:\Arbeitsordner\qt_builds\OpenPASS\Release"
+DIR_DEBUG = "C:\OpenPASS\BinDebug"
+DIR_RELEASE = "C:\OpenPASS\BinRelease"

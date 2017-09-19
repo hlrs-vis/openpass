@@ -10,7 +10,7 @@
 # http://www.eclipse.org/legal/epl-v10.html
 #-----------------------------------------------------------------------------/
 
-include(../../Global.pri)
+include(../../../Global.pri)
 QT -= gui
 
 win32 {

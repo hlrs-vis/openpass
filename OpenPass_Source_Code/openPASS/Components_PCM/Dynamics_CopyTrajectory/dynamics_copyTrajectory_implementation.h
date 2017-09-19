@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -13,52 +13,25 @@
 #include "modelInterface.h"
 #include "observationInterface.h"
 
-/** \addtogroup Dynamics_CopyTrajectory
+/** \addtogroup Components openPASS components
 * @{
-* \brief Implementation interface class for the module Dynamics_CopyTrajectory
+* \addtogroup Dynamics_CopyTrajectory
+* \brief Dynamic component to follow a exactly a given trajectory.
 *
-*  This module uses a given trajectory to set the position of the agent.
-*
-* \section Dynamics_CopyTrajectory_Inputs Inputs
-* none
-*
-* \section Dynamics_CopyTrajectory_InitInputs Init Inputs
-* none
-*
-* \section Dynamics_CopyTrajectory_Outputs Outputs
-* none
-*
-* \section Dynamics_CopyTrajectory_ExternalParameters External parameters
-* name | meaning
-* -----|---------
-* _timeVec | time vector of trajector
-* _xPosVec | x coordinate vector of trajectory
-* _yPosVec | y coordinate vector of trajectory
-* _velVec | velocity vector of trajectory
-* _psiVec | y yaw angle vector of trajectory
-*
-* \section Dynamics_CopyTrajectory_ConfigParameters Parameters to be specified in agentConfiguration.xml
-* type | id | meaning | corresponding external paramter
-* -----|----|---------|----------------------------------
-* IntVector | 0 | time vector of trajector | _timeVec
-* DoubleVector | 1 | x coordinate vector of trajectory | _xPosVec
-* DoubleVector | 2 | y coordinate vector of trajectory | _yPosVec
-* DoubleVector | 3 | velocity vector of trajectory | _velVec
-* DoubleVector | 4 | yaw angle vector of trajectory | _psiVec
-*
-* \section Dynamics_CopyTrajectory_InternalParameters Internal paramters
-* none
+* \details This module uses the given trajectory of the agent to set its position,
+* orientation and velocity at every timestep.
 *
 * @} */
 
 /*!
-* \brief Implementation interface class for the module Dynamics_CopyTrajectory
-*
-* This module uses a given trajectory to set the position of the agent.
+* \copydoc Dynamics_CopyTrajectory
 * \ingroup Dynamics_CopyTrajectory
 */
-class Dynamics_CopyTrajectory_Implementation : public SensorInterface {
+class Dynamics_CopyTrajectory_Implementation : public DynamicsInterface
+{
 public:
+    const std::string COMPONENTNAME = "Dynamics_CopyTrajectory";
+
     //-----------------------------------------------------------------------------
     //! Constructor
     //!
@@ -84,13 +57,20 @@ public:
                                            StochasticsInterface *stochastics,
                                            WorldInterface *world,
                                            const ParameterInterface *parameters,
-                                           const std::map<int, ObservationInterface*> *evaluations,
+                                           const std::map<int, ObservationInterface *> *evaluations,
                                            const CallbackInterface *callbacks,
                                            AgentInterface *agent);
     //-----------------------------------------------------------------------------
     //! Destructor
     //-----------------------------------------------------------------------------
     virtual ~Dynamics_CopyTrajectory_Implementation() {}
+
+    Dynamics_CopyTrajectory_Implementation(const Dynamics_CopyTrajectory_Implementation &) = delete;
+    Dynamics_CopyTrajectory_Implementation(Dynamics_CopyTrajectory_Implementation &&) = delete;
+    Dynamics_CopyTrajectory_Implementation &operator=(const Dynamics_CopyTrajectory_Implementation &) =
+        delete;
+    Dynamics_CopyTrajectory_Implementation &operator=(Dynamics_CopyTrajectory_Implementation &&) =
+        delete;
 
     //-----------------------------------------------------------------------------
     //! Function is called by framework when another component delivers a signal over
@@ -101,7 +81,8 @@ public:
     //! @param[in]     time           Current scheduling time
     //! @return                       True on success
     //-----------------------------------------------------------------------------
-    virtual void UpdateInput(int localLinkId, const std::shared_ptr<SignalInterface const> &data, int time);
+    virtual void UpdateInput(int localLinkId, const std::shared_ptr<SignalInterface const> &data,
+                             int time);
 
     //-----------------------------------------------------------------------------
     //! Function is called by framework when this component has to deliver a signal over
@@ -124,12 +105,14 @@ public:
     virtual void Trigger(int time);
 
 private:
-    unsigned int _counter;          //!< index, which waypoint has been given out already
-    std::vector<int>    _timeVec;   //!< time vector of trajectory
-    std::vector<double> _xPosVec;   //!< x coordinate vector of trajectory
-    std::vector<double> _yPosVec;   //!< y coordinate vector of trajectory
-    std::vector<double> _velVec;    //!< velocity vector of trajectory
-    std::vector<double> _psiVec;    //!< yaw angle vector of trajectory
+
+    unsigned int counter;       //!< index, which waypoint has been given out already
+
+    const std::vector<int>    *timeVec = nullptr;   //!< time vector of trajectory
+    const std::vector<double> *xPosVec = nullptr;   //!< x coordinate vector of trajectory
+    const std::vector<double> *yPosVec = nullptr;   //!< y coordinate vector of trajectory
+    const std::vector<double> *velVec = nullptr;    //!< velocity vector of trajectory
+    const std::vector<double> *psiVec = nullptr;    //!< yaw angle vector of trajectory
 };
 
 #endif // DYNAMICS_COPYTRAJECTORY_IMPLEMENTATION_H

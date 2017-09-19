@@ -75,9 +75,7 @@ public:
                               const std::map<int, ObservationInterface*> *observations,
                               const CallbackInterface *callbacks,
                               AgentInterface *agent);
-    virtual ~Sensor_Distance_Implementation()
-    {
-    }
+    virtual ~Sensor_Distance_Implementation() = default;
 
     /*!
      * \brief Update Inputs

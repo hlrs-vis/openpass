@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -28,10 +28,10 @@ class SpawnItemParameterInterface
 {
 public:
     SpawnItemParameterInterface() = default;
-    SpawnItemParameterInterface(const SpawnItemParameterInterface&) = delete;
-    SpawnItemParameterInterface(SpawnItemParameterInterface&&) = delete;
-    SpawnItemParameterInterface& operator=(const SpawnItemParameterInterface&) = delete;
-    SpawnItemParameterInterface& operator=(SpawnItemParameterInterface&&) = delete;
+    SpawnItemParameterInterface(const SpawnItemParameterInterface &) = delete;
+    SpawnItemParameterInterface(SpawnItemParameterInterface &&) = delete;
+    SpawnItemParameterInterface &operator=(const SpawnItemParameterInterface &) = delete;
+    SpawnItemParameterInterface &operator=(SpawnItemParameterInterface &&) = delete;
     virtual ~SpawnItemParameterInterface() = default;
 
     //-----------------------------------------------------------------------------
@@ -118,7 +118,7 @@ public:
 //-----------------------------------------------------------------------------
 class SpawnPointInterface
 {
-public:    
+public:
     SpawnPointInterface(StochasticsInterface *stochastics,
                         WorldInterface *world,
                         const ParameterInterface *parameters,
@@ -128,10 +128,10 @@ public:
         parameters(parameters),
         callbacks(callbacks)
     {}
-    SpawnPointInterface(const SpawnPointInterface&) = delete;
-    SpawnPointInterface(SpawnPointInterface&&) = delete;
-    SpawnPointInterface& operator=(const SpawnPointInterface&) = delete;
-    SpawnPointInterface& operator=(SpawnPointInterface&&) = delete;
+    SpawnPointInterface(const SpawnPointInterface &) = delete;
+    SpawnPointInterface(SpawnPointInterface &&) = delete;
+    SpawnPointInterface &operator=(const SpawnPointInterface &) = delete;
+    SpawnPointInterface &operator=(SpawnPointInterface &&) = delete;
     virtual ~SpawnPointInterface() = default;
 
     //-----------------------------------------------------------------------------
@@ -188,8 +188,7 @@ protected:
              int line,
              const std::string &message)
     {
-        if(callbacks)
-        {
+        if (callbacks) {
             callbacks->Log(logLevel,
                            file,
                            line,
@@ -201,7 +200,7 @@ private:
     StochasticsInterface *stochastics;    //!< References stochastics functionality of the framework
     WorldInterface *world;                //!< References the world of the framework
     const ParameterInterface *parameters; //!< References the configuration parameters
-    const CallbackInterface *callbacks;   //!< References the callback functions of the framework    
+    const CallbackInterface *callbacks;   //!< References the callback functions of the framework
 };
 
 #endif // SPAWNPOINTINTERFACE_H

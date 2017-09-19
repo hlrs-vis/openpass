@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -24,12 +24,12 @@
 //-----------------------------------------------------------------------------
 class StochasticsInterface
 {
-public:    
+public:
     StochasticsInterface() = default;
-    StochasticsInterface(const StochasticsInterface&) = delete;
-    StochasticsInterface(StochasticsInterface&&) = delete;
-    StochasticsInterface& operator=(const StochasticsInterface&) = delete;
-    StochasticsInterface& operator=(StochasticsInterface&&) = delete;
+    StochasticsInterface(const StochasticsInterface &) = delete;
+    StochasticsInterface(StochasticsInterface &&) = delete;
+    StochasticsInterface &operator=(const StochasticsInterface &) = delete;
+    StochasticsInterface &operator=(StochasticsInterface &&) = delete;
     virtual ~StochasticsInterface() = default;
 
     //-----------------------------------------------------------------------------

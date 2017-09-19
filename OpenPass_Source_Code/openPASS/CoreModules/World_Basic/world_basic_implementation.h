@@ -103,6 +103,9 @@ public:
                                                                  Q_UNUSED(laneNumber);
                                                                  return Position();} //dummy
 
+    bool CreateWorldScenery(const  std::string &sceneryFilename) {Q_UNUSED(sceneryFilename);
+                                                                 return false;} //dummy
+
 protected:
     //-----------------------------------------------------------------------------
     //! Provides callback to LOG() macro
@@ -133,7 +136,7 @@ private:
 
     AgentNetwork agentNetwork;
 
-    const CallbackInterface *callbacks;
+    const CallbackInterface *callbacks = nullptr;
 };
 
 #endif // WORLD_IMPLEMENTATION_H

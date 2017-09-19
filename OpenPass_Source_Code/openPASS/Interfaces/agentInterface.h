@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -31,10 +31,10 @@ class AgentInterface
 {
 public:
     AgentInterface() = default;
-    AgentInterface(const AgentInterface&) = delete;
-    AgentInterface(AgentInterface&&) = delete;
-    AgentInterface& operator=(const AgentInterface&) = delete;
-    AgentInterface& operator=(AgentInterface&&) = delete;
+    AgentInterface(const AgentInterface &) = delete;
+    AgentInterface(AgentInterface &&) = delete;
+    AgentInterface &operator=(const AgentInterface &) = delete;
+    AgentInterface &operator=(AgentInterface &&) = delete;
     virtual ~AgentInterface() = default;
 
     //-----------------------------------------------------------------------------
@@ -204,6 +204,14 @@ public:
     virtual std::vector<int> GetCollisionPartners() const = 0;
 
     //-----------------------------------------------------------------------------
+    //! Retrieves vector of all collisionData with a collisionPartner.
+    //!
+    // @return                a value >0 if collided
+    //-----------------------------------------------------------------------------
+    virtual std::vector<void *> GetCollisionData(int collisionPartnerId,
+                                                 int collisionDataId) const = 0;
+
+    //-----------------------------------------------------------------------------
     //! Sets x-coordinate of agent
     //!
     //! @param[in]     positionX    X-coordinate
@@ -356,6 +364,14 @@ public:
     // @return
     //-----------------------------------------------------------------------------
     virtual void UpdateCollision(int collisionPartnerId) = 0;
+
+    //-----------------------------------------------------------------------------
+    //! update list with collision partners and corresponding collisionData
+    //!
+    // @return
+    //-----------------------------------------------------------------------------
+    virtual void UpdateCollision(int collisionPartnerId, int collisionDataId,
+                                 void *collisionData) = 0;
 
     //-----------------------------------------------------------------------------
     //! Unlocate agent in world.
@@ -641,7 +657,7 @@ public:
     //! @return
     //-----------------------------------------------------------------------------
     virtual bool PerceiveMinimumSpeedOfPlatoonInLaneRight(double MesoscopicPreviewDistance,
-                                                         int &iLane,
+                                                          int &iLane,
                                                           double &laneSpeedDifferential) const = 0;
 
     //-----------------------------------------------------------------------------
@@ -650,9 +666,9 @@ public:
     //! @return
     //-----------------------------------------------------------------------------
     virtual void ObtainGroundTruthObjectLaneExistences(AreaOfInterest aoi,
-                                                       AgentInterface* &agentAOI,
-                                                       bool& hasRightLane,
-                                                       bool& hasLeftLane,
+                                                       AgentInterface *&agentAOI,
+                                                       bool &hasRightLane,
+                                                       bool &hasLeftLane,
                                                        double PreviewDistance,
                                                        double _carLengthEffective) = 0;
 
@@ -675,7 +691,7 @@ public:
     //!
     //! @return
     //-----------------------------------------------------------------------------
-    virtual double GetVelocityAbsolute() = 0;
+    virtual double GetVelocityAbsolute() const = 0;
 
     //-----------------------------------------------------------------------------
     //! Sets the internal CarInfo object.
@@ -773,10 +789,10 @@ public:
     //!
     //! @return
     //-----------------------------------------------------------------------------
-    virtual std::list<AgentInterface*> GetAllAgentsInLane(int laneID,
-                                                          double minDistance,
-                                                          double maxDistance,
-                                                          double AccSensDist) = 0;
+    virtual std::list<AgentInterface *> GetAllAgentsInLane(int laneID,
+                                                           double minDistance,
+                                                           double maxDistance,
+                                                           double AccSensDist) = 0;
 
     //-----------------------------------------------------------------------------
     //! Returns true if agent is a bicycle.
@@ -805,6 +821,203 @@ public:
     //! @return
     //-----------------------------------------------------------------------------
     virtual bool IsFirstCarInLane() const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the type of the nearest mark.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual std::string GetTypeOfNearestMark() const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the distance to the nearest mark of specific markType (NONE for no
+    //! specific or any markType).
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetDistanceToNearestMark(MarkType markType) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the relative angle of the nearest mark of specific markType (NONE for no
+    //! specific or any markType)
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetOrientationOfNearestMark(MarkType markType) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the view direction to the nearest mark of specific markType (NONE for no
+    //! specific or any markType). The direction is seen from the agents
+    //! perspective in radiant.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetViewDirectionToNearestMark(MarkType markType) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the AgentViewDirection to the nearest mark of specific markType
+    //!(NONE for no specific or any markType). The direction is seen from the
+    //! agents perspective.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual AgentViewDirection GetAgentViewDirectionToNearestMark(MarkType markType) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the distance to the nearest mark of specific markType (NONE for no
+    //! specific or any markType) in a specific direction angle in radiant.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetDistanceToNearestMarkInViewDirection(MarkType markType,
+                                                           AgentViewDirection agentViewDirection) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the distance to the nearest mark of specific markType (NONE for no
+    //! specific or any markType) in a specific direction angle in radiant.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetDistanceToNearestMarkInViewDirection(MarkType markType,
+                                                           double mainViewDirection) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the relative angle of the nearest mark of specific markType (NONE for no
+    //! specific or any markType) in a specific direction angle in radiant.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetOrientationOfNearestMarkInViewDirection(MarkType markType,
+                                                              AgentViewDirection agentViewDirection) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the relative angle of the nearest mark of specific markType (NONE for no
+    //! specific or any markType) in a specific direction angle in radiant.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetOrientationOfNearestMarkInViewDirection(MarkType markType,
+                                                              double mainViewDirection) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the distance to the nearest mark of specific markType (NONE for no
+    //! specific or any markType) in a specific range about a viewing direction
+    //! angle in radiant.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetDistanceToNearestMarkInViewRange(MarkType markType,
+                                                       AgentViewDirection agentViewDirection, double range) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the distance to the nearest mark of specific markType (NONE for no
+    //! specific or any markType) in a specific range about a viewing direction
+    //! angle in radiant.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetDistanceToNearestMarkInViewRange(MarkType markType, double mainViewDirection,
+                                                       double range) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the relative angle of the nearest mark of specific markType (NONE for no
+    //! specific or any markType) in a specific range about a viewing direction
+    //! angle in radiant.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetOrientationOfNearestMarkInViewRange(MarkType markType,
+                                                          AgentViewDirection agentViewDirection, double range) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the relative angle of the nearest mark of specific markType (NONE for no
+    //! specific or any markType) in a specific range about a viewing direction
+    //! angle in radiant.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetOrientationOfNearestMarkInViewRange(MarkType markType, double mainViewDirection,
+                                                          double range) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the concrete viewing direction to the nearest mark in a viewing range.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetViewDirectionToNearestMarkInViewRange(MarkType markType,
+                                                            AgentViewDirection agentViewDirection, double range) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the concrete viewing direction to the nearest mark in a viewing range.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetViewDirectionToNearestMarkInViewRange(MarkType markType, double mainViewDirection,
+                                                            double range) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the yaw velocity of the agent.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetYawVelocity() = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Set the yaw velocity of the agent.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual void SetYawVelocity(double yawVelocity) = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the yaw acceleration of the agent.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetYawAcceleration() = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Set the yaw acceleration of the agent.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual void SetYawAcceleration(double yawAcceleration) = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the trajectory of time of the agent.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual const std::vector<int> *GetTrajectoryTime() const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the trajectory of x position of the agent.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual const std::vector<double> *GetTrajectoryXPos() const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the trajectory of y position of the agent.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual const std::vector<double> *GetTrajectoryYPos() const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the trajectory of the velocity of the agent.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual const std::vector<double> *GetTrajectoryVelocity() const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the trajectory of the angle of the agent.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual const std::vector<double> *GetTrajectoryAngle() const = 0;
+
 };
 
 #endif // AGENTINTERFACE_H

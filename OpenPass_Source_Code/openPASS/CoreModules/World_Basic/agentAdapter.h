@@ -29,11 +29,11 @@ class AgentAdapter : public AgentInterface
 {
 public:
     AgentAdapter(WorldInterface *world, const CallbackInterface *callbacks);
-    AgentAdapter(const AgentAdapter&) = delete;
-    AgentAdapter(AgentAdapter&&) = delete;
-    AgentAdapter& operator=(const AgentAdapter&) = delete;
-    AgentAdapter& operator=(AgentAdapter&&) = delete;
-    virtual ~AgentAdapter();
+    AgentAdapter(const AgentAdapter &) = delete;
+    AgentAdapter(AgentAdapter &&) = delete;
+    AgentAdapter &operator=(const AgentAdapter &) = delete;
+    AgentAdapter &operator=(AgentAdapter &&) = delete;
+    virtual ~AgentAdapter() = default;
 
     bool InitAgentParameter(int id,
                             int agentTypeId,
@@ -41,11 +41,13 @@ public:
                             const AgentSpawnItem *agentSpawnItem,
                             const SpawnItemParameterInterface &spawnItemParameter);
 
-    int GetAgentId() const{
+    int GetAgentId() const
+    {
         return id;
     }
 
-    void ResetLocalDrivingView(){
+    void ResetLocalDrivingView()
+    {
         return;
     }
 
@@ -152,18 +154,35 @@ public:
     void UpdateCollision(int collisionPartnerId)
     {
         auto findIter = std::find_if(idsCollisionPartners.begin(), idsCollisionPartners.end(),
-                                     [collisionPartnerId](const int &idInList) { return collisionPartnerId == idInList; });
-        if (findIter == idsCollisionPartners.end())
-        {
+        [collisionPartnerId](const int &idInList) {
+            return collisionPartnerId == idInList;
+        });
+        if (findIter == idsCollisionPartners.end()) {
             // not in list yet
             idsCollisionPartners.push_back(collisionPartnerId);
         }
     }
 
+    virtual void UpdateCollision(int collisionPartnerId, int collisionDataId,
+                                 void *collisionData)
+    {
+        Q_UNUSED(collisionPartnerId);
+        Q_UNUSED(collisionDataId);
+        Q_UNUSED(collisionData);
+    } //dummy
+
     std::vector<int> GetCollisionPartners() const
     {
         return idsCollisionPartners;
     }
+
+    std::vector<void *> GetCollisionData(int collisionPartnerId,
+                                         int collisionDataId) const
+    {
+        Q_UNUSED(collisionPartnerId);
+        Q_UNUSED(collisionDataId);
+        return {};
+    } //dummy
 
     AgentVehicleType GetVehicleType() const
     {
@@ -172,8 +191,7 @@ public:
 
     void SetPositionX(double positionX)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdatePositionX(arg);
         },
         positionX);
@@ -181,8 +199,7 @@ public:
 
     void SetPositionY(double positionY)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdatePositionY(arg);
         },
         positionY);
@@ -190,8 +207,7 @@ public:
 
     void SetWidth(double width)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdateWidth(arg);
         },
         width);
@@ -199,8 +215,7 @@ public:
 
     void SetLength(double length)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdateLength(arg);
         },
         length);
@@ -208,8 +223,7 @@ public:
 
     void SetHeight(double height)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdateHeight(arg);
         },
         height);
@@ -217,8 +231,7 @@ public:
 
     void SetVelocityX(double velocityX)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdateVelocityX(arg);
         },
         velocityX);
@@ -226,8 +239,7 @@ public:
 
     void SetVelocityY(double velocityY)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdateVelocityY(arg);
         },
         velocityY);
@@ -235,8 +247,7 @@ public:
 
     void SetDistanceCOGtoFrontAxle(double distanceCOGtoFrontAxle)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdateDistanceCOGtoFrontAxle(arg);
         },
         distanceCOGtoFrontAxle);
@@ -244,8 +255,7 @@ public:
 
     void SetWeight(double weight)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdateWeight(arg);
         },
         weight);
@@ -253,8 +263,7 @@ public:
 
     void SetHeightCOG(double heightCOG)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdateHeightCOG(arg);
         },
         heightCOG);
@@ -262,8 +271,7 @@ public:
 
     void SetWheelbase(double wheelbase)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdateWheelbase(arg);
         },
         wheelbase);
@@ -271,8 +279,7 @@ public:
 
     void SetMomentInertiaRoll(double momentInertiaRoll)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdateMomentInertiaRoll(arg);
         },
         momentInertiaRoll);
@@ -280,8 +287,7 @@ public:
 
     void SetMomentInertiaPitch(double momentInertiaPitch)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdateMomentInertiaPitch(arg);
         },
         momentInertiaPitch);
@@ -289,8 +295,7 @@ public:
 
     void SetMomentInertiaYaw(double momentInertiaYaw)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdateMomentInertiaYaw(arg);
         },
         momentInertiaYaw);
@@ -298,8 +303,7 @@ public:
 
     void SetFrictionCoeff(double frictionCoeff)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdateFrictionCoeff(arg);
         },
         frictionCoeff);
@@ -307,8 +311,7 @@ public:
 
     void SetTrackWidth(double trackWidth)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdateTrackWidth(arg);
         },
         trackWidth);
@@ -316,8 +319,7 @@ public:
 
     void SetDistanceCOGtoLeadingEdge(double distanceCOGtoLeadingEdge)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdateDistanceCOGtoLeadingEdge(arg);
         },
         distanceCOGtoLeadingEdge);
@@ -325,8 +327,7 @@ public:
 
     void SetAccelerationX(double accelerationX)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdateAccelerationX(arg);
         },
         accelerationX);
@@ -334,8 +335,7 @@ public:
 
     void SetAccelerationY(double accelerationY)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdateAccelerationY(arg);
         },
         accelerationY);
@@ -343,8 +343,7 @@ public:
 
     void SetYawAngle(double yawAngle)
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
+        world->QueueAgentUpdate([this](double arg) {
             UpdateYawAngle(arg);
         },
         yawAngle);
@@ -472,113 +471,417 @@ public:
         return isValid;
     }
 
-    void SetBrakeLight(bool brakeLightStatus){
+    void SetBrakeLight(bool brakeLightStatus)
+    {
         this->brakeLightStatus = brakeLightStatus;
     }
 
-    bool GetBrakeLight(){
+    bool GetBrakeLight()
+    {
         return brakeLightStatus;
     }
 
     int GetAgentTypeId() const;
 
-    int GetSpawnTime() const {
+    int GetSpawnTime() const
+    {
         return 0;
     }
 
-    virtual void SetIndicatorState(IndicatorState indicatorState) {Q_UNUSED(indicatorState);} //dummy
-    virtual IndicatorState GetIndicatorState() {return IndicatorState::IndicatorState_Off;} //dummy
-    virtual int GetAgentLaneId() const {return 0;} //dummy
-    virtual int GetAgentLaneIdLeft() {return 0;} //dummy
-    virtual int GetAgentLaneIdRight() {return 0;} //dummy
-    virtual int GetAgentLaneNumber() {return 0;} //dummy
-    virtual bool IsAgentInWorld() {return true;} //dummy
-    virtual void ReinitCarInQueue(){} //dummy
-    virtual bool IsAgentAtEndOfRoad() {return false;} //dummy
-    virtual void ReenterAgentAtStart() {} //dummy
-    virtual void SetPosition(Position pos) {Q_UNUSED(pos);} //dummy
-    virtual double GetDistanceToStartOfRoad() const {return 0;} //dummy
-    virtual Position GetPositionByDistance(double distance) const {Q_UNUSED(distance); return Position();} //dummy
-    virtual double GetLaneWidth() {return 0;} //dummy
-    virtual double GetLaneWidthLeft() {return 0;} //dummy
-    virtual double GetLaneWidthRight() {return 0;} //dummy
-    virtual double GetCurvature() {return 0;} //dummy
-    virtual double GetCurvatureInDistance(double distance) {Q_UNUSED(distance); return 0;} //dummy
-    virtual bool IsSpecialAgent() const {return false;} //dummy
+    void SetIndicatorState(IndicatorState indicatorState)
+    {
+        Q_UNUSED(indicatorState);   //dummy
+    }
+    IndicatorState GetIndicatorState()
+    {
+        return IndicatorState::IndicatorState_Off;   //dummy
+    }
+    int GetAgentLaneId() const
+    {
+        return 0;   //dummy
+    }
+    int GetAgentLaneIdLeft()
+    {
+        return 0;   //dummy
+    }
+    int GetAgentLaneIdRight()
+    {
+        return 0;   //dummy
+    }
+    int GetAgentLaneNumber()
+    {
+        return 0;   //dummy
+    }
+    bool IsAgentInWorld()
+    {
+        return true;   //dummy
+    }
+    void ReinitCarInQueue() {} //dummy
+    bool IsAgentAtEndOfRoad()
+    {
+        return false;   //dummy
+    }
+    void ReenterAgentAtStart() {} //dummy
+    void SetPosition(Position pos)
+    {
+        Q_UNUSED(pos);   //dummy
+    }
+    double GetDistanceToStartOfRoad() const
+    {
+        return 0;   //dummy
+    }
+    Position GetPositionByDistance(double distance) const
+    {
+        Q_UNUSED(distance);    //dummy
+        return Position();
+    }
+    double GetLaneWidth()
+    {
+        return 0;   //dummy
+    }
+    double GetLaneWidthLeft()
+    {
+        return 0;   //dummy
+    }
+    double GetLaneWidthRight()
+    {
+        return 0;   //dummy
+    }
+    double GetCurvature()
+    {
+        return 0;   //dummy
+    }
+    double GetCurvatureInDistance(double distance)
+    {
+        Q_UNUSED(distance);    //dummy
+        return 0;
+    }
+    bool IsSpecialAgent() const
+    {
+        return false;   //dummy
+    }
 
     double GetDistanceToFrontAgent(int laneId);
-    virtual double GetDistanceToRearAgent(int laneId) {Q_UNUSED(laneId); return 0;} //dummy
-    virtual AgentInterface *GetAgentInFront(int laneId) const {Q_UNUSED(laneId); return nullptr;} //dummy
-    virtual AgentInterface *GetAgentBehind(int laneId) const {Q_UNUSED(laneId); return nullptr;} //dummy
-    virtual double GetDistanceToAgent(AgentInterface *otherAgent) {Q_UNUSED(otherAgent);return 0;} //dummy
-    virtual void RemoveSpecialAgentMarker(){} //dummy
-    virtual void SetSpecialAgentMarker(){} //dummy
-    virtual bool ExistLaneLeft() {return false;} //dummy
-    virtual bool ExistLaneRight() {return false;} //dummy
-    virtual void SetObstacleFlag(){} //dummy
-    virtual double GetVelocityLateral() {return 0;} //dummy
-    virtual void GetAgentsDirectlyInFront(double PeripheralPreviewDistance,
-                                          AgentInterface *&agentFront,
-                                          AgentInterface *&agentFrontLeft,
-                                          AgentInterface *&agentFrontRight){Q_UNUSED(PeripheralPreviewDistance);
-                                                                            Q_UNUSED(agentFront);
-                                                                            Q_UNUSED(agentFrontLeft);
-                                                                            Q_UNUSED(agentFrontRight);} //dummy
-    virtual double GetDistanceToSpecialAgent() {return 0;} //dummy
-    virtual bool IsObstacle() {return false;} //dummy
-    virtual double GetDistanceToEndOfLane(double sightDistance) const  {Q_UNUSED(sightDistance);return 0;} //dummy
-    virtual bool PerceiveMinimumSpeedOfPlatoonInLaneLeft(double MesoscopicPreviewDistance,
-                                                         int &iLane,
-                                                         double &laneSpeedDifferential) const {Q_UNUSED(MesoscopicPreviewDistance);
-                                                                                               Q_UNUSED(iLane);
-                                                                                               Q_UNUSED(laneSpeedDifferential);
-                                                                                               return false;} //dummy
-    virtual bool PerceiveMinimumSpeedOfPlatoonInLaneRight(double MesoscopicPreviewDistance,
-                                                         int &iLane,
-                                                          double &laneSpeedDifferential) const {Q_UNUSED(MesoscopicPreviewDistance);
-                                                                                                Q_UNUSED(iLane);
-                                                                                                Q_UNUSED(laneSpeedDifferential);
-                                                                                                return false;} //dummy
-    virtual void ObtainGroundTruthObjectLaneExistences(AreaOfInterest aoi,
-                                                       AgentInterface* &agentAOI,
-                                                       bool& hasRightLane,
-                                                       bool& hasLeftLane,
-                                                       double PreviewDistance,
-                                                       double _carLengthEffective) {Q_UNUSED(aoi);
-                                                                                    Q_UNUSED(agentAOI);
-                                                                                    Q_UNUSED(hasRightLane);
-                                                                                    Q_UNUSED(hasLeftLane);
-                                                                                    Q_UNUSED(PreviewDistance);
-                                                                                    Q_UNUSED(_carLengthEffective);} //dummy
-    virtual double GetLaneDepartureFromLeftLaneBoundary() {return 0;} //dummy
-    virtual double GetLaneDepartureFromRightLaneBoundary() {return 0;} //dummy
-    virtual double GetVelocityAbsolute() {return 0;} //dummy
-    virtual void SetCarInfo(CarInfo *carInfo) {Q_UNUSED(carInfo);} //dummy
-    virtual CarInfo *GetCarInfo() const {return nullptr;} //dummy
-    virtual double GetDistanceToEndOfRamp(int laneId) {Q_UNUSED(laneId); return 0;} //dummy
-    virtual double GetPositionLateral() const {return 0;} //dummy
-    virtual void SetCarInfoExtra(void *extraInfo) {Q_UNUSED(extraInfo)} //dummy
-    virtual void *GetCarInfoExtra() {return nullptr;} //dummy
-    virtual void AssignCarInfo(double accSensDist) {Q_UNUSED(accSensDist)} //dummy
-    virtual void AssignCarInfoExtra(){} //dummy
-    virtual CarInfo *GenerateCarInfo() {return nullptr;} //dummy
-    virtual double GetDistanceFrontAgentToEgo() {return 0;} //dummy
-    virtual bool HasTwoLeftLanes() {return false;} //dummy
-    virtual bool HasTwoRightLanes() {return false;} //dummy
-    virtual LaneChangeState EstimateLaneChangeState(double thresholdLooming) {Q_UNUSED(thresholdLooming); return LaneChangeState::NoLaneChange;} //dummy
-    virtual std::list<AgentInterface*> GetAllAgentsInLane(int laneID,
-                                                          double minDistance,
-                                                          double maxDistance,
-                                                          double AccSensDist) {Q_UNUSED(laneID);
-                                                                               Q_UNUSED(minDistance);
-                                                                               Q_UNUSED(maxDistance);
-                                                                               Q_UNUSED(AccSensDist);
-                                                                               std::list<AgentInterface*> dummy;
-                                                                               return dummy;} //dummy
-    virtual bool IsBicycle() const {return false;} //dummy
-    virtual double GetLaneDirection() const {return 0;} //dummy
-    virtual void Unregister() const {} //dummy
-    virtual bool IsFirstCarInLane() const {return false;} //dummy
+    double GetDistanceToRearAgent(int laneId)
+    {
+        Q_UNUSED(laneId);    //dummy
+        return 0;
+    }
+    AgentInterface *GetAgentInFront(int laneId) const
+    {
+        Q_UNUSED(laneId);    //dummy
+        return nullptr;
+    }
+    AgentInterface *GetAgentBehind(int laneId) const
+    {
+        Q_UNUSED(laneId);    //dummy
+        return nullptr;
+    }
+    double GetDistanceToAgent(AgentInterface *otherAgent)
+    {
+        Q_UNUSED(otherAgent);    //dummy
+        return 0;
+    }
+    void RemoveSpecialAgentMarker() {} //dummy
+    void SetSpecialAgentMarker() {} //dummy
+    bool ExistLaneLeft()
+    {
+        return false;   //dummy
+    }
+    bool ExistLaneRight()
+    {
+        return false;   //dummy
+    }
+    void SetObstacleFlag() {} //dummy
+    double GetVelocityLateral()
+    {
+        return 0;   //dummy
+    }
+    void GetAgentsDirectlyInFront(double PeripheralPreviewDistance,
+                                  AgentInterface *&agentFront,
+                                  AgentInterface *&agentFrontLeft,
+                                  AgentInterface *&agentFrontRight)
+    {
+        Q_UNUSED(PeripheralPreviewDistance);
+        Q_UNUSED(agentFront);
+        Q_UNUSED(agentFrontLeft);
+        Q_UNUSED(agentFrontRight);
+    } //dummy
+    double GetDistanceToSpecialAgent()
+    {
+        return 0;   //dummy
+    }
+    bool IsObstacle()
+    {
+        return false;   //dummy
+    }
+    double GetDistanceToEndOfLane(double sightDistance) const
+    {
+        Q_UNUSED(sightDistance);    //dummy
+        return 0;
+    }
+    bool PerceiveMinimumSpeedOfPlatoonInLaneLeft(double MesoscopicPreviewDistance,
+                                                 int &iLane,
+                                                 double &laneSpeedDifferential) const
+    {
+        Q_UNUSED(MesoscopicPreviewDistance);
+        Q_UNUSED(iLane);
+        Q_UNUSED(laneSpeedDifferential);
+        return false;
+    } //dummy
+    bool PerceiveMinimumSpeedOfPlatoonInLaneRight(double MesoscopicPreviewDistance,
+                                                  int &iLane,
+                                                  double &laneSpeedDifferential) const
+    {
+        Q_UNUSED(MesoscopicPreviewDistance);
+        Q_UNUSED(iLane);
+        Q_UNUSED(laneSpeedDifferential);
+        return false;
+    } //dummy
+    void ObtainGroundTruthObjectLaneExistences(AreaOfInterest aoi,
+                                               AgentInterface *&agentAOI,
+                                               bool &hasRightLane,
+                                               bool &hasLeftLane,
+                                               double PreviewDistance,
+                                               double _carLengthEffective)
+    {
+        Q_UNUSED(aoi);
+        Q_UNUSED(agentAOI);
+        Q_UNUSED(hasRightLane);
+        Q_UNUSED(hasLeftLane);
+        Q_UNUSED(PreviewDistance);
+        Q_UNUSED(_carLengthEffective);
+    } //dummy
+    double GetLaneDepartureFromLeftLaneBoundary()
+    {
+        return 0;   //dummy
+    }
+    double GetLaneDepartureFromRightLaneBoundary()
+    {
+        return 0;   //dummy
+    }
+    double GetVelocityAbsolute() const
+    {
+        return 0;   //dummy
+    }
+    void SetCarInfo(CarInfo *carInfo)
+    {
+        Q_UNUSED(carInfo);   //dummy
+    }
+    CarInfo *GetCarInfo() const
+    {
+        return nullptr;   //dummy
+    }
+    double GetDistanceToEndOfRamp(int laneId)
+    {
+        Q_UNUSED(laneId);    //dummy
+        return 0;
+    }
+    double GetPositionLateral() const
+    {
+        return 0;   //dummy
+    }
+    void SetCarInfoExtra(void *extraInfo)
+    {
+        Q_UNUSED(extraInfo)
+    } //dummy
+    void *GetCarInfoExtra()
+    {
+        return nullptr;   //dummy
+    }
+    void AssignCarInfo(double accSensDist)
+    {
+        Q_UNUSED(accSensDist)
+    } //dummy
+    void AssignCarInfoExtra() {} //dummy
+    CarInfo *GenerateCarInfo()
+    {
+        return nullptr;   //dummy
+    }
+    double GetDistanceFrontAgentToEgo()
+    {
+        return 0;   //dummy
+    }
+    bool HasTwoLeftLanes()
+    {
+        return false;   //dummy
+    }
+    bool HasTwoRightLanes()
+    {
+        return false;   //dummy
+    }
+    LaneChangeState EstimateLaneChangeState(double thresholdLooming)
+    {
+        Q_UNUSED(thresholdLooming);    //dummy
+        return LaneChangeState::NoLaneChange;
+    }
+    std::list<AgentInterface *> GetAllAgentsInLane(int laneID,
+                                                   double minDistance,
+                                                   double maxDistance,
+                                                   double AccSensDist)
+    {
+        Q_UNUSED(laneID);
+        Q_UNUSED(minDistance);
+        Q_UNUSED(maxDistance);
+        Q_UNUSED(AccSensDist);
+        std::list<AgentInterface *> dummy;
+        return dummy;
+    } //dummy
+    bool IsBicycle() const
+    {
+        return false;   //dummy
+    }
+    double GetLaneDirection() const
+    {
+        return 0;   //dummy
+    }
+    void Unregister() const {} //dummy
+    bool IsFirstCarInLane() const
+    {
+        return false;   //dummy
+    }
+    virtual std::string GetTypeOfNearestMark() const
+    {
+        return "";
+    }//dummy
+    virtual double GetDistanceToNearestMark(MarkType markType) const
+    {
+        Q_UNUSED(markType);
+        return INFINITY;
+    }//dummy
+    double GetOrientationOfNearestMark(MarkType markType) const
+    {
+        Q_UNUSED(markType);
+        return INFINITY;
+    }//dummy
+    virtual double GetViewDirectionToNearestMark(MarkType markType) const
+    {
+        Q_UNUSED(markType);
+        return INFINITY;
+    }//dummy
+    virtual AgentViewDirection GetAgentViewDirectionToNearestMark(MarkType markType) const
+    {
+        Q_UNUSED(markType);
+        return AgentViewDirection::none;
+    }//dummy
+    virtual double GetDistanceToNearestMarkInViewDirection(MarkType markType,
+                                                           AgentViewDirection agentViewDirection) const
+    {
+        Q_UNUSED(markType);
+        Q_UNUSED(agentViewDirection);
+        return INFINITY;
+    }//dummy
+    virtual double GetDistanceToNearestMarkInViewDirection(MarkType markType,
+                                                           double mainViewDirection) const
+    {
+        Q_UNUSED(markType);
+        Q_UNUSED(mainViewDirection);
+        return INFINITY;
+    }//dummy
+    virtual double GetOrientationOfNearestMarkInViewDirection(MarkType markType,
+                                                              AgentViewDirection agentViewDirection) const
+    {
+        Q_UNUSED(markType);
+        Q_UNUSED(agentViewDirection);
+        return INFINITY;
+    }//dummy
+    virtual double GetOrientationOfNearestMarkInViewDirection(MarkType markType,
+                                                              double mainViewDirection) const
+    {
+        Q_UNUSED(markType);
+        Q_UNUSED(mainViewDirection);
+        return INFINITY;
+    }//dummy
+
+    double GetDistanceToNearestMarkInViewRange(MarkType markType, AgentViewDirection agentViewDirection,
+                                               double range) const
+    {
+        Q_UNUSED(markType);
+        Q_UNUSED(agentViewDirection);
+        Q_UNUSED(range);
+        return INFINITY;
+    }//dummy
+
+    double GetDistanceToNearestMarkInViewRange(MarkType markType, double mainViewDirection,
+                                               double range) const
+    {
+        Q_UNUSED(markType);
+        Q_UNUSED(mainViewDirection);
+        Q_UNUSED(range);
+        return INFINITY;
+    }//dummy
+
+    double GetOrientationOfNearestMarkInViewRange(MarkType markType,
+                                                  AgentViewDirection agentViewDirection, double range) const
+    {
+        Q_UNUSED(markType);
+        Q_UNUSED(agentViewDirection);
+        Q_UNUSED(range);
+        return INFINITY;
+    }//dummy
+
+    double GetOrientationOfNearestMarkInViewRange(MarkType markType, double mainViewDirection,
+                                                  double range) const
+    {
+        Q_UNUSED(markType);
+        Q_UNUSED(mainViewDirection);
+        Q_UNUSED(range);
+        return INFINITY;
+    }//dummy
+
+    double GetViewDirectionToNearestMarkInViewRange(MarkType markType,
+                                                    AgentViewDirection agentViewDirection, double range) const
+    {
+        Q_UNUSED(markType);
+        Q_UNUSED(agentViewDirection);
+        Q_UNUSED(range);
+        return INFINITY;
+    }//dummy
+
+    double GetViewDirectionToNearestMarkInViewRange(MarkType markType, double mainViewDirection,
+                                                    double range) const
+    {
+        Q_UNUSED(markType);
+        Q_UNUSED(mainViewDirection);
+        Q_UNUSED(range);
+        return INFINITY;
+    }//dummy
+    double GetYawVelocity()
+    {
+        return 0;   //dummy
+    }
+    void SetYawVelocity(double yawVelocity)
+    {
+        Q_UNUSED(yawVelocity);   //dummy
+    }
+    double GetYawAcceleration()
+    {
+        return 0;   //dummy
+    }
+    void SetYawAcceleration(double yawAcceleration)
+    {
+        Q_UNUSED(yawAcceleration);   //dummy
+    }
+    const std::vector<int> *GetTrajectoryTime() const
+    {
+        return nullptr;    //dummy
+    }
+    const std::vector<double> *GetTrajectoryXPos() const
+    {
+        return nullptr;    //dummy
+    }
+    const std::vector<double> *GetTrajectoryYPos() const
+    {
+        return nullptr;    //dummy
+    }
+    const std::vector<double> *GetTrajectoryVelocity() const
+    {
+        return nullptr;    //dummy
+    }
+    const std::vector<double> *GetTrajectoryAngle() const
+    {
+        return nullptr;    //dummy
+    }
 
 protected:
     //-----------------------------------------------------------------------------
@@ -594,8 +897,7 @@ protected:
              int line,
              const std::string &message)
     {
-        if(callbacks)
-        {
+        if (callbacks) {
             callbacks->Log(logLevel,
                            file,
                            line,
@@ -631,11 +933,11 @@ private:
     bool isValid = true;
     bool brakeLightStatus = false;
 
-    int id;
-    int agentTypeId;
+    int id = -1;
+    int agentTypeId = -1;
 
-    WorldInterface *world;
-    const CallbackInterface *callbacks;
+    WorldInterface *world = nullptr;
+    const CallbackInterface *callbacks = nullptr;
 };
 
 #endif // AGENTADAPTER_H

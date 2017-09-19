@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -8,7 +8,7 @@
 
 //-----------------------------------------------------------------------------
 //! @file  agentTypeImporter.h
-//! @brief This file contains the importer of the agent configuration.
+//! @brief This file contains the importer of the agent types.
 //-----------------------------------------------------------------------------
 
 #ifndef AGENTTYPEIMPORTER_H
@@ -23,11 +23,11 @@ namespace SimulationSlave
 class AgentType;
 
 //-----------------------------------------------------------------------------
-//! Class handles importing an agent configuration.
+//! Class handles importing an agent type.
 //-----------------------------------------------------------------------------
 class AgentTypeImporter
 {
-public:    
+public:
     AgentTypeImporter() = delete;
     AgentTypeImporter(const AgentTypeImporter&) = delete;
     AgentTypeImporter(AgentTypeImporter&&) = delete;
@@ -36,10 +36,10 @@ public:
     virtual ~AgentTypeImporter() = delete;
 
     //-----------------------------------------------------------------------------
-    //! Imports the XML agent configuration from the provided file path and stores
+    //! Imports the agent types from the provided file path and stores
     //! the results in the provided mapping.
     //!
-    //! @param[in]  filename            Path to the file with the XML agent config
+    //! @param[in]  filename            Path to the file with the agent types
     //! @param[out] agentTypes          Mapping from IDs to agents to store the results
     //!                                 of the import
     //! @return                         False if an error occurred, true otherwise

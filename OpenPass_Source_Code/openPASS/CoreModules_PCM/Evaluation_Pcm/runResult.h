@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -32,10 +32,10 @@ public:
     RunResult() = default;
 
     // removing operators
-    RunResult(const RunResult&) = delete;
-    RunResult(RunResult&&) = delete;
-    RunResult& operator=(const RunResult&) = delete;
-    RunResult& operator=(RunResult&&) = delete;
+    RunResult(const RunResult &) = delete;
+    RunResult(RunResult &&) = delete;
+    RunResult &operator=(const RunResult &) = delete;
+    RunResult &operator=(RunResult &&) = delete;
 
     //-----------------------------------------------------------------------------
     //! Standard destructor
@@ -53,7 +53,7 @@ public:
     //! @param[in]  velocityy   The vertical velocity of that agent
     //! @param[in]  distance    The 1d distance of the collision point on the boundary of the agent
     //-----------------------------------------------------------------------------
-    bool AddCollisionAgent(const AgentInterface* agent,
+    bool AddCollisionAgent(const AgentInterface *agent,
                            Common::Vector2d &position,
                            double yawAngle,
                            double velocityX,
@@ -88,7 +88,7 @@ public:
     //! Getter-Function for the collision agents
     //! @return         The collision agents
     //-----------------------------------------------------------------------------
-    virtual const std::list<const AgentInterface*> *GetCollisionAgents() const
+    virtual const std::list<const AgentInterface *> *GetCollisionAgents() const
     {
         return &agents;
     }
@@ -97,7 +97,7 @@ public:
     //! Getter-Function for the map of agent-pointers to their 2d-positions
     //! @return         The map of agent-pointers to their 2d-positions
     //-----------------------------------------------------------------------------
-    virtual const std::map<const AgentInterface*, std::tuple<double, double> > *GetPositions() const
+    virtual const std::map<const AgentInterface *, std::tuple<double, double> > *GetPositions() const
     {
         return &positions;
     }
@@ -106,7 +106,7 @@ public:
     //! Getter-Function for the map of agent-pointers to their 2d-velocities
     //! @return         The map of agent-pointers to their 2d-velocities
     //-----------------------------------------------------------------------------
-    virtual const std::map<const AgentInterface*, std::tuple<double, double> > *GetVelocities() const
+    virtual const std::map<const AgentInterface *, std::tuple<double, double> > *GetVelocities() const
     {
         return &velocities;
     }
@@ -115,7 +115,7 @@ public:
     //! Getter-Function for the map of agent-pointers to their yaw angles
     //! @return         The map of agent-pointers to their yaw angles
     //-----------------------------------------------------------------------------
-    virtual const std::map<const AgentInterface*, double> *GetYawAngles() const
+    virtual const std::map<const AgentInterface *, double> *GetYawAngles() const
     {
         return &yawAngles;
     }
@@ -124,7 +124,7 @@ public:
     //! Getter-Function for the map of agent-pointers to their 1d-on-boundary-distances
     //! @return         The map of agent-pointers to their 1d-on-boundary-distances
     //-----------------------------------------------------------------------------
-    virtual const std::map<const AgentInterface*, double> *GetDistances() const
+    virtual const std::map<const AgentInterface *, double> *GetDistances() const
     {
         return &distances;
     }
@@ -156,12 +156,12 @@ public:
         return 0 != (result & maskEndCondition);
     }
 
-    virtual bool AddCollision(const AgentInterface* agent,
-                      Common::Vector2d &positionAgent,
-                      double distanceOnBorderAgent,
-                      const AgentInterface* other,
-                      Common::Vector2d &positionOther,
-                      double distanceOnBorderOther)
+    virtual bool AddCollision(const AgentInterface *agent,
+                              Common::Vector2d &positionAgent,
+                              double distanceOnBorderAgent,
+                              const AgentInterface *other,
+                              Common::Vector2d &positionOther,
+                              double distanceOnBorderOther)
     {
         Q_UNUSED(agent);
         Q_UNUSED(positionAgent);
@@ -173,16 +173,23 @@ public:
     }
 
 private:
-    const std::uint32_t maskCollision = 0x1;        //!< mask for the result flag marking 'collision happened'
+    const std::uint32_t maskCollision =
+        0x1;        //!< mask for the result flag marking 'collision happened'
     const std::uint32_t maskTimeOver = 0x2;         //!< mask for the result flag marking 'time over'
-    const std::uint32_t maskEndCondition = 0x4;     //!< mask for the result flag marking 'end due to evaluation module'
+    const std::uint32_t maskEndCondition =
+        0x4;     //!< mask for the result flag marking 'end due to evaluation module'
 
     std::uint32_t result = 0;                       //!< result flag
-    std::list<const AgentInterface*> agents;                                    //!< list of agents provoking a collision
-    std::map<const AgentInterface*, std::tuple<double, double>> positions;      //!< map of agent-pointers to their 2d-positions
-    std::map<const AgentInterface*, std::tuple<double, double>> velocities;     //!< map of agent-pointers to their 2d-velocities
-    std::map<const AgentInterface*, double> yawAngles;                          //!< map of agent-pointers to their yaw angles
-    std::map<const AgentInterface*, double> distances;                          //!< map of agent-pointers to their 1d-on-boundary-distances
+    std::list<const AgentInterface *>
+    agents;                                   //!< list of agents provoking a collision
+    std::map<const AgentInterface *, std::tuple<double, double>>
+                                                              positions;     //!< map of agent-pointers to their 2d-positions
+    std::map<const AgentInterface *, std::tuple<double, double>>
+                                                              velocities;    //!< map of agent-pointers to their 2d-velocities
+    std::map<const AgentInterface *, double>
+    yawAngles;                         //!< map of agent-pointers to their yaw angles
+    std::map<const AgentInterface *, double>
+    distances;                         //!< map of agent-pointers to their 1d-on-boundary-distances
 };
 
 #endif // RUNRESULT_H

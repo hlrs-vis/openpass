@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -24,10 +24,10 @@ class CollisionDetectionInterface
 {
 public:
     CollisionDetectionInterface() = default;
-    CollisionDetectionInterface(const CollisionDetectionInterface&) = delete;
-    CollisionDetectionInterface(CollisionDetectionInterface&&) = delete;
-    CollisionDetectionInterface& operator=(const CollisionDetectionInterface&) = delete;
-    CollisionDetectionInterface& operator=(CollisionDetectionInterface&&) = delete;
+    CollisionDetectionInterface(const CollisionDetectionInterface &) = delete;
+    CollisionDetectionInterface(CollisionDetectionInterface &&) = delete;
+    CollisionDetectionInterface &operator=(const CollisionDetectionInterface &) = delete;
+    CollisionDetectionInterface &operator=(CollisionDetectionInterface &&) = delete;
     virtual ~CollisionDetectionInterface() = default;
 
     /*!
@@ -45,8 +45,7 @@ public:
      *
      * \param agents                     map of agents
      */
-    virtual void SetAgents(const std::map<int, const AgentInterface*> &agents) = 0;
+    virtual void SetAgents(const std::map<int, const AgentInterface *> &agents) = 0;
 };
 
 #endif // COLLISIONDETECTIONINTERFACE
-

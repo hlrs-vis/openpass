@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -233,6 +233,115 @@ bool ImportParameters(QDomElement &parametersElement, Parameters &parameters)
         } // bool vector parameter loop
     } // if bool vector parameters exist
 
+    return true;
+}
+
+bool ImportSystemParameters(QDomElement &parametersElement, Parameters &parameters)
+{
+    QDomElement parameterElement = parametersElement.firstChildElement("parameter");
+    while(!parameterElement.isNull()){
+        int id = parameterElement.firstChildElement("id").text().toInt();
+
+        QString type = parameterElement.firstChildElement("type").text();
+        QString value = parameterElement.firstChildElement("value").text();
+
+        if(type == "int"){
+            CHECKFALSE(parameters.AddParameterInt(id, value.toInt()));
+        }else if(type == "double"){
+            CHECKFALSE(parameters.AddParameterDouble(id, value.toDouble()));
+        }else if(type == "bool"){
+            value.toLower();
+            CHECKFALSE(parameters.AddParameterBool(id, value == "true" ? true : false));
+        }else if(type == "string"){
+            CHECKFALSE(parameters.AddParameterString(id, value.toStdString()));
+        }else if(type == "intVector"){
+            std::vector<int> *vector = new (std::nothrow) std::vector<int>();
+            CHECKFALSE(vector);
+            try
+            {
+                std::stringstream valueStream(value.toStdString());
+
+                int item;
+                while(valueStream >> item)
+                {
+                    vector->push_back(item);
+
+                    if(valueStream.peek() == ',')
+                    {
+                        valueStream.ignore();
+                    }
+                }
+            }
+            catch(...)
+            {
+                return false;
+            }
+            if(!parameters.AddParameterIntVector(id, vector))
+            {
+                LOG_INTERN(LogLevel::Warning) << "an error occurred during import of parameters";
+                delete vector;
+                return false;
+            }
+        }else if(type == "doubleVector"){
+            std::vector<double> *vector = new (std::nothrow) std::vector<double>();
+            CHECKFALSE(vector);
+            try
+            {
+                std::stringstream valueStream(value.toStdString());
+
+                double item;
+                while(valueStream >> item)
+                {
+                    vector->push_back(item);
+
+                    if(valueStream.peek() == ',')
+                    {
+                        valueStream.ignore();
+                    }
+                }
+            }
+            catch(...)
+            {
+                return false;
+            }
+            if(!parameters.AddParameterDoubleVector(id, vector))
+            {
+                LOG_INTERN(LogLevel::Warning) << "an error occurred during import of parameters";
+                delete vector;
+                return false;
+            }
+        }else if(type == "boolVector"){
+            std::vector<bool> *vector = new (std::nothrow) std::vector<bool>();
+            CHECKFALSE(vector);
+            try
+            {
+                std::stringstream valueStream(value.toStdString());
+
+                bool item;
+                while(valueStream >> item)
+                {
+                    vector->push_back(item);
+
+                    if(valueStream.peek() == ',')
+                    {
+                        valueStream.ignore();
+                    }
+                }
+            }
+            catch(...)
+            {
+                return false;
+            }
+            if(!parameters.AddParameterBoolVector(id, vector))
+            {
+                LOG_INTERN(LogLevel::Warning) << "an error occurred during import of parameters";
+                delete vector;
+                return false;
+            }
+        }
+
+        parameterElement = parameterElement.nextSiblingElement("parameter");
+    }
     return true;
 }
 

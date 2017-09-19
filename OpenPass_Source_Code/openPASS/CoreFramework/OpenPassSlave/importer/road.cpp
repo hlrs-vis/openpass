@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -7,6 +7,15 @@
 ******************************************************************************/
 
 #include "road.h"
+
+extern "C"
+{
+
+extern int fresnl(double xxa,
+                  double *ssa,
+                  double *cca);
+
+}
 
 namespace
 {
@@ -91,15 +100,6 @@ RoadLane *RoadLaneSection::AddRoadLane(int id,
     }
 
     return lane;
-}
-
-//dummy for extern C function at the top
-int RoadGeometry::fresnl(double xxa, double *ssa, double *cca)
-{
-    Q_UNUSED(xxa);
-    Q_UNUSED(ssa);
-    Q_UNUSED(cca);
-    return -1;
 }
 
 Common::Vector2d RoadGeometry::GetCoordLine(double side,

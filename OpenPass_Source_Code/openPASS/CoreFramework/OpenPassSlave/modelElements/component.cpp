@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -288,7 +288,7 @@ bool Component::SetInputBuffer(int linkId, ChannelBuffer *buffer)
     if(!inputChannelBuffers.insert({linkId, buffer}).second)
     {
         LOG_INTERN(LogLevel::Error) << "channel buffers must be unique";
-        return nullptr;
+        return false;
     }
 
     return true;

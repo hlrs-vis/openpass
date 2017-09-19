@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -16,10 +16,10 @@ class SignalInterface
 {
 public:
     SignalInterface() = default;
-    SignalInterface(const SignalInterface&) = delete;
-    SignalInterface(SignalInterface&&) = delete;
-    SignalInterface& operator=(const SignalInterface&) = delete;
-    SignalInterface& operator=(SignalInterface&&) = delete;
+    SignalInterface(const SignalInterface &) = delete;
+    SignalInterface(SignalInterface &&) = delete;
+    SignalInterface &operator=(const SignalInterface &) = delete;
+    SignalInterface &operator=(SignalInterface &&) = delete;
     virtual ~SignalInterface() = default;
 
     //-----------------------------------------------------------------------------
@@ -28,9 +28,8 @@ public:
     explicit virtual operator std::string() const = 0;
 
 private:
-    friend std::ostream& operator<<(std::ostream&,
-                                    const SignalInterface&);
+    friend std::ostream &operator<<(std::ostream &,
+                                    const SignalInterface &);
 };
 
 #endif // SIGNALINTERFACE
-

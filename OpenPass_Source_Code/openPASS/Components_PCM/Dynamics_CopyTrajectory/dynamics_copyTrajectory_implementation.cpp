@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -22,28 +22,29 @@ Dynamics_CopyTrajectory_Implementation::Dynamics_CopyTrajectory_Implementation(i
                                                                                const std::map<int, ObservationInterface *> *evaluations,
                                                                                const CallbackInterface *callbacks,
                                                                                AgentInterface *agent) :
-    SensorInterface(componentId,
-                   isInit,
-                   priority,
-                   offsetTime,
-                   responseTime,
-                   cycleTime,
-                   stochastics,
-                   world,
-                   parameters,
-                   evaluations,
-                   callbacks,
-                   agent),
-    _timeVec(*GetParameters()->GetParametersIntVector().at(0)),
-    _xPosVec(*GetParameters()->GetParametersDoubleVector().at(1)),
-    _yPosVec(*GetParameters()->GetParametersDoubleVector().at(2)),
-    _velVec(*GetParameters()->GetParametersDoubleVector().at(3)),
-    _psiVec(*GetParameters()->GetParametersDoubleVector().at(4))
+    DynamicsInterface(componentId,
+                      isInit,
+                      priority,
+                      offsetTime,
+                      responseTime,
+                      cycleTime,
+                      stochastics,
+                      world,
+                      parameters,
+                      evaluations,
+                      callbacks,
+                      agent)
 {
-    _counter = 0;
+    counter = 0;
+    timeVec = GetAgent()->GetTrajectoryTime();
+    xPosVec = GetAgent()->GetTrajectoryXPos();
+    yPosVec = GetAgent()->GetTrajectoryYPos();
+    velVec = GetAgent()->GetTrajectoryVelocity();
+    psiVec = GetAgent()->GetTrajectoryAngle();
 }
 
-void Dynamics_CopyTrajectory_Implementation::UpdateInput(int localLinkId, const std::shared_ptr<SignalInterface const> &data, int time)
+void Dynamics_CopyTrajectory_Implementation::UpdateInput(int localLinkId,
+                                                         const std::shared_ptr<SignalInterface const> &data, int time)
 {
     // no inputs of the module
     Q_UNUSED(localLinkId);
@@ -51,7 +52,8 @@ void Dynamics_CopyTrajectory_Implementation::UpdateInput(int localLinkId, const 
     Q_UNUSED(time);
 }
 
-void Dynamics_CopyTrajectory_Implementation::UpdateOutput(int localLinkId, std::shared_ptr<SignalInterface const> &data, int time)
+void Dynamics_CopyTrajectory_Implementation::UpdateOutput(int localLinkId,
+                                                          std::shared_ptr<SignalInterface const> &data, int time)
 {
     // no outputs of the module
     Q_UNUSED(localLinkId);
@@ -62,17 +64,19 @@ void Dynamics_CopyTrajectory_Implementation::UpdateOutput(int localLinkId, std::
 void Dynamics_CopyTrajectory_Implementation::Trigger(int time)
 {
     Q_UNUSED(time);
-    AgentInterface* ownAgent = GetAgent();
+    AgentInterface *ownAgent = GetAgent();
 
-    ownAgent->SetPositionX(_xPosVec[_counter]);
-    ownAgent->SetPositionY(_yPosVec[_counter]);
-    ownAgent->SetVelocityX(_velVec[_counter]);
-    ownAgent->SetYawAngle(_psiVec[_counter]);
+    ownAgent->SetPositionX(xPosVec->at(counter));
+    ownAgent->SetPositionY(yPosVec->at(counter));
+    ownAgent->SetVelocityX(velVec->at(counter));
+    ownAgent->SetYawAngle(psiVec->at(counter));
 
     std::stringstream log;
-    log << GetComponentId() << " (agent " << ownAgent->GetAgentId() << "): newX = " << _xPosVec[_counter] << ", newY = " << _yPosVec[_counter];
+    log << GetComponentId() << " (agent " << ownAgent->GetAgentId() << "): newX = " << xPosVec->at(
+            counter) << ", newY = " << yPosVec->at(counter);
     LOG(CbkLogLevel::Debug, log.str());
 
-    _counter++;
+    counter++;
 
 }
+

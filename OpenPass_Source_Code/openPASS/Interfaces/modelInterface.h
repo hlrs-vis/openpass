@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -39,7 +39,7 @@
 //! @param[in]     signal  Signal to be printed
 //! @return                Output stream for concatenation
 //-----------------------------------------------------------------------------
-inline std::ostream& operator<<(std::ostream &stream,
+inline std::ostream &operator<<(std::ostream &stream,
                                 const SignalInterface &signal)
 {
     return stream << static_cast<std::string>(signal);
@@ -71,10 +71,10 @@ public:
         responseTime(responseTime),
         cycleTime(cycleTime)
     {}
-    ModelInterface(const ModelInterface&) = delete;
-    ModelInterface(ModelInterface&&) = delete;
-    ModelInterface& operator=(const ModelInterface&) = delete;
-    ModelInterface& operator=(ModelInterface&&) = delete;
+    ModelInterface(const ModelInterface &) = delete;
+    ModelInterface(ModelInterface &&) = delete;
+    ModelInterface &operator=(const ModelInterface &) = delete;
+    ModelInterface &operator=(ModelInterface &&) = delete;
     virtual ~ModelInterface() = default;
 
     //-----------------------------------------------------------------------------
@@ -191,7 +191,7 @@ public:
                              int cycleTime,
                              StochasticsInterface *stochastics,
                              const ParameterInterface *parameters,
-                             const std::map<int, ObservationInterface*> *observations,
+                             const std::map<int, ObservationInterface *> *observations,
                              const CallbackInterface *callbacks) :
         ModelInterface(isInit, priority, offsetTime, responseTime, cycleTime),
         callbacks(callbacks),
@@ -200,10 +200,10 @@ public:
         parameters(parameters),
         observations(observations)
     {}
-    RestrictedModelInterface(const RestrictedModelInterface&) = delete;
-    RestrictedModelInterface(RestrictedModelInterface&&) = delete;
-    RestrictedModelInterface& operator=(const RestrictedModelInterface&) = delete;
-    RestrictedModelInterface& operator=(RestrictedModelInterface&&) = delete;
+    RestrictedModelInterface(const RestrictedModelInterface &) = delete;
+    RestrictedModelInterface(RestrictedModelInterface &&) = delete;
+    RestrictedModelInterface &operator=(const RestrictedModelInterface &) = delete;
+    RestrictedModelInterface &operator=(RestrictedModelInterface &&) = delete;
     virtual ~RestrictedModelInterface() = default;
 
     //-----------------------------------------------------------------------------
@@ -243,7 +243,7 @@ protected:
     //!
     //! @return                       Mapping of observation modules.
     //-----------------------------------------------------------------------------
-    const std::map<int, ObservationInterface*> *GetObservations() const
+    const std::map<int, ObservationInterface *> *GetObservations() const
     {
         return observations;
     }
@@ -261,8 +261,7 @@ protected:
              int line,
              const std::string &message)
     {
-        if(callbacks)
-        {
+        if (callbacks) {
             callbacks->Log(logLevel,
                            file,
                            line,
@@ -275,9 +274,10 @@ private:
     // functions.
     const CallbackInterface *callbacks;   //!< Reference to framework callbacks
     int componentId;                      //!< Id of this component
-    StochasticsInterface *stochastics;    //!< Reference to the stochastics functionality of the framework
+    StochasticsInterface
+    *stochastics;    //!< Reference to the stochastics functionality of the framework
     const ParameterInterface *parameters; //!< Reference to the configuration parameters
-    const std::map<int, ObservationInterface*> *observations; //!< Mapping of observation modules
+    const std::map<int, ObservationInterface *> *observations; //!< Mapping of observation modules
 };
 
 //-----------------------------------------------------------------------------
@@ -311,7 +311,7 @@ public:
                                StochasticsInterface *stochastics,
                                WorldInterface *world,
                                const ParameterInterface *parameters,
-                               const std::map<int, ObservationInterface*> *observations,
+                               const std::map<int, ObservationInterface *> *observations,
                                const CallbackInterface *callbacks,
                                AgentInterface *agent) :
         RestrictedModelInterface(componentId,
@@ -327,10 +327,10 @@ public:
         agent(agent),
         world(world)
     {}
-    UnrestrictedModelInterface(const UnrestrictedModelInterface&) = delete;
-    UnrestrictedModelInterface(UnrestrictedModelInterface&&) = delete;
-    UnrestrictedModelInterface& operator=(const UnrestrictedModelInterface&) = delete;
-    UnrestrictedModelInterface& operator=(UnrestrictedModelInterface&&) = delete;
+    UnrestrictedModelInterface(const UnrestrictedModelInterface &) = delete;
+    UnrestrictedModelInterface(UnrestrictedModelInterface &&) = delete;
+    UnrestrictedModelInterface &operator=(const UnrestrictedModelInterface &) = delete;
+    UnrestrictedModelInterface &operator=(UnrestrictedModelInterface &&) = delete;
     virtual ~UnrestrictedModelInterface() = default;
 
 protected:
@@ -394,7 +394,7 @@ public:
                        int cycleTime,
                        StochasticsInterface *stochastics,
                        const ParameterInterface *parameters,
-                       const std::map<int, ObservationInterface*> *observations,
+                       const std::map<int, ObservationInterface *> *observations,
                        const CallbackInterface *callbacks,
                        int agentId) :
         RestrictedModelInterface(componentId,
@@ -409,10 +409,10 @@ public:
                                  callbacks),
         agentId(agentId)
     {}
-    AlgorithmInterface(const AlgorithmInterface&) = delete;
-    AlgorithmInterface(AlgorithmInterface&&) = delete;
-    AlgorithmInterface& operator=(const AlgorithmInterface&) = delete;
-    AlgorithmInterface& operator=(AlgorithmInterface&&) = delete;
+    AlgorithmInterface(const AlgorithmInterface &) = delete;
+    AlgorithmInterface(AlgorithmInterface &&) = delete;
+    AlgorithmInterface &operator=(const AlgorithmInterface &) = delete;
+    AlgorithmInterface &operator=(AlgorithmInterface &&) = delete;
     virtual ~AlgorithmInterface() = default;
 
 protected:

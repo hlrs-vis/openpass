@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -58,7 +58,7 @@ bool ModelLibrary::Init()
     createInstanceFunc = (ModelInterface_CreateInstanceType)library->resolve(DllCreateInstanceId.c_str());
     if(!createInstanceFunc)
     {
-        return nullptr;
+        return false;
     }
 
     destroyInstanceFunc = (ModelInterface_DestroyInstanceType)library->resolve(DllDestroyInstanceId.c_str());
@@ -71,19 +71,19 @@ bool ModelLibrary::Init()
     updateInputFunc = (ModelInterface_UpdateInputType)library->resolve(DllUpdateInputId.c_str());
     if(!updateInputFunc)
     {
-        return nullptr;
+        return false;
     }
 
     updateOutputFunc = (ModelInterface_UpdateOutputType)library->resolve(DllUpdateOutputId.c_str());
     if(!updateOutputFunc)
     {
-        return nullptr;
+        return false;
     }
 
     triggerFunc = (ModelInterface_TriggerType)library->resolve(DllTriggerId.c_str());
     if(!triggerFunc)
     {
-        return nullptr;
+        return false;
     }
 
     try

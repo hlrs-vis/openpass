@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -30,10 +30,10 @@ class WorldInterface
 {
 public:
     WorldInterface() = default;
-    WorldInterface(const WorldInterface&) = delete;
-    WorldInterface(WorldInterface&&) = delete;
-    WorldInterface& operator=(const WorldInterface&) = delete;
-    WorldInterface& operator=(WorldInterface&&) = delete;
+    WorldInterface(const WorldInterface &) = delete;
+    WorldInterface(WorldInterface &&) = delete;
+    WorldInterface &operator=(const WorldInterface &) = delete;
+    WorldInterface &operator=(WorldInterface &&) = delete;
     virtual ~WorldInterface() = default;
 
     //-----------------------------------------------------------------------------
@@ -42,14 +42,14 @@ public:
     //!
     //! @return                global view
     //-----------------------------------------------------------------------------
-    virtual void* GetGlobalDrivingView() = 0;
+    virtual void *GetGlobalDrivingView() = 0;
 
     //-----------------------------------------------------------------------------
     //! Retrieves static objects (roads and junctions)
     //!
     //! @return                reference to scenery
     //-----------------------------------------------------------------------------
-    virtual void* GetGlobalObjects() = 0;
+    virtual void *GetGlobalObjects() = 0;
 
     //-----------------------------------------------------------------------------
     //! Sets time of day (hour) for the simulation run
@@ -114,7 +114,7 @@ public:
     //!
     //! @return                Mapping of ids to agents
     //-----------------------------------------------------------------------------
-    virtual const std::map<int, const AgentInterface*> &GetAgents() const = 0;
+    virtual const std::map<int, const AgentInterface *> &GetAgents() const = 0;
 
     //-----------------------------------------------------------------------------
     //! Add agent to world
@@ -131,7 +131,7 @@ public:
     //! @return
     //-----------------------------------------------------------------------------
     virtual void QueueAgentUpdate(std::function<void(double)> func,
-                          double val) = 0;
+                                  double val) = 0;
 
     //-----------------------------------------------------------------------------
     //! Add agent to list to be removed when SyncGlobalData is called
@@ -160,7 +160,7 @@ public:
     //!
     //! @return
     //-----------------------------------------------------------------------------
-    virtual AgentInterface* CreateAgentAdapterForAgent() = 0;
+    virtual AgentInterface *CreateAgentAdapterForAgent() = 0;
 
     //-----------------------------------------------------------------------------
     //! Returns one agent which is set to be special.
@@ -191,6 +191,13 @@ public:
     //-----------------------------------------------------------------------------
     virtual Position GetPositionByDistanceAndLane(double distance,
                                                   int laneNumber) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Tries to create an internal scenery from a given file.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual bool CreateWorldScenery(const  std::string &sceneryFilename) = 0;
 };
 
 #endif // WORLDINTERFACE_H

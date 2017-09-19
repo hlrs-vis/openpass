@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -8,6 +8,55 @@
 
 #ifndef COMMONTOOLS
 #define COMMONTOOLS
+
+#include "globalDefinitions.h"
+#include "math.h"
+
+//-----------------------------------------------------------------------------
+//! @brief defines common helper functions like conversion from and to enums.
+//-----------------------------------------------------------------------------
+class CommonHelper
+{
+public:
+    static double ConvertagentViewDirectionToRadiant(AgentViewDirection agentViewDirection)
+    {
+        double viewDirection = INFINITY;
+
+        switch (agentViewDirection) {
+        case AgentViewDirection::front:
+            viewDirection = 0;
+            break;
+        case AgentViewDirection::left:
+            viewDirection = M_PI_2;
+            break;
+        case AgentViewDirection::back:
+            viewDirection = M_PI;
+            break;
+        case AgentViewDirection::right:
+            viewDirection = -M_PI_2;
+            break;
+        default:
+            break;
+        }
+        return viewDirection;
+    }
+
+    static AgentViewDirection ConvertRadiantToAgentViewDirection(double radiant)
+    {
+        if ((radiant <= M_PI_4) && (radiant >= -M_PI_4)) {
+            return AgentViewDirection::front;
+        } else if ((radiant > M_PI_4) && (radiant <= 3 * M_PI_4)) {
+            return AgentViewDirection::left;
+        } else if ((radiant < -M_PI_4) && (radiant >= -3 * M_PI)) {
+            return AgentViewDirection::right;
+        } else if (((radiant < -3 * M_PI_4) && (radiant >= -M_PI))
+                   || ((radiant > 3 * M_PI_4) && (radiant <= M_PI))) {
+            return AgentViewDirection::back;
+        } else {
+            return AgentViewDirection::none;
+        }
+    }
+};
 
 //-----------------------------------------------------------------------------
 //! @brief Containing general static functions to evaluate traffic situations
@@ -41,17 +90,16 @@ public:
     //! @return time to collsion between the two objects
     //-----------------------------------------------------------------------------
     static double CalculateNetTTC(
-            double vRear,
-            double vFront,
-            double netDistance)
+        double vRear,
+        double vFront,
+        double netDistance)
     {
-        if(netDistance < 0.0)
-        {
+        if (netDistance < 0.0) {
             return -1.0;
         }
 
         double deltaV = vRear - vFront;
-        return (deltaV < 1e-6)? 99.0 : netDistance / deltaV;
+        return (deltaV < 1e-6) ? 99.0 : netDistance / deltaV;
     }
 
     //-----------------------------------------------------------------------------
@@ -80,15 +128,14 @@ public:
     //! @return time gap between the two objects
     //-----------------------------------------------------------------------------
     static double CalculateNetTimeGap(
-            double vRear,
-            double netDistance)
+        double vRear,
+        double netDistance)
     {
-        if(netDistance < 0.0)
-        {
+        if (netDistance < 0.0) {
             return -1.0;
         }
 
-        return (netDistance <= 0.0)? 0.0 : (vRear <= 1)? netDistance : netDistance / vRear;
+        return (netDistance <= 0.0) ? 0.0 : (vRear <= 1) ? netDistance : netDistance / vRear;
     }
 
 
@@ -108,13 +155,12 @@ public:
     //-----------------------------------------------------------------------------
     template <typename T>
     static T ValueInBounds(
-            const T& low,
-            const T& value,
-            const T& high)
+        const T &low,
+        const T &value,
+        const T &high)
     {
-        return (value < low)? low : ((value < high) ? value : high);
+        return (value < low) ? low : ((value < high) ? value : high);
     }
 };
 
 #endif // COMMONTOOLS
-

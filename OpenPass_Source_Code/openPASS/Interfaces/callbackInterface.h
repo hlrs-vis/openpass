@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -26,8 +26,7 @@
 //-----------------------------------------------------------------------------
 //! Log level for the log callback
 //-----------------------------------------------------------------------------
-enum class CbkLogLevel : int
-{
+enum class CbkLogLevel : int {
     Error = 0,      //!< indicates abortion of program flow (e.g. on return values indicating an error)
     Warning,        //!< indicates change of intended program flow (doesn't necessarily lead to an error)
     Info,           //!< used for diagnostic information (should not be used for periodic events to prevent overflow of log)
@@ -41,10 +40,10 @@ class CallbackInterface
 {
 public:
     CallbackInterface() = default;
-    CallbackInterface(const CallbackInterface&) = delete;
-    CallbackInterface(CallbackInterface&&) = delete;
-    CallbackInterface& operator=(const CallbackInterface&) = delete;
-    CallbackInterface& operator=(CallbackInterface&&) = delete;
+    CallbackInterface(const CallbackInterface &) = delete;
+    CallbackInterface(CallbackInterface &&) = delete;
+    CallbackInterface &operator=(const CallbackInterface &) = delete;
+    CallbackInterface &operator=(CallbackInterface &&) = delete;
     virtual ~CallbackInterface() = default;
 
     //-------------------------------------------------------------------------

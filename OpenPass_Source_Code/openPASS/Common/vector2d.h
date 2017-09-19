@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -11,8 +11,7 @@
 #ifndef VECTOR2D_H
 #define VECTOR2D_H
 
-namespace Common
-{
+namespace Common {
 
 /*!
  * class for 2d vectors in cartesian coordinate system
@@ -27,10 +26,10 @@ public:
      * \param[in] y     y-value
      */
     Vector2d(double x = 0, double y = 0);
-    Vector2d(const Vector2d&) = default;
-    Vector2d(Vector2d&&) = default;
-    Vector2d& operator=(const Vector2d&) = default;
-    Vector2d& operator=(Vector2d&&) = default;
+    Vector2d(const Vector2d &) = default;
+    Vector2d(Vector2d &&) = default;
+    Vector2d &operator=(const Vector2d &) = default;
+    Vector2d &operator=(Vector2d &&) = default;
     virtual ~Vector2d() = default;
 
     /*!
@@ -40,6 +39,13 @@ public:
      * \param[in] y    y-value of displacement vector
      */
     void Translate(double x, double y);
+
+    /*!
+     * \brief Translate
+     * translation of vector via another vector
+     * \param[in] translationVector vector of translation
+     */
+    void Translate(Vector2d translationVector);
 
     /*!
      * rotates vector by angle
@@ -78,6 +84,14 @@ public:
     double Dot(const Vector2d &in);
 
     /*!
+     * cross product with Z=0
+     *
+     * \param[in] in      2d vector
+     * \return returns z-component of the cross product
+     */
+    double Cross(const Vector2d &in);
+
+    /*!
      * Normalizes the 2d vector
      *
      * Each component of the vector is devided by the length of the vector.
@@ -94,6 +108,13 @@ public:
      * \return length of the vector
      */
     double Length() const;
+
+    /*!
+     * \brief Angle
+     * returns the angle of the vector [-pi,+pi]
+     * \return angle of vector
+     */
+    double Angle() const;
 
     Vector2d operator-(const Vector2d &in);
     Vector2d operator+(const Vector2d &in);

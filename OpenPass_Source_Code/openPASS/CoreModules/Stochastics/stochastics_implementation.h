@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -13,48 +13,32 @@
 #include <functional>
 #include "stochasticsInterface.h"
 
-/** \addtogroup Stochastics
+/**
+* \addtogroup CoreModules openPASS CoreModules
 * @{
-*\brief implementation of StochasticsInterface
+* \addtogroup Stochastics
+*
+* \brief Stochastics module to provide stochastic functions.
 *
 * The Stochastics module implements a StochasticsInterface which is used
 * by all agents to create a random behavior.
 *
-* \section Stochastics_Inputs Inputs
-* name | meaning
-* -----|---------
-* callbacks | CallbackInterface to send log information to the framework
-*
-* \section Stochastics_Outputs Outputs
- name | meaning
-* -----|---------
-* *StochasticsInterface | Provides a reference to an implementation of a StochasticsInterface to the framework.
-*
-* \section Stochastics_ConfigParameters Parameters to be specified in runConfiguration.xml
-* tag | meaning
-* -----|---------
-* Stochastics | Name of stochastics library. "Stochastics" by default.
-*
 * @see StochasticsInterface
-*
-* @} */
+* @}
+*/
 
 /*!
- * \brief implementation of StochasticsInterface
- *
- * The Stochastics module implements a StochasticsInterface which is used
- * by all agents to create a random behavior.
- *
+ * \copydoc Stochastics
  * \ingroup Stochastics
  */
 class Stochastics_Implementation : public StochasticsInterface
 {
 public:
     Stochastics_Implementation(const CallbackInterface *callbacks);
-    Stochastics_Implementation(const Stochastics_Implementation&) = delete;
-    Stochastics_Implementation(Stochastics_Implementation&&) = delete;
-    Stochastics_Implementation& operator=(const Stochastics_Implementation&) = delete;
-    Stochastics_Implementation& operator=(Stochastics_Implementation&&) = delete;
+    Stochastics_Implementation(const Stochastics_Implementation &) = delete;
+    Stochastics_Implementation(Stochastics_Implementation &&) = delete;
+    Stochastics_Implementation &operator=(const Stochastics_Implementation &) = delete;
+    Stochastics_Implementation &operator=(Stochastics_Implementation &&) = delete;
     virtual ~Stochastics_Implementation() = default;
 
     double GetUniformDistributed(double a, double b);
@@ -81,8 +65,7 @@ protected:
              int line,
              const std::string &message)
     {
-        if(callbacks)
-        {
+        if (callbacks) {
             callbacks->Log(logLevel,
                            file,
                            line,

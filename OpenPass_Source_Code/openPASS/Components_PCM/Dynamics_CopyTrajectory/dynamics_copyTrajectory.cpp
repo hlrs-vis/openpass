@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -15,7 +15,8 @@
 #include "dynamics_copyTrajectory.h"
 #include "dynamics_copyTrajectory_implementation.h"
 
-const std::string Version = "1.1.0";    //!< version of the current module - has to be incremented manually
+const std::string Version =
+    "1.1.0";    //!< version of the current module - has to be incremented manually
 static const CallbackInterface *Callbacks = nullptr;
 
 //-----------------------------------------------------------------------------
@@ -23,7 +24,8 @@ static const CallbackInterface *Callbacks = nullptr;
 //!
 //! @return                       Version of the current module
 //-----------------------------------------------------------------------------
-extern "C" DYNAMICS_COPYTRAJECTORYSHARED_EXPORT const std::string &OpenPASS_GetVersion() {
+extern "C" DYNAMICS_COPYTRAJECTORYSHARED_EXPORT const std::string &OpenPASS_GetVersion()
+{
     return Version;
 }
 
@@ -44,32 +46,34 @@ extern "C" DYNAMICS_COPYTRAJECTORYSHARED_EXPORT const std::string &OpenPASS_GetV
 //! @param[in]     callbacks      Pointer to the callbacks
 //! @return                       A pointer to the created module instance.
 //-----------------------------------------------------------------------------
-extern "C" DYNAMICS_COPYTRAJECTORYSHARED_EXPORT SensorInterface *OpenPASS_CreateInstance(int componentId,
-                                                                               bool isInit,
-                                                                               int priority,
-                                                                               int offsetTime,
-                                                                               int responseTime,
-                                                                               int cycleTime,
-                                                                               StochasticsInterface *stochastics,
-                                                                               WorldInterface *world,
-                                                                               const ParameterInterface *parameters,
-                                                                               const std::map<int, ObservationInterface*> *evaluations,
-                                                                               AgentInterface *agent,
-                                                                               const CallbackInterface *callbacks) {
+extern "C" DYNAMICS_COPYTRAJECTORYSHARED_EXPORT DynamicsInterface *OpenPASS_CreateInstance(
+    int componentId,
+    bool isInit,
+    int priority,
+    int offsetTime,
+    int responseTime,
+    int cycleTime,
+    StochasticsInterface *stochastics,
+    WorldInterface *world,
+    const ParameterInterface *parameters,
+    const std::map<int, ObservationInterface *> *evaluations,
+    AgentInterface *agent,
+    const CallbackInterface *callbacks)
+{
     Callbacks = callbacks;
 
-    return (SensorInterface*)(new (std::nothrow) Dynamics_CopyTrajectory_Implementation(componentId,
-                                                                                       isInit,
-                                                                                       priority,
-                                                                                       offsetTime,
-                                                                                       responseTime,
-                                                                                       cycleTime,
-                                                                                       stochastics,
-                                                                                       world,
-                                                                                       parameters,
-                                                                                       evaluations,
-                                                                                       callbacks,
-                                                                                       agent));
+    return (DynamicsInterface *)(new (std::nothrow) Dynamics_CopyTrajectory_Implementation(componentId,
+                                                                                           isInit,
+                                                                                           priority,
+                                                                                           offsetTime,
+                                                                                           responseTime,
+                                                                                           cycleTime,
+                                                                                           stochastics,
+                                                                                           world,
+                                                                                           parameters,
+                                                                                           evaluations,
+                                                                                           callbacks,
+                                                                                           agent));
 }
 
 //-----------------------------------------------------------------------------
@@ -77,32 +81,28 @@ extern "C" DYNAMICS_COPYTRAJECTORYSHARED_EXPORT SensorInterface *OpenPASS_Create
 //!
 //! @param[in]     implementation    The instance that should be freed
 //-----------------------------------------------------------------------------
-extern "C" DYNAMICS_COPYTRAJECTORYSHARED_EXPORT void OpenPASS_DestroyInstance(SensorInterface *implementation) {
-    delete (Dynamics_CopyTrajectory_Implementation*)implementation;
+extern "C" DYNAMICS_COPYTRAJECTORYSHARED_EXPORT void OpenPASS_DestroyInstance(
+    DynamicsInterface *implementation)
+{
+    delete (Dynamics_CopyTrajectory_Implementation *)implementation;
 }
 
-extern "C" DYNAMICS_COPYTRAJECTORYSHARED_EXPORT bool OpenPASS_UpdateInput(ModelInterface *implementation,
-                                                                       int localLinkId,
-                                                                       const std::shared_ptr<SignalInterface const> &data,
-                                                                       int time)
+extern "C" DYNAMICS_COPYTRAJECTORYSHARED_EXPORT bool OpenPASS_UpdateInput(
+    ModelInterface *implementation,
+    int localLinkId,
+    const std::shared_ptr<SignalInterface const> &data,
+    int time)
 {
-    try
-    {
+    try {
         implementation->UpdateInput(localLinkId, data, time);
-    }
-    catch(const std::runtime_error &ex)
-    {
-        if(Callbacks != nullptr)
-        {
+    } catch (const std::runtime_error &ex) {
+        if (Callbacks != nullptr) {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, ex.what());
         }
 
         return false;
-    }
-    catch(...)
-    {
-        if(Callbacks != nullptr)
-        {
+    } catch (...) {
+        if (Callbacks != nullptr) {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, "unexpected exception");
         }
 
@@ -112,28 +112,22 @@ extern "C" DYNAMICS_COPYTRAJECTORYSHARED_EXPORT bool OpenPASS_UpdateInput(ModelI
     return true;
 }
 
-extern "C" DYNAMICS_COPYTRAJECTORYSHARED_EXPORT bool OpenPASS_UpdateOutput(ModelInterface *implementation,
-                                                                        int localLinkId,
-                                                                        std::shared_ptr<SignalInterface const> &data,
-                                                                        int time)
+extern "C" DYNAMICS_COPYTRAJECTORYSHARED_EXPORT bool OpenPASS_UpdateOutput(
+    ModelInterface *implementation,
+    int localLinkId,
+    std::shared_ptr<SignalInterface const> &data,
+    int time)
 {
-    try
-    {
+    try {
         implementation->UpdateOutput(localLinkId, data, time);
-    }
-    catch(const std::runtime_error &ex)
-    {
-        if(Callbacks != nullptr)
-        {
+    } catch (const std::runtime_error &ex) {
+        if (Callbacks != nullptr) {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, ex.what());
         }
 
         return false;
-    }
-    catch(...)
-    {
-        if(Callbacks != nullptr)
-        {
+    } catch (...) {
+        if (Callbacks != nullptr) {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, "unexpected exception");
         }
 
@@ -143,26 +137,20 @@ extern "C" DYNAMICS_COPYTRAJECTORYSHARED_EXPORT bool OpenPASS_UpdateOutput(Model
     return true;
 }
 
-extern "C" DYNAMICS_COPYTRAJECTORYSHARED_EXPORT bool OpenPASS_Trigger(ModelInterface *implementation,
-                                                                   int time)
+extern "C" DYNAMICS_COPYTRAJECTORYSHARED_EXPORT bool OpenPASS_Trigger(
+    ModelInterface *implementation,
+    int time)
 {
-    try
-    {
+    try {
         implementation->Trigger(time);
-    }
-    catch(const std::runtime_error &ex)
-    {
-        if(Callbacks != nullptr)
-        {
+    } catch (const std::runtime_error &ex) {
+        if (Callbacks != nullptr) {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, ex.what());
         }
 
         return false;
-    }
-    catch(...)
-    {
-        if(Callbacks != nullptr)
-        {
+    } catch (...) {
+        if (Callbacks != nullptr) {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, "unexpected exception");
         }
 

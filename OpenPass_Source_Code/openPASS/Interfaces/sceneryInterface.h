@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
+* Copyright (c) 2017 ITK Engineering GmbH.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -25,10 +25,10 @@ class SceneryInterface
 {
 public:
     SceneryInterface() = default;
-    SceneryInterface(const SceneryInterface&) = delete;
-    SceneryInterface(SceneryInterface&&) = delete;
-    SceneryInterface& operator=(const SceneryInterface&) = delete;
-    SceneryInterface& operator=(SceneryInterface&&) = delete;
+    SceneryInterface(const SceneryInterface &) = delete;
+    SceneryInterface(SceneryInterface &&) = delete;
+    SceneryInterface &operator=(const SceneryInterface &) = delete;
+    SceneryInterface &operator=(SceneryInterface &&) = delete;
     virtual ~SceneryInterface() = default;
 
     //-----------------------------------------------------------------------------
@@ -51,7 +51,7 @@ public:
     //!
     //! @return                         list of roads
     //-----------------------------------------------------------------------------
-    virtual std::map<std::string, RoadInterface*> &GetRoads() = 0;
+    virtual std::map<std::string, RoadInterface *> &GetRoads() = 0;
 
 
     //-----------------------------------------------------------------------------
@@ -60,8 +60,7 @@ public:
     //! @param[in]  id                  ID of the road
     //! @return                         road with the provided ID
     //-----------------------------------------------------------------------------
-    virtual RoadInterface *GetRoad(const std::string& id) = 0;
+    virtual RoadInterface *GetRoad(const std::string &id) = 0;
 };
 
 #endif // SCENERYINTERFACE
-
