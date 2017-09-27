@@ -64,19 +64,22 @@ void Dynamics_CopyTrajectory_Implementation::UpdateOutput(int localLinkId,
 void Dynamics_CopyTrajectory_Implementation::Trigger(int time)
 {
     Q_UNUSED(time);
-    AgentInterface *ownAgent = GetAgent();
 
-    ownAgent->SetPositionX(xPosVec->at(counter));
-    ownAgent->SetPositionY(yPosVec->at(counter));
-    ownAgent->SetVelocityX(velVec->at(counter));
-    ownAgent->SetYawAngle(psiVec->at(counter));
+    if (counter < timeVec->size() - 1)
+    {
+        AgentInterface *ownAgent = GetAgent();
 
-    std::stringstream log;
-    log << GetComponentId() << " (agent " << ownAgent->GetAgentId() << "): newX = " << xPosVec->at(
-            counter) << ", newY = " << yPosVec->at(counter);
-    LOG(CbkLogLevel::Debug, log.str());
+        ownAgent->SetPositionX(xPosVec->at(counter));
+        ownAgent->SetPositionY(yPosVec->at(counter));
+        ownAgent->SetVelocityX(velVec->at(counter));
+        ownAgent->SetYawAngle(psiVec->at(counter));
 
-    counter++;
+        std::stringstream log;
+        log << GetComponentId() << " (agent " << ownAgent->GetAgentId() << "): newX = " << xPosVec->at(
+                counter) << ", newY = " << yPosVec->at(counter);
+        LOG(CbkLogLevel::Debug, log.str());
 
+        counter++;
+    }
 }
 
