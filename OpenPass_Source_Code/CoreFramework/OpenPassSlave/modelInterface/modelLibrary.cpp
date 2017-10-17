@@ -33,6 +33,9 @@ bool ModelLibrary::Init()
 #else
     error: "undefined target platform"
 #endif
+#ifdef _DEBUG
+		path += "d";
+#endif
 
     library = new (std::nothrow) QLibrary(path);
     if(!library)

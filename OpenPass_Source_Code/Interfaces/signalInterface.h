@@ -25,7 +25,8 @@ public:
     //-----------------------------------------------------------------------------
     //! String conversion of signal
     //-----------------------------------------------------------------------------
-    explicit virtual operator std::string() const = 0;
+    virtual operator std::string() const = 0;
+	// VisualStudio 2015 does not allow explicit and virtual
 
 private:
     friend std::ostream& operator<<(std::ostream&,

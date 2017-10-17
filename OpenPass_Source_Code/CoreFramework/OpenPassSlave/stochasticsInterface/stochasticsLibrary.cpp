@@ -23,6 +23,11 @@ bool StochasticsLibrary::Init()
     error: "undefined target platform"
 #endif
 
+    stochasticsInterface = nullptr;
+#ifdef _DEBUG
+    path += "d";
+#endif
+
     library = new (std::nothrow) QLibrary(path);
     if(!library)
     {

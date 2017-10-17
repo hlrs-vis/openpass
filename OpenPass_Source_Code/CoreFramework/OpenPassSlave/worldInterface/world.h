@@ -147,7 +147,7 @@ public:
     //! @return                true if world was already instantiated
     //-----------------------------------------------------------------------------
     bool isInstantiated(){
-        return implementation;
+        return implementation!=NULL;
     }
 
 private:
