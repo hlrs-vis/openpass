@@ -5,11 +5,11 @@ SET (HEADERS algorithm_cruisecontrolbydistance.h algorithm_cruisecontrolbydistan
 add_definitions(-DALGORITHM_CRUISECONTROLBYDISTANCE_LIBRARY)
 include_directories(../../Common ../../Interfaces)
 
-add_library(Algorithm_cruisecontrolbydistance SHARED ${SOURCES} ${HEADERS})
+add_library(Algorithm_CruiseControlByDistance SHARED ${SOURCES} ${HEADERS})
 
-qt5_use_modules(Algorithm_cruisecontrolbydistance Xml)
+qt5_use_modules(Algorithm_CruiseControlByDistance Xml)
 
-install(TARGETS Algorithm_cruisecontrolbydistance
+install(TARGETS Algorithm_CruiseControlByDistance
         RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
         ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
         LIBRARY DESTINATION "${INSTALL_LIB_DIR}" )

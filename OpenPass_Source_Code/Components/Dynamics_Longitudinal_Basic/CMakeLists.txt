@@ -5,11 +5,11 @@ SET (HEADERS dynamics_longitudinal_basic.h dynamics_longitudinal_basic_implement
 add_definitions(-DDYNAMICS_LONGITUDINAL_BASIC_LIBRARY)
 include_directories(../../Common ../../Interfaces)
 
-add_library(Dynamics_longitudinal_basic SHARED ${SOURCES} ${HEADERS})
+add_library(Dynamics_Longitudinal_Basic SHARED ${SOURCES} ${HEADERS})
 
-qt5_use_modules(Dynamics_longitudinal_basic Xml)
+qt5_use_modules(Dynamics_Longitudinal_Basic Xml)
 
-install(TARGETS Dynamics_longitudinal_basic
+install(TARGETS Dynamics_Longitudinal_Basic
         RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
         ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
         LIBRARY DESTINATION "${INSTALL_LIB_DIR}" )

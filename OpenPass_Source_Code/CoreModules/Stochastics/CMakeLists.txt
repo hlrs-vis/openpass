@@ -5,12 +5,12 @@ SET (HEADERS stochastics.h stochastics_implementation.h stochastics_global.h)
 add_definitions(-DSTOCHASTICS_LIBRARY)
 include_directories(../../Common ../../Interfaces)
 
-add_library(stochastics SHARED ${SOURCES} ${HEADERS})
-target_link_libraries(stochastics Common)
+add_library(Stochastics SHARED ${SOURCES} ${HEADERS})
+target_link_libraries(Stochastics Common)
 
-qt5_use_modules(stochastics Xml)
+qt5_use_modules(Stochastics Xml)
 
-install(TARGETS stochastics
+install(TARGETS Stochastics
         RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
         ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
         LIBRARY DESTINATION "${INSTALL_LIB_DIR}" )
