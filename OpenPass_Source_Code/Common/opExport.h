@@ -13,7 +13,7 @@
 #define OPIMPORT __declspec(dllimport)
 #define OPEXPORT __declspec(dllexport)
 
-#elif(defined(__GNUC__) && __GNUC__ >= 4|| defined(__clang__)
+#elif(defined(__GNUC__) && __GNUC__ >= 4|| defined(__clang__))
 #define OPEXPORT __attribute__((visibility("default")))
 #define OPIMPORT OPEXPORT
 

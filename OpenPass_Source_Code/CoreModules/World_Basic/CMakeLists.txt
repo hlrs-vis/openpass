@@ -1,5 +1,5 @@
-SET (SOURCES World_Basic.cpp World_Basic_implementation.cpp agentAdapter.cpp agentNetwork.cpp)
-SET (HEADERS World_Basic.h World_Basic_implementation.h World_Basic_global.h agentAdapter.h agentNetwork.h)
+SET (SOURCES world_basic.cpp world_basic_implementation.cpp agentAdapter.cpp agentNetwork.cpp)
+SET (HEADERS world_basic.h world_basic_implementation.h world_basic_global.h agentAdapter.h agentNetwork.h)
 
 
 add_definitions(-DWORLD_BASIC_LIBRARY)

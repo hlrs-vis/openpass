@@ -1,5 +1,5 @@
-SET (SOURCES SpawnPointSingle_0.cpp SpawnPointSingle_0_implementation.cpp )
-SET (HEADERS SpawnPointSingle_0.h SpawnPointSingle_0_implementation.h SpawnPointSingle_0_global.h )
+SET (SOURCES spawnPointSingle_0.cpp spawnPointSingle_0_implementation.cpp )
+SET (HEADERS spawnPointSingle_0.h spawnPointSingle_0_implementation.h spawnPointSingle_0_global.h )
 
 
 add_definitions(-DSPAWNPOINTSINGLE_0_LIBRARY)

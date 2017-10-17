@@ -1,5 +1,5 @@
-SET (SOURCES Dynamics_CopyTrajectory.cpp Dynamics_CopyTrajectory_implementation.cpp)
-SET (HEADERS Dynamics_CopyTrajectory.h Dynamics_CopyTrajectory_implementation.h Dynamics_CopyTrajectory_global.h)
+SET (SOURCES dynamics_copyTrajectory.cpp dynamics_copyTrajectory_implementation.cpp)
+SET (HEADERS dynamics_copyTrajectory.h dynamics_copyTrajectory_implementation.h dynamics_copyTrajectory_global.h)
 
 
 add_definitions(-DDYNAMICS_COPYTRAJECTORY_LIBRARY)

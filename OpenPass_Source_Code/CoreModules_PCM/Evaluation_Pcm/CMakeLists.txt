@@ -1,5 +1,5 @@
-SET (SOURCES Evaluation_Pcm.cpp Evaluation_Pcm_implementation.cpp collisionDetection.cpp runResult.cpp)
-SET (HEADERS Evaluation_Pcm.h Evaluation_Pcm_implementation.h Evaluation_Pcm_global.h collisionDetection.h agent.h runResult.h)
+SET (SOURCES evaluation_pcm.cpp evaluation_pcm_implementation.cpp collisionDetection.cpp runResult.cpp)
+SET (HEADERS evaluation_pcm.h evaluation_pcm_implementation.h evaluation_pcm_global.h collisionDetection.h agent.h runResult.h)
 
 
 add_definitions(-DEVALUATION_PCM_LIBRARY)

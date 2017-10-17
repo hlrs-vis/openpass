@@ -22,12 +22,10 @@ namespace SimulationSlave
 
 bool ObservationLibrary::Init()
 {
-#if defined(unix)
+#ifndef WIN32
     QString path = QString(observationLibraryPath.c_str()) + QString("/lib") + QString(libraryName.c_str());
-#elif defined (WIN32)
-    QString path = QString(observationLibraryPath.c_str()) + QString("/") + QString(libraryName.c_str());
 #else
-    error: "undefined target platform"
+    QString path = QString(observationLibraryPath.c_str()) + QString("/") + QString(libraryName.c_str());
 #endif
 #ifdef _DEBUG
 		path += "d";

@@ -18,7 +18,7 @@
 #define COLLISIONDETECTION_H
 
 #include "collisionDetection_global.h"
-#include "collisionDetectioninterface.h"
+#include "collisionDetectionInterface.h"
 
 
 #endif // COLLISIONDETECTION_H

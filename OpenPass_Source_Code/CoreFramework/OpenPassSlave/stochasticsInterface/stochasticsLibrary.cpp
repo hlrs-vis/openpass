@@ -15,12 +15,10 @@ namespace SimulationSlave
 
 bool StochasticsLibrary::Init()
 {
-#if defined(unix)
+#ifndef WIN32
     QString path = QString(stochasticsLibraryPath.c_str()) + QString("/lib") + QString(libraryName.c_str());
-#elif defined (WIN32)
-    QString path = QString(stochasticsLibraryPath.c_str()) + QString("/") + QString(libraryName.c_str());
 #else
-    error: "undefined target platform"
+    QString path = QString(stochasticsLibraryPath.c_str()) + QString("/") + QString(libraryName.c_str());
 #endif
 
     stochasticsInterface = nullptr;

@@ -17,7 +17,7 @@ modelElements/agentType.cpp
 modelElements/channel.cpp
 modelElements/component.cpp
 modelElements/componentType.cpp
-modelElements/SpawnPointNetwork.cpp
+modelElements/spawnPointNetwork.cpp
 modelInterface/modelBinding.cpp
 modelInterface/modelLibrary.cpp
 observationInterface/observationBinding.cpp
@@ -59,8 +59,8 @@ modelElements/channelBuffer.h
 modelElements/component.h
 modelElements/componentType.h
 modelElements/spawnItemParameter.h
-modelElements/SpawnPoint.h
-modelElements/SpawnPointNetwork.h
+modelElements/spawnPoint.h
+modelElements/spawnPointNetwork.h
 modelInterface/modelBinding.h
 modelInterface/modelLibrary.h
 spawnPointInterface/spawnPointBinding.h
