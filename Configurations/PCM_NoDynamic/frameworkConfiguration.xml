@@ -1,34 +1,11 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!--
-*******************************************************************************
- @file  frameworkConfiguration.xml
- @brief This file contains the configuration of the master parameters
- 
- It should be located in the folder of the master.exe.
- 
- The currently most interesting parameter is the address and port of the slave
- to be able to establish a connection.
- 
- 
-
- @n ***************************************************************************
- @n ITK-Engineering AG
- @n
- @n Im Speyerer Tal 6
- @n D-76761 Ruelzheim
- @n
- @n Email: info@itk-engineering.de
- @n ***************************************************************************
-*******************************************************************************
--->
+<?xml version="1.0" encoding="UTF-8"?>
 <FrameworkConfiguration>
-    <LibraryPath />
-    <ResultPath />
-    <AgentConfigFile />
-    <RunConfigFile />
-    <SceneryConfigFile />
-    <LogFileMaster />
-	<LogFileSlave />
-    <LogLevel>5</LogLevel>
-	<SlavePath>"OpenPassSlave.exe"</SlavePath>
+    <LibraryPath/>
+    <ResultPath/>
+    <AgentConfigFile/>
+    <SceneryConfigFile/>
+    <LogFileMaster/>
+    <LogFileSlave/>
+    <LogLevel>2</LogLevel>
+    <SlavePath>OpenPassSlave.exe</SlavePath>
 </FrameworkConfiguration>

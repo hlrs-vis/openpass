@@ -1,0 +1,121 @@
+/******************************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH.
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
+******************************************************************************/
+
+#include "world_pcm_implementation.h"
+
+World_PCM_Implementation::World_PCM_Implementation(const CallbackInterface *callbacks):
+    agentNetwork(this, callbacks),
+    sceneryImporterPCM(callbacks),
+    callbacks(callbacks)
+{}
+
+World_PCM_Implementation::~World_PCM_Implementation()
+{
+    Clear();
+}
+
+bool World_PCM_Implementation::AddAgent(int id, AgentInterface *agent)
+{
+    return agentNetwork.AddAgent(id, agent);
+}
+
+const AgentInterface *World_PCM_Implementation::GetAgent(int id) const
+{
+    return agentNetwork.GetAgent(id);
+}
+
+const std::map<int, const AgentInterface *> &World_PCM_Implementation::GetAgents() const
+{
+    return agentNetwork.GetAgents();
+}
+
+void World_PCM_Implementation::SetParameter(WorldParameter *worldParameter)
+{
+    weekday = worldParameter->GetWeekday();
+    timeOfDay = worldParameter->GetTimeOfDay();
+}
+
+void World_PCM_Implementation::Clear()
+{
+    agentNetwork.Clear();
+    pcmData.Clear();
+    for (auto &trajectoryItem : trajectories) {
+        trajectoryItem.second.Clear();
+    }
+
+    timeOfDay = 0;
+    weekday = Weekday::Undefined;
+}
+
+bool World_PCM_Implementation::CreateGlobalDrivingView()
+{
+    return true;
+}
+
+void World_PCM_Implementation::QueueAgentUpdate(std::function<void (double)> func, double val)
+{
+    agentNetwork.QueueAgentUpdate(func, val);
+}
+
+void World_PCM_Implementation::QueueAgentRemove(const AgentInterface *agent)
+{
+    agentNetwork.QueueAgentRemove(agent);
+}
+
+void World_PCM_Implementation::SyncGlobalData()
+{
+    agentNetwork.SyncGlobalData();
+}
+
+bool World_PCM_Implementation::CreateScenery(SceneryInterface &scenery)
+{
+    Q_UNUSED(scenery);
+    return true;
+}
+
+AgentInterface *World_PCM_Implementation::CreateAgentAdapterForAgent()
+{
+    AgentInterface *agentAdapter = new AgentAdapter(this, callbacks);
+
+    return agentAdapter;
+}
+
+int World_PCM_Implementation::GetTimeOfDay() const
+{
+    return timeOfDay;
+}
+
+Weekday World_PCM_Implementation::GetWeekday() const
+{
+    return weekday;
+}
+
+void World_PCM_Implementation::SetTimeOfDay(int timeOfDay)
+{
+    this->timeOfDay = timeOfDay;
+}
+
+void World_PCM_Implementation::SetWeekday(Weekday weekday)
+{
+    this->weekday = weekday;
+}
+
+bool World_PCM_Implementation::CreateWorldScenery(const std::string &sceneryFilename)
+{
+    return sceneryImporterPCM.Import(sceneryFilename, pcmData, trajectories);
+}
+
+const PCM_Data *World_PCM_Implementation::GetPCM_Data() const
+{
+    return &pcmData;
+}
+
+const Trajectory *World_PCM_Implementation::GetTrajectory(int agentId) const
+{
+    return &trajectories.find(agentId)->second;
+}
