@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FrameworkConfiguration>
-    <LibraryPath/>
-    <ResultPath></ResultPath>
+    <LibraryPath>./</LibraryPath>
+    <ResultPath>./</ResultPath>
     <AgentConfigFile>systemConfiguration.xml</AgentConfigFile>
-    <SceneryConfigFile/>
-    <LogFileMaster/>
-    <LogFileSlave/>
+    <RunConfigFile>runConfiguration.xml</RunConfigFile>
+    <SceneryConfigFile>sceneryConfiguration.xml</SceneryConfigFile>
+    <LogFileMaster>logMaster.txt</LogFileMaster>
+	<LogFileSlave>logSlave.txt</LogFileSlave>
     <LogLevel>2</LogLevel>
-    <SlavePath>OpenPassSlave.exe</SlavePath>
+	<SlavePath>OpenPassSlave.exe</SlavePath>
 </FrameworkConfiguration>
