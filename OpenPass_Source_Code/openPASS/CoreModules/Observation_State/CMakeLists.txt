@@ -5,12 +5,12 @@ SET (HEADERS observation_state.h observation_state_implementation.h observation_
 add_definitions(-DOBSERVATION_STATE_LIBRARY)
 include_directories(../../Common ../../Interfaces)
 
-add_library(observation_state SHARED ${SOURCES} ${HEADERS})
-target_link_libraries(observation_state Common)
+add_library(Observation_State SHARED ${SOURCES} ${HEADERS})
+target_link_libraries(Observation_State Common)
 
-qt5_use_modules(observation_state Xml)
+qt5_use_modules(Observation_State Xml)
 
-install(TARGETS observation_state
+install(TARGETS Observation_State
         RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
         ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
         LIBRARY DESTINATION "${INSTALL_LIB_DIR}" )

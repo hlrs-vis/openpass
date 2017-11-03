@@ -5,12 +5,12 @@ SET (HEADERS observation_ttc.h observation_ttc_implementation.h observation_ttc_
 add_definitions(-DOBSERVATION_TTC_LIBRARY)
 include_directories(../../Common ../../Interfaces)
 
-add_library(observation_ttc SHARED ${SOURCES} ${HEADERS})
-target_link_libraries(observation_ttc Common)
+add_library(Observation_Ttc SHARED ${SOURCES} ${HEADERS})
+target_link_libraries(Observation_Ttc Common)
 
-qt5_use_modules(observation_ttc Xml)
+qt5_use_modules(Observation_Ttc Xml)
 
-install(TARGETS observation_ttc
+install(TARGETS Observation_Ttc
         RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
         ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
         LIBRARY DESTINATION "${INSTALL_LIB_DIR}" )
