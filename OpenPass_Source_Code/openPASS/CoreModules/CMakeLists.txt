@@ -1,6 +1,7 @@
 ADD_SUBDIRECTORY(CollisionDetection)
 ADD_SUBDIRECTORY(Observation_State)
 ADD_SUBDIRECTORY(Observation_Ttc)
+ADD_SUBDIRECTORY(Observation_Osc)
 ADD_SUBDIRECTORY(SpawnPoint_Start)
 ADD_SUBDIRECTORY(Stochastics)
 ADD_SUBDIRECTORY(World_Basic)
