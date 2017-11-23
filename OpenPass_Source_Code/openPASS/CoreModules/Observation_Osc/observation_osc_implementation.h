@@ -16,6 +16,7 @@
 #include <QXmlStreamWriter>
 #include "observationInterface.h"
 #include "observationtypes.h"
+#include <list>
 
 /** \addtogroup Observation_Osc
 * @{
@@ -58,8 +59,41 @@
  *
  * \ingroup Observation_Osc
  */
+
+class VehicleState {
+private:
+    // Positions X,Y
+    double xpos;
+    double ypos;
+
+    // Vehicle Orientation
+    double yawangle;
+
+    // Time
+    double time;
+public:
+
+    VehicleState(double ixpos, double iypos, double iyawangle, int itime){
+        xpos = ixpos;
+        ypos = iypos;
+        yawangle = iyawangle;
+        time = (double) itime; // itime als double speichern
+        time = time/1000.0; // umrechnung von ms in s
+        time = round(time*100)/100; // runde auf 100tel
+
+    }
+    double getxpos();
+    double getypos();
+    double getyawangle();
+    double gettime();
+
+
+};
+typedef std::list<VehicleState> stateList;
+
 class Observation_Osc_Implementation : public ObservationInterface
 {
+
 public:
     const std::string COMPONENTNAME = "Observation_Osc";
 
@@ -121,6 +155,11 @@ public:
     //! @return                      File to be transferred
     //-----------------------------------------------------------------------------
     virtual const std::string SlaveResultFile(){return "";} //dummy
+
+    std::vector<stateList> AgentLists;
+
+
+
 
 private:
     void RecordAllAgents(int time);
@@ -187,6 +226,7 @@ private:
 
     //!< run number
     int runNumber = 0;
+    //int maxrunNumber = runConfig->GetNumberInvocations();
 
     // File and Path Variables
     std::string Par_folder;
@@ -199,6 +239,9 @@ private:
     std::string resultPathCSV;
     std::string resultFileCSV = "simulationPositionX.csv";
 
+
 };
+
+
 
 #endif // OBSERVATION_OSC_IMPLEMENTATION_H

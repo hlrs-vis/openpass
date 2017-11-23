@@ -12,6 +12,7 @@
 #include <iostream>
 #include <fstream>
 #include "observation_osc_implementation.h"
+#include <list>
 
 const std::string Observation_Osc_Implementation::PeriodicTypeStrings[] =
 {
@@ -44,7 +45,6 @@ Observation_Osc_Implementation::Observation_Osc_Implementation(StochasticsInterf
     // read parameters
     try
     {
-        Par_WriteOutputForVisualisation = parameters->GetParametersBool().at(0);
 
         // retrieve storage location
         Par_folder = parameters->GetParametersString().at(0);
@@ -62,7 +62,9 @@ Observation_Osc_Implementation::Observation_Osc_Implementation(StochasticsInterf
 void Observation_Osc_Implementation::SlavePreHook(const std::string &path)
 {
     Q_UNUSED(path);
+
     for(int runNumber = 0; runNumber<10;runNumber++){
+    //for(int runNumber = 0; runNumber < runConfig->GetNumberInvocations(); ++runNumber){
 
         // create run folder (./Run_X)
         Run_folder = Par_folder + "/Run_" + std::to_string(runNumber);
@@ -139,12 +141,6 @@ void Observation_Osc_Implementation::SlavePreRunHook()
             QFile::remove(QString::fromStdString(finalPath));
         }
 
-
-
-        //            fileStream->writeEndDocument();
-        //            file->flush();
-        //            file->close();
-
     }
 
 
@@ -163,9 +159,11 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
 
     Run_folder = Par_folder + "/Run_" + std::to_string(runNumber);
 
-    for(int agentID = 0; agentID<10; agentID++){
+    for(int agentID = 0; agentID<AgentLists.size(); agentID++){
         tmpPath = Run_folder + "/agID_" + std::to_string(agentID) + "_" + Par_tmpFilename;
         finalPath = Run_folder + "/agID_" + std::to_string(agentID) + "_" + Par_finalFilename;
+
+        std::list<VehicleState> agentData = AgentLists[agentID];
 
         file = std::make_shared<QFile>(QString::fromStdString(tmpPath));
         if(!file->open(QIODevice::WriteOnly))
@@ -224,22 +222,27 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
 
 
             // write VertexTag
-
-            std::map<int,double> XPos = agentsPositionX.at(agentID);
-
             //std::vector<double> values = agentsPositionX->second;
             //                std::vector<std::string> XPos = channels.at(agentIndexX);
             //                std::vector<std::string> YPos = channels.at(agentIndexY);
-            for(auto const &timeIndex : XPos)
+
+            std::list<VehicleState>::iterator t;
+            for(t = agentData.begin(); t != agentData.end(); ++t)
             {
+                double x = t->getxpos();
+                double y = t->getypos();
+
+                double yaw = t->getyawangle();
+
+                double time = t->gettime();
+
                 fileStream->writeStartElement(VertexTag);
                 fileStream->writeStartElement(PositionTag);
                 fileStream->writeStartElement(WorldTag);
-                double x = XPos.at(timeIndex.first);
                 fileStream->writeAttribute("x", QString::number(x));
-                fileStream->writeAttribute("y", "0");
+                fileStream->writeAttribute("y", QString::number(y));
                 fileStream->writeAttribute("z", "0");
-                fileStream->writeAttribute("h", "0");
+                fileStream->writeAttribute("h", QString::number(yaw));
                 fileStream->writeAttribute("p", "0");
                 fileStream->writeAttribute("r", "0");
                 fileStream->writeEndElement();
@@ -247,7 +250,7 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
                 fileStream->writeEndElement(); //end Position
 
                 fileStream->writeStartElement(ShapeTag);
-                fileStream->writeAttribute(referenceAttribute,QString::number(timeIndex.first));
+                fileStream->writeAttribute(referenceAttribute,QString::number(time));
 
                 fileStream->writeStartElement(PolylineTag);
                 fileStream->writeEndElement(); //end Polyline
@@ -295,9 +298,22 @@ void Observation_Osc_Implementation::RecordAllAgents(int time)
 void Observation_Osc_Implementation::RecordAgentState(int time, const AgentInterface *agent)
 {
     int agentId = agent->GetAgentId();
+    double agentXPos = agent->GetPositionX();
+    double agentYPos = agent->GetPositionY();
+    double agentYAwangle = agent->GetYawAngle();
+
+    //VehicleState *AgentX = new VehicleState(agentXPos, agentYPos, agentYAwangle, time);
+    VehicleState AgentX(agentXPos, agentYPos, agentYAwangle, time);
+    if((agentId+1) > AgentLists.size()){
+        AgentLists.resize(agentId+1);
+    }
+    AgentLists[agentId].push_back(AgentX);
+
 
     AddPositionXForCSV(agentId, time, agent->GetPositionX());
 
+
+    // Position in Map einfügen
     Insert(time, agentId, Observation_Osc_Periodic_XPosition, std::to_string(agent->GetPositionX()));
     Insert(time, agentId, Observation_Osc_Periodic_YPosition, std::to_string(agent->GetPositionY()));
 }
@@ -398,4 +414,17 @@ void Observation_Osc_Implementation::WriteAgentPositionsToCSV()
 
 
     resultFile.close();
+}
+
+double VehicleState::getxpos(){
+    return xpos;
+}
+double VehicleState::getypos(){
+    return ypos;
+}
+double VehicleState::getyawangle(){
+    return yawangle;
+}
+double VehicleState::gettime(){
+    return time;
 }
