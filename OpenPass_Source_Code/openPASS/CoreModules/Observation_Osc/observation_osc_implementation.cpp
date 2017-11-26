@@ -63,58 +63,41 @@ void Observation_Osc_Implementation::SlavePreHook(const std::string &path)
 {
     Q_UNUSED(path);
 
-    for(int runNumber = 0; runNumber<10;runNumber++){
-    //for(int runNumber = 0; runNumber < runConfig->GetNumberInvocations(); ++runNumber){
+    tmpPath = Par_folder + "/" + Par_tmpFilename;
+    finalPath = Par_folder + "/" + std::to_string(runNumber) + "_" + Par_finalFilename;
 
-        // create run folder (./Run_X)
-        Run_folder = Par_folder + "/Run_" + std::to_string(runNumber);
-        QDir rundir(Run_folder.c_str());
+    std::stringstream ss;
+    ss << COMPONENTNAME << " retrieved storage location: " << finalPath;
+    LOG(CbkLogLevel::Debug, ss.str());
 
-        if(!rundir.exists() && !rundir.mkpath("."))
-        {
-            std::stringstream ss;
-            ss << COMPONENTNAME << " could not create folder: " << Run_folder;
-            LOG(CbkLogLevel::Error, ss.str());
-            throw std::runtime_error(ss.str());
-        }
-
-        for(int agentID = 0; agentID<10; agentID++){
-            tmpPath = Run_folder + "/agID_" + std::to_string(agentID) + "_" + Par_tmpFilename;
-            finalPath = Run_folder + "/agID_" + std::to_string(agentID) + "_" + Par_finalFilename;
-
-            std::stringstream ss;
-            ss << COMPONENTNAME << " retrieved storage location: " << finalPath;
-            LOG(CbkLogLevel::Debug, ss.str());
-
-            // setup environment
-            QDir dir(Par_folder.c_str());
-            if(!dir.exists() && !dir.mkpath(Par_folder.c_str()))
-            {
-                std::stringstream ss;
-                ss << COMPONENTNAME << " could not create folder: " << Par_folder;
-                LOG(CbkLogLevel::Error, ss.str());
-                throw std::runtime_error(ss.str());
-            }
-
-
-            if(QFile::exists(QString::fromStdString(tmpPath)))
-            {
-                QFile::remove(QString::fromStdString(tmpPath));
-            }
-
-            if(QFile::exists(QString::fromStdString(finalPath)))
-            {
-                QFile::remove(QString::fromStdString(finalPath));
-            }
-
-            //---------------------------------------------------------
-            resultPathCSV = Par_folder + "/" + resultFileCSV;
-
-            if(QFile().exists(QString::fromStdString(resultPathCSV))){
-                QFile::remove(QString::fromStdString(resultPathCSV));
-            }
-        }
+    // setup environment
+    QDir dir(Par_folder.c_str());
+    if(!dir.exists() && !dir.mkpath(Par_folder.c_str()))
+    {
+        std::stringstream ss;
+        ss << COMPONENTNAME << " could not create folder: " << Par_folder;
+        LOG(CbkLogLevel::Error, ss.str());
+        throw std::runtime_error(ss.str());
     }
+
+    if(QFile::exists(QString::fromStdString(tmpPath)))
+    {
+        QFile::remove(QString::fromStdString(tmpPath));
+    }
+
+    if(QFile::exists(QString::fromStdString(finalPath)))
+    {
+        QFile::remove(QString::fromStdString(finalPath));
+    }
+
+    //---------------------------------------------------------
+    resultPathCSV = Par_folder + "/" + resultFileCSV;
+
+    if(QFile().exists(QString::fromStdString(resultPathCSV))){
+        QFile::remove(QString::fromStdString(resultPathCSV));
+    }
+
+    runNumber = 0;
 }
 
 void Observation_Osc_Implementation::SlavePreRunHook()
@@ -122,28 +105,44 @@ void Observation_Osc_Implementation::SlavePreRunHook()
     timeChannel.clear();
     channels.clear();
     agentsPositionX.clear();
+    finalPath = Par_folder + "/" + std::to_string(runNumber) + "_" + Par_finalFilename;
 
-    Run_folder = Par_folder + "/Run_" + std::to_string(runNumber);
-
-    for(int agentID = 0; agentID<10; agentID++){
-        tmpPath = Run_folder + "/agID_" + std::to_string(agentID) + "_" + Par_tmpFilename;
-        finalPath = Run_folder + "/agID_" + std::to_string(agentID) + "_" + Par_finalFilename;
-
-
-
-        if(QFile::exists(QString::fromStdString(tmpPath)))
-        {
-            QFile::remove(QString::fromStdString(tmpPath));
-        }
-
-        if(QFile::exists(QString::fromStdString(finalPath)))
-        {
-            QFile::remove(QString::fromStdString(finalPath));
-        }
-
+    if(QFile::exists(QString::fromStdString(tmpPath)))
+    {
+        QFile::remove(QString::fromStdString(tmpPath));
     }
 
+    if(QFile::exists(QString::fromStdString(finalPath)))
+    {
+        QFile::remove(QString::fromStdString(finalPath));
+    }
 
+    file = std::make_shared<QFile>(QString::fromStdString(tmpPath));
+    if(!file->open(QIODevice::WriteOnly))
+    {
+        std::stringstream ss;
+        ss << COMPONENTNAME << " could not create file: " << tmpPath;
+        LOG(CbkLogLevel::Error, ss.str());
+        throw std::runtime_error(ss.str());
+    }
+
+    fileStream = std::make_shared<QXmlStreamWriter>(file.get());
+    fileStream->setAutoFormatting(true);
+    fileStream->writeStartDocument();
+
+    // Start writing XML
+    fileStream->writeStartElement(OpenSCENARIOTag);
+
+    fileStream->writeStartElement(FileHeaderTag);
+    fileStream->writeAttribute(revMajorAttribute, revMajorAttributeValue);
+    fileStream->writeAttribute(revMajorAttribute, revMajorAttributeValue);
+    fileStream->writeAttribute(dateAttribute, dateAttributeValue);
+    fileStream->writeAttribute(descriptionAttribute, descriptionAttributeValue);
+    fileStream->writeAttribute(authorAttribute, authorAttributeValue);
+    fileStream->writeEndElement();
+
+    fileStream->writeStartElement(CatalogTag);
+    fileStream->writeAttribute(CatalogNameAttribute, CatalogNameAttributeValue);
 }
 
 void Observation_Osc_Implementation::SlaveUpdateHook(int time, RunResultInterface &runResult)
@@ -157,60 +156,19 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
 {
     Q_UNUSED(runResult);
 
-    Run_folder = Par_folder + "/Run_" + std::to_string(runNumber);
 
     for(int agentID = 0; agentID<AgentLists.size(); agentID++){
-        tmpPath = Run_folder + "/agID_" + std::to_string(agentID) + "_" + Par_tmpFilename;
-        finalPath = Run_folder + "/agID_" + std::to_string(agentID) + "_" + Par_finalFilename;
+
 
         std::list<VehicleState> agentData = AgentLists[agentID];
 
-        file = std::make_shared<QFile>(QString::fromStdString(tmpPath));
-        if(!file->open(QIODevice::WriteOnly))
-        {
-            std::stringstream ss;
-            ss << COMPONENTNAME << " could not create file: " << tmpPath;
-            LOG(CbkLogLevel::Error, ss.str());
-            throw std::runtime_error(ss.str());
-        }
 
-        fileStream = std::make_shared<QXmlStreamWriter>(file.get());
-        fileStream->setAutoFormatting(true);
-        fileStream->writeStartDocument();
-        fileStream->writeStartElement(OpenSCENARIOTag);
 
-        fileStream->writeStartElement(FileHeaderTag);
-        fileStream->writeAttribute(revMajorAttribute, revMajorAttributeValue);
-        fileStream->writeAttribute(revMajorAttribute, revMajorAttributeValue);
-        fileStream->writeAttribute(dateAttribute, dateAttributeValue);
-        fileStream->writeAttribute(descriptionAttribute, descriptionAttributeValue);
-        fileStream->writeAttribute(authorAttribute, authorAttributeValue);
-        fileStream->writeEndElement();
-
-        fileStream->writeStartElement(CatalogTag);
-        fileStream->writeAttribute(CatalogNameAttribute, CatalogNameAttributeValue);
-
+        //TrajectoryNameAttributeValue = "Test"; //"Agent_" + std::to_string(agentID) + "_Trajectory";
         fileStream->writeStartElement(TrajectoryTag);
+        fileStream->writeAttribute(TrajectoryNameAttribute, "Agent_" + QString::number(agentID) + "_Trajectory");
 
         fileStream->writeStartElement(ParameterDeclarationTag);
-
-        fileStream->writeStartElement(ParameterTag);
-        fileStream->writeAttribute(ParameterNameAttribute, "name151");
-        fileStream->writeAttribute(ParameterTypeAttribute, "int");
-        fileStream->writeAttribute(ParameterValueAttribute, "value151");
-        fileStream->writeEndElement(); // end Parameter
-        fileStream->writeStartElement(ParameterTag);
-        fileStream->writeAttribute(ParameterNameAttribute, "name152");
-        fileStream->writeAttribute(ParameterTypeAttribute, "double");
-        fileStream->writeAttribute(ParameterValueAttribute, "value151");
-        fileStream->writeEndElement(); // end Parameter
-        fileStream->writeStartElement(ParameterTag);
-        fileStream->writeAttribute(ParameterNameAttribute, "name153");
-        fileStream->writeAttribute(ParameterTypeAttribute, "String");
-        fileStream->writeAttribute(ParameterValueAttribute, "value153");
-        fileStream->writeEndElement(); // end Parameter
-
-
         fileStream->writeEndElement(); // end ParameterDeclaration
 
 
@@ -263,20 +221,21 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
             }
 
             fileStream->writeEndElement(); //end Trajectory
-            fileStream->writeEndElement(); //end Catalog
-            fileStream->writeEndElement(); //end OpenSCENARIO-Header
+
 
 
         }
-        fileStream->writeEndDocument();
-        file->flush();
-        file->close();
 
-        // finalize results
-        file->rename(QString::fromStdString(finalPath));
 
     }
+    fileStream->writeEndElement(); //end Catalog
+    fileStream->writeEndElement(); //end OpenSCENARIO-Header
+    fileStream->writeEndDocument();
+    file->flush();
+    file->close();
 
+    // finalize results
+    file->rename(QString::fromStdString(finalPath));
     //Write Agents position to csv
     WriteAgentPositionsToCSV();
     runNumber++;

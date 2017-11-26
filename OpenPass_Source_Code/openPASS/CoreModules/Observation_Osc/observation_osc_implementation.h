@@ -18,6 +18,7 @@
 #include "observationtypes.h"
 #include <list>
 
+
 /** \addtogroup Observation_Osc
 * @{
 * \brief logs the current X position of every agent at each time step.
@@ -160,7 +161,6 @@ public:
 
 
 
-
 private:
     void RecordAllAgents(int time);
     void RecordAgentState(int time, const AgentInterface *agent);
@@ -207,6 +207,8 @@ private:
     const QString CatalogNameAttributeValue = "tCatalog";
 
     const QString TrajectoryTag = "Trajectory";
+    const QString TrajectoryNameAttribute = "name";
+    const QString TrajectoryNameAttributeValue = "Test123"; // = Agent_X_Trajectory
 
     const QString ParameterDeclarationTag = "ParameterDeclaration";
 

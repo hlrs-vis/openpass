@@ -103,7 +103,7 @@ bool RunInstantiator::ExecuteRun()
         agentFactory->Clear();
         spawnPointNetwork->Clear();
         world->SetParameter(runConfig->GetWorldParameter());
-
+        int maxInvoc = runConfig->GetNumberInvocations();
         CHECKFALSE(SceneryImporter::Import(frameworkConfig->GetSceneryConfigFile(),
                                            world));
 
