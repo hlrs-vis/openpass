@@ -164,12 +164,8 @@ public:
 private:
     void RecordAllAgents(int time);
     void RecordAgentState(int time, const AgentInterface *agent);
-    void Insert(int time,
-                int agentId,
-                Observation_Osc_Periodic_Type valueType,
-                const std::string &value);
-    void AddPositionXForCSV(int agentId, int time, double positionX);
-    void WriteAgentPositionsToCSV();
+
+
 
     static const std::string PeriodicTypeStrings[];
     static const std::string EventTypeStrings[];
@@ -184,9 +180,9 @@ private:
     bool Par_WriteOutputForVisualisation = true;
     /** @} @} */
 
-    std::vector<int> timeChannel;                                //!< time values
-    std::map<std::string, std::vector<std::string>> channels;    //!< samples
-    std::map<int, std::map<int, double>> agentsPositionX;
+    //std::vector<int> timeChannel;                                //!< time values
+    //std::map<std::string, std::vector<std::string>> channels;    //!< samples
+    //std::map<int, std::map<int, double>> agentsPositionX;
     std::shared_ptr<QXmlStreamWriter> fileStream;
 
     //XML Tags/Attributes/Values
@@ -208,7 +204,7 @@ private:
 
     const QString TrajectoryTag = "Trajectory";
     const QString TrajectoryNameAttribute = "name";
-    const QString TrajectoryNameAttributeValue = "Test123"; // = Agent_X_Trajectory
+    const QString TrajectoryNameAttributeValue; // = Agent_X_Trajectory
 
     const QString ParameterDeclarationTag = "ParameterDeclaration";
 
@@ -238,8 +234,8 @@ private:
     std::string tmpPath;
     std::string finalPath;
     std::shared_ptr<QFile> file;
-    std::string resultPathCSV;
-    std::string resultFileCSV = "simulationPositionX.csv";
+    //std::string resultPathCSV;
+    //std::string resultFileCSV = "simulationPositionX.csv";
 
 
 };

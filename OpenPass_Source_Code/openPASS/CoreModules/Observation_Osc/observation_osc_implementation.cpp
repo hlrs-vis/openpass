@@ -90,22 +90,18 @@ void Observation_Osc_Implementation::SlavePreHook(const std::string &path)
         QFile::remove(QString::fromStdString(finalPath));
     }
 
-    //---------------------------------------------------------
-    resultPathCSV = Par_folder + "/" + resultFileCSV;
 
-    if(QFile().exists(QString::fromStdString(resultPathCSV))){
-        QFile::remove(QString::fromStdString(resultPathCSV));
-    }
 
     runNumber = 0;
 }
 
 void Observation_Osc_Implementation::SlavePreRunHook()
 {
-    timeChannel.clear();
-    channels.clear();
-    agentsPositionX.clear();
+
+
     finalPath = Par_folder + "/" + std::to_string(runNumber) + "_" + Par_finalFilename;
+
+    AgentLists.clear();
 
     if(QFile::exists(QString::fromStdString(tmpPath)))
     {
@@ -142,7 +138,7 @@ void Observation_Osc_Implementation::SlavePreRunHook()
     fileStream->writeEndElement();
 
     fileStream->writeStartElement(CatalogTag);
-    fileStream->writeAttribute(CatalogNameAttribute, CatalogNameAttributeValue);
+    fileStream->writeAttribute(CatalogNameAttribute, "tCatalog_Run_" + QString::number(runNumber));
 }
 
 void Observation_Osc_Implementation::SlaveUpdateHook(int time, RunResultInterface &runResult)
@@ -164,7 +160,7 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
 
 
 
-        //TrajectoryNameAttributeValue = "Test"; //"Agent_" + std::to_string(agentID) + "_Trajectory";
+        //TrajectoryNameAttributeValue = "Agent_" + QString::number(agentID) + "_Trajectory";
         fileStream->writeStartElement(TrajectoryTag);
         fileStream->writeAttribute(TrajectoryNameAttribute, "Agent_" + QString::number(agentID) + "_Trajectory");
 
@@ -179,10 +175,6 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
             LOG(CbkLogLevel::Debug, ss.str());
 
 
-            // write VertexTag
-            //std::vector<double> values = agentsPositionX->second;
-            //                std::vector<std::string> XPos = channels.at(agentIndexX);
-            //                std::vector<std::string> YPos = channels.at(agentIndexY);
 
             std::list<VehicleState>::iterator t;
             for(t = agentData.begin(); t != agentData.end(); ++t)
@@ -230,15 +222,14 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
     }
     fileStream->writeEndElement(); //end Catalog
     fileStream->writeEndElement(); //end OpenSCENARIO-Header
+
+    // finalize results
     fileStream->writeEndDocument();
     file->flush();
     file->close();
 
-    // finalize results
     file->rename(QString::fromStdString(finalPath));
-    //Write Agents position to csv
-    WriteAgentPositionsToCSV();
-    runNumber++;
+    ++runNumber;
 }
 
 void Observation_Osc_Implementation::SlavePostHook()
@@ -268,111 +259,6 @@ void Observation_Osc_Implementation::RecordAgentState(int time, const AgentInter
     }
     AgentLists[agentId].push_back(AgentX);
 
-
-    AddPositionXForCSV(agentId, time, agent->GetPositionX());
-
-
-    // Position in Map einfügen
-    Insert(time, agentId, Observation_Osc_Periodic_XPosition, std::to_string(agent->GetPositionX()));
-    Insert(time, agentId, Observation_Osc_Periodic_YPosition, std::to_string(agent->GetPositionY()));
-}
-
-void Observation_Osc_Implementation::Insert(int time, int agentId, Observation_Osc_Periodic_Type valueType, const std::string &value)
-{
-    //hier wird Map mit Korrdinaten erstellt (?)
-    if(timeChannel.size() == 0 || timeChannel.back() != time)
-    {
-        timeChannel.push_back(time);
-    }
-
-    int keyIndex = static_cast<int>(valueType);
-    std::string key = (agentId < 10 ? "0" : "") + std::to_string(agentId) + ":" + PeriodicTypeStrings[keyIndex];
-
-
-    if(channels.find(key) == channels.end())
-    {// key doesn't exist yet
-
-        std::vector<std::string> &values = channels[key];
-
-        // fill up skipped time steps
-        for(unsigned int i = 0; i < timeChannel.size() - 1; ++i)
-        {
-            values.push_back("");
-        }
-
-        values.push_back(value);
-
-        return;
-    }
-
-    std::vector<std::string> &channel = channels.at(key);
-
-    // fill up skipped time steps (e.g. another agent has been instantiated in between -> inserted new time step in scheduling)
-    for(unsigned int i = channel.size(); i < timeChannel.size() - 1; ++i)
-    {
-        channel.push_back("");
-
-    }
-
-    channel.push_back(value);
-}
-
-void Observation_Osc_Implementation::AddPositionXForCSV(int agentId, int time, double positionX)
-{
-    std::map<int, std::map<int, double>>::iterator agentIterator = agentsPositionX.find(agentId);
-    if(agentIterator != agentsPositionX.end()){
-        agentIterator->second.emplace(time, positionX);
-    }else{
-        std::map<int, double> agentPosition;
-        agentPosition.emplace(std::make_pair(time, positionX));
-        agentsPositionX.emplace(std::make_pair(agentId, agentPosition));
-    }
-}
-
-void Observation_Osc_Implementation::WriteAgentPositionsToCSV()
-{
-    std::ofstream resultFile;
-    resultFile.open(resultPathCSV, std::ofstream::out | std::ofstream::app);
-
-    if(!resultFile.is_open())
-    {
-        LOG(CbkLogLevel::Debug, "result File could not be opened");
-        return;
-    }
-    std::string sep = ";";
-    std::string endLine = "\n";
-
-    //header
-    resultFile  << "RunID" << sep
-                << "AgentID" << sep;
-
-    // write in fist line all time steps
-    for(uint i = 0; i < timeChannel.size(); ++i){
-        resultFile << timeChannel.at(i) << sep;
-    }
-    resultFile << endLine;
-
-    resultFile << runNumber; // write runID in first column
-    //data
-    for(auto const &agentID : agentsPositionX){
-        resultFile << sep; // leave first column always empty (reserved for runID)
-        resultFile << agentID.first << sep; //write ID of agent
-        for(uint i = 0; i < timeChannel.size(); ++i){ //write all positions at every specific time step
-            std::map<int, double> agentPositions = agentID.second;
-            std::map<int, double>::iterator it = agentPositions.find(timeChannel.at(i));
-            if(it != agentPositions.end() ){// if position is found at specific time step, then write it
-                resultFile << it->second;
-            }else{
-                resultFile << 0;
-            }
-            resultFile << sep;
-        }
-        resultFile << endLine;
-    }
-    resultFile << endLine;
-
-
-    resultFile.close();
 }
 
 double VehicleState::getxpos(){
