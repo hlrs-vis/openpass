@@ -1,4 +1,4 @@
-Run simulation:
+Run simulations:
 
  0) Install Qt
  1) Build "OpenPass_PCM.pro"
