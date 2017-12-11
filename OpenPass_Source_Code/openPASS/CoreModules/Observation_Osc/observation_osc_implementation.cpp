@@ -50,6 +50,8 @@ Observation_Osc_Implementation::Observation_Osc_Implementation(StochasticsInterf
         Par_folder = parameters->GetParametersString().at(0);
         Par_tmpFilename = parameters->GetParametersString().at(1);
         Par_finalFilename = parameters->GetParametersString().at(2);
+        Par_tmpXoscName = parameters->GetParametersString().at(3);
+        Par_finalXoscName = parameters->GetParametersString().at(4);
     }
     catch(...)
     {
@@ -63,8 +65,13 @@ void Observation_Osc_Implementation::SlavePreHook(const std::string &path)
 {
     Q_UNUSED(path);
 
-    tmpPath = Par_folder + "/" + Par_tmpFilename;
+    // Trajectory files
+    tmpPath = Par_folder + "/" + Par_tmpXoscName;
     finalPath = Par_folder + "/" + std::to_string(runNumber) + "_" + Par_finalFilename;
+
+    //Szenario files
+    tmpXoscPath = Par_folder + "/" + Par_tmpFilename;
+    finalXoscPath = Par_folder + "/" + std::to_string(runNumber) + "_" + Par_finalXoscName;
 
     std::stringstream ss;
     ss << COMPONENTNAME << " retrieved storage location: " << finalPath;
@@ -80,6 +87,7 @@ void Observation_Osc_Implementation::SlavePreHook(const std::string &path)
         throw std::runtime_error(ss.str());
     }
 
+    // remove files in case of existence
     if(QFile::exists(QString::fromStdString(tmpPath)))
     {
         QFile::remove(QString::fromStdString(tmpPath));
@@ -88,6 +96,15 @@ void Observation_Osc_Implementation::SlavePreHook(const std::string &path)
     if(QFile::exists(QString::fromStdString(finalPath)))
     {
         QFile::remove(QString::fromStdString(finalPath));
+    }
+    if(QFile::exists(QString::fromStdString(tmpXoscPath)))
+    {
+        QFile::remove(QString::fromStdString(tmpXoscPath));
+    }
+
+    if(QFile::exists(QString::fromStdString(finalXoscPath)))
+    {
+        QFile::remove(QString::fromStdString(finalXoscPath));
     }
 
 
@@ -100,19 +117,25 @@ void Observation_Osc_Implementation::SlavePreRunHook()
 
 
     finalPath = Par_folder + "/" + std::to_string(runNumber) + "_" + Par_finalFilename;
+    finalXoscPath = Par_folder + "/" + std::to_string(runNumber) + "_" + Par_finalXoscName;
 
     AgentLists.clear();
-
-    if(QFile::exists(QString::fromStdString(tmpPath)))
-    {
-        QFile::remove(QString::fromStdString(tmpPath));
-    }
 
     if(QFile::exists(QString::fromStdString(finalPath)))
     {
         QFile::remove(QString::fromStdString(finalPath));
     }
+    if(QFile::exists(QString::fromStdString(tmpXoscPath)))
+    {
+        QFile::remove(QString::fromStdString(tmpXoscPath));
+    }
 
+    if(QFile::exists(QString::fromStdString(finalXoscPath)))
+    {
+        QFile::remove(QString::fromStdString(finalXoscPath));
+    }
+
+    // Trajectory file
     file = std::make_shared<QFile>(QString::fromStdString(tmpPath));
     if(!file->open(QIODevice::WriteOnly))
     {
@@ -131,14 +154,113 @@ void Observation_Osc_Implementation::SlavePreRunHook()
 
     fileStream->writeStartElement(FileHeaderTag);
     fileStream->writeAttribute(revMajorAttribute, revMajorAttributeValue);
-    fileStream->writeAttribute(revMajorAttribute, revMajorAttributeValue);
+    fileStream->writeAttribute(revMinorAttribute, revMinorAttributeValue);
     fileStream->writeAttribute(dateAttribute, dateAttributeValue);
     fileStream->writeAttribute(descriptionAttribute, descriptionAttributeValue);
     fileStream->writeAttribute(authorAttribute, authorAttributeValue);
     fileStream->writeEndElement();
 
     fileStream->writeStartElement(CatalogTag);
-    fileStream->writeAttribute(CatalogNameAttribute, "tCatalog_Run_" + QString::number(runNumber));
+    CatalogNameAttributeValue = "tCatalog_Run_" + QString::number(runNumber);
+    fileStream->writeAttribute(CatalogNameAttribute, CatalogNameAttributeValue);
+
+    // XOSC file
+    xoscfile = std::make_shared<QFile>(QString::fromStdString(tmpXoscPath));
+    if(!xoscfile->open(QIODevice::WriteOnly))
+    {
+        std::stringstream ss;
+        ss << COMPONENTNAME << " could not create file: " << tmpXoscPath;
+        LOG(CbkLogLevel::Error, ss.str());
+        throw std::runtime_error(ss.str());
+    }
+
+    fileStreamXosc = std::make_shared<QXmlStreamWriter>(xoscfile.get());
+    fileStreamXosc->setAutoFormatting(true);
+    fileStreamXosc->writeStartDocument();
+
+    fileStreamXosc->writeStartElement(OpenSCENARIOTag);
+    fileStreamXosc->writeStartElement(FileHeaderTag);
+    fileStreamXosc->writeAttribute(authorAttribute, authorAttributeValue);
+    fileStreamXosc->writeAttribute(dateAttribute, dateAttributeValue);
+    fileStreamXosc->writeAttribute(descriptionAttribute, descriptionAttributeValue);
+    fileStreamXosc->writeAttribute(revMajorAttribute, revMajorAttributeValue);
+    fileStreamXosc->writeAttribute(revMinorAttribute, revMinorAttributeValue);
+    fileStreamXosc->writeEndElement(); // end File Header Tag
+
+    fileStreamXosc->writeStartElement(ParameterDeclarationTag);
+    fileStreamXosc->writeEndElement(); // end ParameterDeclaration
+
+
+    //      Catalogs Definitions
+
+    fileStreamXosc->writeStartElement(CatalogsTag);
+    fileStreamXosc->writeStartElement(VehicleCatalogTag);
+    fileStreamXosc->writeStartElement(DirectoryTag);
+    fileStreamXosc->writeAttribute(DirectoryAttribute,VehicleCatalogValue);
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeStartElement(DriverCatalogTag);
+    fileStreamXosc->writeStartElement(DirectoryTag);
+    fileStreamXosc->writeAttribute(DirectoryAttribute,DriverCatalogValue);
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeStartElement(PedestrianCatalogTag);
+    fileStreamXosc->writeStartElement(DirectoryTag);
+    fileStreamXosc->writeAttribute(DirectoryAttribute,PedestrianCatalogValue);
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeStartElement(PedestrianControllerCatalogTag);
+    fileStreamXosc->writeStartElement(DirectoryTag);
+    fileStreamXosc->writeAttribute(DirectoryAttribute,PedestrianControllerCatalogValue);
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeStartElement(MiscObjectCatalogTag);
+    fileStreamXosc->writeStartElement(DirectoryTag);
+    fileStreamXosc->writeAttribute(DirectoryAttribute,MiscObjectCatalogValue);
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeStartElement(EnvironmentCatalogTag);
+    fileStreamXosc->writeStartElement(DirectoryTag);
+    fileStreamXosc->writeAttribute(DirectoryAttribute,EnvironmentCatalogValue);
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeStartElement(ManeuverCatalogTag);
+    fileStreamXosc->writeStartElement(DirectoryTag);
+    fileStreamXosc->writeAttribute(DirectoryAttribute,ManeuverCatalogValue);
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeStartElement(TrajectoryCatalogTag);
+    fileStreamXosc->writeStartElement(DirectoryTag);
+    fileStreamXosc->writeAttribute(DirectoryAttribute,TrajectoryCatalogTagValue);
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeStartElement(RouteCatalogTag);
+    fileStreamXosc->writeStartElement(DirectoryTag);
+    fileStreamXosc->writeAttribute(DirectoryAttribute,RouteCatalogValue);
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeEndElement();
+
+    //      RoadNetwork Definitions//    fileStreamXosc->writeEndDocument();
+    //    xoscfile->flush();
+    //    xoscfile->close();
+
+    //    xoscfile->rename(QString::fromStdString(finalXoscPath));
+    fileStreamXosc->writeStartElement(RoadNetworkTag);
+    fileStreamXosc->writeStartElement(LogicsTag);
+    fileStreamXosc->writeAttribute(filepathAttribute,LogicsFilePathValue);
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeStartElement(SceneGraphTag);
+    fileStreamXosc->writeAttribute(filepathAttribute,SceneGraphFilepathValue);
+    fileStreamXosc->writeEndElement();
+    fileStreamXosc->writeEndElement();
+
+
+
+
+
+
+
 }
 
 void Observation_Osc_Implementation::SlaveUpdateHook(int time, RunResultInterface &runResult)
@@ -152,17 +274,184 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
 {
     Q_UNUSED(runResult);
 
+    //      Define Agents (Entities)
+    fileStreamXosc->writeStartElement(EntitiesTag);
+    for(int agentID = 0; agentID<AgentLists.size(); agentID++){
+        ObjectNameValue = "Agent" + QString::number(agentID);
+
+        fileStreamXosc->writeStartElement(ObjectTag);
+        fileStreamXosc->writeAttribute(NameAttribute,ObjectNameValue);
+        fileStreamXosc->writeStartElement(CatalogReferenceTag);
+        fileStreamXosc->writeAttribute(CatalogReferenceAttribute,VehicleCatalogTag);
+        fileStreamXosc->writeAttribute(entryNameAttribute,carModel);
+        fileStreamXosc->writeEndElement(); //EndCatalogRefernce
+        fileStreamXosc->writeStartElement(ControllerTag);
+        fileStreamXosc->writeStartElement(CatalogReferenceTag);
+        fileStreamXosc->writeAttribute(CatalogReferenceAttribute,DriverCatalogTag);
+        fileStreamXosc->writeAttribute(entryNameAttribute,driverModel);
+        fileStreamXosc->writeEndElement(); //End CatalogRefernceTag
+        fileStreamXosc->writeEndElement(); //End ControllerTag
+        fileStreamXosc->writeEndElement(); //End ObjectTag
+
+    }
+    fileStreamXosc->writeEndElement(); //End EntitiesTag
+
+    fileStreamXosc->writeStartElement(StoryboardTag);
+    fileStreamXosc->writeStartElement(InitTag);
+    fileStreamXosc->writeStartElement(ActionsTag);
 
     for(int agentID = 0; agentID<AgentLists.size(); agentID++){
+        ObjectNameValue = "Agent" + QString::number(agentID);
+
+        fileStreamXosc->writeStartElement(PrivteTag);
+        fileStreamXosc->writeAttribute(objectAttribute,ObjectNameValue);
+        fileStreamXosc->writeStartElement(ActionTag);
+        fileStreamXosc->writeStartElement(LongitudinalTag);
+        fileStreamXosc->writeStartElement(SpeedTag);
+        fileStreamXosc->writeStartElement(DynamicsTag);
+        fileStreamXosc->writeAttribute(rateAttribute,DynamicsRateValue);
+        fileStreamXosc->writeAttribute(shapeAttribute,DynamicsShapeValue);
+        fileStreamXosc->writeEndElement(); //End DynamicsTag
+        fileStreamXosc->writeStartElement(TargetTag);
+        fileStreamXosc->writeStartElement(AbsoluteTag);
+        fileStreamXosc->writeAttribute(valueAttribute,AbsoluteValueValue);
+        fileStreamXosc->writeEndElement(); //End AbsoluteTag
+        fileStreamXosc->writeEndElement(); //End TargetTag
+        fileStreamXosc->writeEndElement(); //End SpeedTag
+        fileStreamXosc->writeEndElement(); //End LongitudinalTag
+        fileStreamXosc->writeEndElement(); //End ActionTag
+        fileStreamXosc->writeStartElement(ActionTag);
+        fileStreamXosc->writeStartElement(PositionTag);
+        fileStreamXosc->writeStartElement(LaneTag);
+        fileStreamXosc->writeAttribute(laneIDAttribue,laneIdValue);
+        fileStreamXosc->writeAttribute(offsetAttribute,offsetValue);
+        fileStreamXosc->writeAttribute(roadIdAttribute,roadIdValue);
+        fileStreamXosc->writeAttribute(sAttribute,sValue);
+        fileStreamXosc->writeEndElement(); //End LaneTag
+        fileStreamXosc->writeEndElement(); //End PositionTag
+        fileStreamXosc->writeEndElement(); //End ActionTag
+        fileStreamXosc->writeEndElement(); //End PrivateTag
+    }
+    fileStreamXosc->writeEndElement(); //End ActionsTag
+    fileStreamXosc->writeEndElement(); //End initTag
+
+
+    for(int agentID = 0; agentID<AgentLists.size(); agentID++){
+        TrajectoryNameAttributeValue = "Agent_" + QString::number(agentID) + "_Trajectory";
 
 
         std::list<VehicleState> agentData = AgentLists[agentID];
+        std::list<VehicleState>::iterator firstTimeStep = agentData.begin();
+        std::list<VehicleState>::iterator lastTimeStep = agentData.end();
+        SimulationTimeStart = firstTimeStep->gettime()+5;
+        SimulationTimeEnd = 400; //lastTimeStep->gettime();
+
+        // XOSC File
+        StoryNameValue = "MyStory" + QString::number(agentID);
+        StoryOwnerValue = "Agent" + QString::number(agentID);
+        ActNameValue = "MyAct" + QString::number(agentID);
+        SequenceNameValue = "MySequence" + QString::number(agentID);
+        ManeuverNameValue = "laneChange" + QString::number(agentID);
+        EventNameValue = "MyLaneChangeEvent" + QString::number(agentID);
+        ActionNameValue = "MyLaneChangeAction" + QString::number(agentID);
 
 
+        fileStreamXosc->writeStartElement(StoryTag);
+        fileStreamXosc->writeAttribute(NameAttribute, StoryNameValue);
+        fileStreamXosc->writeAttribute(ownerAttribute, StoryOwnerValue);
+        fileStreamXosc->writeStartElement(ActTag);
+        fileStreamXosc->writeAttribute(NameAttribute, ActNameValue);
+        fileStreamXosc->writeStartElement(SequenceTag);
+        fileStreamXosc->writeAttribute(NameAttribute, SequenceNameValue);
+        fileStreamXosc->writeAttribute(numOfExecAttribute, numOfExecValue);
+        fileStreamXosc->writeStartElement(ActorsTag);
+        fileStreamXosc->writeStartElement(EntityTag);
+        fileStreamXosc->writeAttribute(NameAttribute, EntityNameValue);
+        fileStreamXosc->writeEndElement(); //End EntityTag
+        fileStreamXosc->writeEndElement(); //End ActorsTag
+        fileStreamXosc->writeStartElement(ManeuverTag);
+        fileStreamXosc->writeAttribute(NameAttribute, ManeuverNameValue);
+        fileStreamXosc->writeStartElement(EventTag);
+        fileStreamXosc->writeAttribute(NameAttribute, EventNameValue);
+        fileStreamXosc->writeAttribute(EventPrioAttribute, EventPrioValue);
+        fileStreamXosc->writeStartElement(ActionTag);
+        fileStreamXosc->writeAttribute(NameAttribute, ActionNameValue);
+        fileStreamXosc->writeStartElement(PrivteTag);
+        fileStreamXosc->writeStartElement(RoutingTag);
+        fileStreamXosc->writeStartElement(FollowTrajectoryTag);
+        fileStreamXosc->writeStartElement(CatalogReferenceTag);
+        fileStreamXosc->writeAttribute(CatalogReferenceAttribute, TrajectoryCatalogTag);
+        fileStreamXosc->writeAttribute(entryNameAttribute, TrajectoryNameAttributeValue);
+        fileStreamXosc->writeEndElement(); //End CatalogReference
+        fileStreamXosc->writeStartElement(LongitudinalTag);
+        fileStreamXosc->writeStartElement(Nonetag);
+        fileStreamXosc->writeEndElement(); //End NoneTag
+        fileStreamXosc->writeEndElement(); //End LongitudinalTag
+        fileStreamXosc->writeStartElement(LateralTag);
+        fileStreamXosc->writeAttribute(purposeAttribute, LateralPurposeValue);
+        fileStreamXosc->writeEndElement(); //End LateralTag
+        fileStreamXosc->writeEndElement(); //End FollowTrajectory
+        fileStreamXosc->writeEndElement(); //End RoutingTag
+        fileStreamXosc->writeEndElement(); //End Private
+        fileStreamXosc->writeEndElement(); //End Action
+        fileStreamXosc->writeStartElement(ConditionsTag);
+        fileStreamXosc->writeStartElement(StartTag);
+        fileStreamXosc->writeStartElement(ConditionGroupTag);
+        fileStreamXosc->writeStartElement(ConditionTag);
+        fileStreamXosc->writeAttribute(delayAttribute, ConditionDelayValue);
+        fileStreamXosc->writeAttribute(edgeAttribute, ConditionEdgeValue);
+        fileStreamXosc->writeAttribute(NameAttribute, ConditionNameValue);
+        fileStreamXosc->writeStartElement(ByValueTag);
+        fileStreamXosc->writeStartElement(SimulationTimeTag);
+        fileStreamXosc->writeAttribute(ruleAttribute, SimulationTimeRuleValue);
+        fileStreamXosc->writeAttribute(valueAttribute, QString::number(SimulationTimeStart));
+        fileStreamXosc->writeEndElement(); //End SimulationTimeTag
+        fileStreamXosc->writeEndElement(); //End ByValueTag
+        fileStreamXosc->writeEndElement(); //End ConditionTag
+        fileStreamXosc->writeEndElement(); //End ConditionGroupTag
+        fileStreamXosc->writeEndElement(); //End StartTag
+        fileStreamXosc->writeEndElement(); //End ConditionsTag
+        fileStreamXosc->writeEndElement(); //End EventTag
+        fileStreamXosc->writeEndElement(); //End ManeuverTag
+        fileStreamXosc->writeEndElement(); //End SequenceTag
+        fileStreamXosc->writeStartElement(ConditionsTag);
+        fileStreamXosc->writeStartElement(StartTag);
+        fileStreamXosc->writeStartElement(ConditionGroupTag);
+        fileStreamXosc->writeStartElement(ConditionTag);
+        fileStreamXosc->writeAttribute(delayAttribute, ConditionDelayValue);
+        fileStreamXosc->writeAttribute(edgeAttribute, ConditionEdgeValue);
+        fileStreamXosc->writeAttribute(NameAttribute, ConditionNameValue);
+        fileStreamXosc->writeStartElement(ByValueTag);
+        fileStreamXosc->writeStartElement(SimulationTimeTag);
+        fileStreamXosc->writeAttribute(ruleAttribute, SimulationTimeRuleValue);
+        fileStreamXosc->writeAttribute(valueAttribute, SimulationStartDelay);
+        fileStreamXosc->writeEndElement(); //End SimulationTimeTag
+        fileStreamXosc->writeEndElement(); //End ByValueTag
+        fileStreamXosc->writeEndElement(); //End ConditionTag
+        fileStreamXosc->writeEndElement(); //End ConditionGroupTag
+        fileStreamXosc->writeEndElement(); //End StartTag
+        fileStreamXosc->writeStartElement(EndTag);
+        fileStreamXosc->writeStartElement(ConditionGroupTag);
+        fileStreamXosc->writeStartElement(ConditionTag);
+        fileStreamXosc->writeAttribute(delayAttribute, ConditionDelayValue);
+        fileStreamXosc->writeAttribute(edgeAttribute, ConditionEdgeValue);
+        fileStreamXosc->writeAttribute(NameAttribute, ConditionNameValue);
+        fileStreamXosc->writeStartElement(ByValueTag);
+        fileStreamXosc->writeStartElement(SimulationTimeTag);
+        fileStreamXosc->writeAttribute(ruleAttribute, SimulationTimeRuleValue);
+        fileStreamXosc->writeAttribute(valueAttribute, QString::number(SimulationTimeEnd));
+        fileStreamXosc->writeEndElement(); //End SimulationTimeTag
+        fileStreamXosc->writeEndElement(); //End ByValueTag
+        fileStreamXosc->writeEndElement(); //End ConditionTag
+        fileStreamXosc->writeEndElement(); //End ConditionGroupTag
+        fileStreamXosc->writeEndElement(); //End EndTag
+        fileStreamXosc->writeEndElement(); //End ConditionsTag
+        fileStreamXosc->writeEndElement(); //End ActTag
+        fileStreamXosc->writeEndElement(); //End StoryTag
 
-        //TrajectoryNameAttributeValue = "Agent_" + QString::number(agentID) + "_Trajectory";
+        // Trajectory File
         fileStream->writeStartElement(TrajectoryTag);
-        fileStream->writeAttribute(TrajectoryNameAttribute, "Agent_" + QString::number(agentID) + "_Trajectory");
+        fileStream->writeAttribute(NameAttribute, TrajectoryNameAttributeValue);
 
         fileStream->writeStartElement(ParameterDeclarationTag);
         fileStream->writeEndElement(); // end ParameterDeclaration
@@ -174,25 +463,39 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
             ss << COMPONENTNAME << " append log to file: " << tmpPath;
             LOG(CbkLogLevel::Debug, ss.str());
 
+            // Agent Stories
 
+            x = 0;
+            y = 0;
+            yaw = 0;
 
-            std::list<VehicleState>::iterator t;
+            std::list<VehicleState>::iterator t; // iterator
             for(t = agentData.begin(); t != agentData.end(); ++t)
             {
-                double x = t->getxpos();
-                double y = t->getypos();
+                time = t->gettime();
+                xnew = t->getxpos();
+                ynew = t->getypos();
+                yawnew = t->getyawangle();
 
-                double yaw = t->getyawangle();
 
-                double time = t->gettime();
+                dx = xnew-x;
+                dy = ynew-y;
+                dyaw = yawnew-yaw;
+
+                // set current coordinates to previous coordinates for the next timestep
+                x = xnew;
+                y = ynew;
+                yaw = yawnew;
+
+
 
                 fileStream->writeStartElement(VertexTag);
                 fileStream->writeStartElement(PositionTag);
                 fileStream->writeStartElement(WorldTag);
-                fileStream->writeAttribute("x", QString::number(x));
-                fileStream->writeAttribute("y", QString::number(y));
+                fileStream->writeAttribute("x", QString::number(dx));
+                fileStream->writeAttribute("y", QString::number(dy));
                 fileStream->writeAttribute("z", "0");
-                fileStream->writeAttribute("h", QString::number(yaw));
+                fileStream->writeAttribute("h", QString::number(dyaw));
                 fileStream->writeAttribute("p", "0");
                 fileStream->writeAttribute("r", "0");
                 fileStream->writeEndElement();
@@ -220,6 +523,30 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
 
 
     }
+    fileStreamXosc->writeStartElement(EndTag);
+    fileStreamXosc->writeStartElement(ConditionGroupTag);
+    fileStreamXosc->writeStartElement(ConditionTag);
+    fileStreamXosc->writeAttribute(delayAttribute, ConditionDelayValue);
+    fileStreamXosc->writeAttribute(edgeAttribute, ConditionEdgeValue);
+    fileStreamXosc->writeAttribute(NameAttribute, ConditionNameValue);
+    fileStreamXosc->writeStartElement(ByValueTag);
+    fileStreamXosc->writeStartElement(SimulationTimeTag);
+    fileStreamXosc->writeAttribute(ruleAttribute, SimulationTimeRuleValue);
+    fileStreamXosc->writeAttribute(valueAttribute, "500.0");
+    fileStreamXosc->writeEndElement(); //End SimulationTimeTag
+    fileStreamXosc->writeEndElement(); //End ByValueTag
+    fileStreamXosc->writeEndElement(); //End ConditionTag
+    fileStreamXosc->writeEndElement(); //End ConditionGroupTag
+    fileStreamXosc->writeEndElement(); //End EndTag
+    fileStreamXosc->writeEndElement(); //End StoryboardTag
+    fileStreamXosc->writeEndElement(); //End OpenScenarioTag
+
+    fileStreamXosc->writeEndDocument();
+    xoscfile->flush();
+    xoscfile->close();
+
+    xoscfile->rename(QString::fromStdString(finalXoscPath));
+
     fileStream->writeEndElement(); //end Catalog
     fileStream->writeEndElement(); //end OpenSCENARIO-Header
 
@@ -252,7 +579,6 @@ void Observation_Osc_Implementation::RecordAgentState(int time, const AgentInter
     double agentYPos = agent->GetPositionY();
     double agentYAwangle = agent->GetYawAngle();
 
-    //VehicleState *AgentX = new VehicleState(agentXPos, agentYPos, agentYAwangle, time);
     VehicleState AgentX(agentXPos, agentYPos, agentYAwangle, time);
     if((agentId+1) > AgentLists.size()){
         AgentLists.resize(agentId+1);
@@ -261,15 +587,4 @@ void Observation_Osc_Implementation::RecordAgentState(int time, const AgentInter
 
 }
 
-double VehicleState::getxpos(){
-    return xpos;
-}
-double VehicleState::getypos(){
-    return ypos;
-}
-double VehicleState::getyawangle(){
-    return yawangle;
-}
-double VehicleState::gettime(){
-    return time;
-}
+
