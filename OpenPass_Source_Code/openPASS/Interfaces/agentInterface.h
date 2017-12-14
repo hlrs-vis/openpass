@@ -827,7 +827,14 @@ public:
     //!
     //! @return
     //-----------------------------------------------------------------------------
-    virtual std::string GetTypeOfNearestMark() const = 0;
+    virtual MarkType GetTypeOfNearestMark() const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the type of the nearest mark.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual std::string GetTypeOfNearestMarkString() const = 0;
 
     //-----------------------------------------------------------------------------
     //! Retrieve the distance to the nearest mark of specific markType (NONE for no
@@ -953,7 +960,114 @@ public:
     //! @return
     //-----------------------------------------------------------------------------
     virtual double GetViewDirectionToNearestMarkInViewRange(MarkType markType, double mainViewDirection,
+
                                                             double range) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the type of the nearest object in a viewing range.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual std::string GetTypeOfNearestObject(AgentViewDirection agentViewDirection,
+                                               double range) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the type of the nearest object in a viewing range.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual std::string GetTypeOfNearestObject(double mainViewDirection,
+                                               double range) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the distance to the nearest object of specific objectType (NONE for no
+    //! specific or any objectType) in a specific range about a viewing direction
+    //! angle in radiant.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetDistanceToNearestObjectInViewRange(ObjectType objectType,
+                                                         AgentViewDirection agentViewDirection,
+                                                         double range) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the distance to the nearest object of specific objectType (NONE for no
+    //! specific or any objectType) in a specific range about a viewing direction
+    //! angle in radiant.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetDistanceToNearestObjectInViewRange(ObjectType objectType,
+                                                         double mainViewDirection,
+                                                         double range) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the concrete viewing direction to the nearest object in a viewing range.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetViewDirectionToNearestObjectInViewRange(ObjectType objectType,
+                                                              AgentViewDirection agentViewDirection,
+                                                              double range) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the concrete viewing direction to the nearest object in a viewing range.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetViewDirectionToNearestObjectInViewRange(ObjectType objectType,
+                                                              double mainViewDirection,
+                                                              double range) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the Id of the nearest Agent in a viewing range.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual int GetIdOfNearestAgent(AgentViewDirection agentViewDirection,
+                                    double range) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the Id of the nearest Agent in a viewing range.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual int GetIdOfNearestAgent(double mainViewDirection,
+                                    double range) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the distance to the nearest agent in a specific range about a viewing direction
+    //! angle in radiant.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetDistanceToNearestAgentInViewRange(AgentViewDirection agentViewDirection,
+                                                        double range) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the distance to the nearest agent in a specific range about a viewing direction
+    //! angle in radiant.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetDistanceToNearestAgentInViewRange(double mainViewDirection,
+                                                        double range) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the concrete viewing direction to the nearest agent in a viewing range.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetViewDirectionToNearestAgentInViewRange(AgentViewDirection agentViewDirection,
+                                                             double range) const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the concrete viewing direction to the nearest agent in a viewing range.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetViewDirectionToNearestAgentInViewRange(double mainViewDirection,
+                                                             double range) const = 0;
 
     //-----------------------------------------------------------------------------
     //! Retrieve the yaw velocity of the agent.
@@ -1017,6 +1131,69 @@ public:
     //! @return
     //-----------------------------------------------------------------------------
     virtual const std::vector<double> *GetTrajectoryAngle() const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Set the acceleration intention of the agent.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual void SetAccelerationIntention(double accelerationIntention) = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the acceleration intention of the agent.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetAccelerationIntention() const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Set the deceleration intention of the agent.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual void SetDecelerationIntention(double decelerationIntention) = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the deceleration intention of the agent.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetDecelerationIntention() const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Set the angle intention of the agent.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual void SetAngleIntention(double angleIntention) = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the angle intention of the agent.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetAngleIntention() const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Set the collision state of the agent. (collision occured or not)
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual void SetCollisionState(bool collisionState) = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the collision state of the agent. (collision occured or not)
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual bool GetCollisionState() const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieves absolute acceleration of agent
+    //!
+    // @return                Sideward acceleration
+    //-----------------------------------------------------------------------------
+    virtual double GetAccelerationAbsolute() const = 0;
 
 };
 

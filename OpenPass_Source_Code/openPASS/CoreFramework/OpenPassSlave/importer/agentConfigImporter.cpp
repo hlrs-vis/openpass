@@ -6,12 +6,14 @@
 * http://www.eclipse.org/legal/epl-v10.html
 ******************************************************************************/
 
+#include <QApplication>
 #include <climits>
 #include <cfloat>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <QDomDocument>
+#include <QDir>
 #include <QFile>
 #include "agentConfigImporter.h"
 #include "componentType.h"
@@ -33,15 +35,34 @@
     } \
     while(0);
 
-namespace SimulationSlave
-{
+namespace SimulationSlave {
 
-bool AgentConfigImporter::Import(const std::string &filename, std::map<int, const AgentType*> &agentTypes)
+bool AgentConfigImporter::Import(const std::string &filename,
+                                 std::map<int, const AgentType *> &agentTypes)
 {
     std::locale::global(std::locale("C"));
 
-    QFile xmlFile(filename.c_str()); // automatic object will be closed on destruction
-    if(!xmlFile.open(QIODevice::ReadOnly))
+    QString absoluteFilePath = "";
+
+    if (QFileInfo(QString::fromStdString(filename)).isRelative())
+    {
+        QDir baseDir = QCoreApplication::applicationDirPath();
+        absoluteFilePath = baseDir.absoluteFilePath(QString::fromStdString(filename));
+        absoluteFilePath = baseDir.cleanPath(absoluteFilePath);
+    }
+    else
+    {
+        absoluteFilePath = QString::fromStdString(filename);
+    }
+
+    if (!QFileInfo(absoluteFilePath).exists())
+    {
+        LOG_INTERN(LogLevel::Error) << "Agent Config does not exist.";
+        return nullptr;
+    }
+
+    QFile xmlFile(absoluteFilePath); // automatic object will be closed on destruction
+    if (!xmlFile.open(QIODevice::ReadOnly))
     {
         LOG_INTERN(LogLevel::Warning) << "an error occurred during agent type import";
         return false;
@@ -51,7 +72,7 @@ bool AgentConfigImporter::Import(const std::string &filename, std::map<int, cons
     QDomDocument document;
     QString errorMsg;
     int errorLine;
-    if(!document.setContent(xmlData, &errorMsg, &errorLine))
+    if (!document.setContent(xmlData, &errorMsg, &errorLine))
     {
         LOG_INTERN(LogLevel::Warning) << "invalid xml file format of file " << filename;
         LOG_INTERN(LogLevel::Warning) << "in line " << errorLine << " : " << errorMsg.toStdString();
@@ -59,21 +80,22 @@ bool AgentConfigImporter::Import(const std::string &filename, std::map<int, cons
     }
 
     QDomElement documentRoot = document.documentElement();
-    if(documentRoot.isNull())
+    if (documentRoot.isNull())
     {
         return false;
     }
 
     // parse agents
     QDomElement agentElement;
-    if(SimulationCommon::GetFirstChildElement(documentRoot, "Agent", agentElement))
+    if (SimulationCommon::GetFirstChildElement(documentRoot, "Agent", agentElement))
     {
-        while(!agentElement.isNull())
+        while (!agentElement.isNull())
         {
             // retrieve agent id
             int agentId;
             CHECKFALSE(SimulationCommon::ParseAttributeInt(agentElement, "id", agentId));
-            LOG_INTERN(LogLevel::DebugCore) << "agent type id: " << agentId << " *********************************************************";
+            LOG_INTERN(LogLevel::DebugCore) << "agent type id: " << agentId <<
+                                            " *********************************************************";
 
             // retrieve agent priority
             int agentPriority;
@@ -95,9 +117,9 @@ bool AgentConfigImporter::Import(const std::string &filename, std::map<int, cons
             CHECKFALSE(SimulationCommon::GetFirstChildElement(agentElement, "Channels", channelsElement));
 
             QDomElement channelElement;
-            if(SimulationCommon::GetFirstChildElement(channelsElement, "Channel", channelElement))
+            if (SimulationCommon::GetFirstChildElement(channelsElement, "Channel", channelElement))
             {
-                while(!channelElement.isNull())
+                while (!channelElement.isNull())
                 {
                     // retrieve channel id
                     int channelId;
@@ -116,14 +138,15 @@ bool AgentConfigImporter::Import(const std::string &filename, std::map<int, cons
             CHECKFALSE(SimulationCommon::GetFirstChildElement(agentElement, "Components", componentsElement));
 
             QDomElement componentElement;
-            if(SimulationCommon::GetFirstChildElement(componentsElement, "Component", componentElement))
+            if (SimulationCommon::GetFirstChildElement(componentsElement, "Component", componentElement))
             {
-                while(!componentElement.isNull())
+                while (!componentElement.isNull())
                 {
                     // retrieve component id
                     int componentId;
                     CHECKFALSE(SimulationCommon::ParseAttributeInt(componentElement, "id", componentId));
-                    LOG_INTERN(LogLevel::DebugCore) << "component type id: " << componentId << " ---------------------------------------------------------";
+                    LOG_INTERN(LogLevel::DebugCore) << "component type id: " << componentId <<
+                                                    " ---------------------------------------------------------";
 
                     // check for init component
                     bool isInitComponent;
@@ -144,7 +167,7 @@ bool AgentConfigImporter::Import(const std::string &filename, std::map<int, cons
 
                     // retrieve component offset time
                     int offsetTime = 0; // must be set to 0 for init tasks for scheduler
-                    if(!isInitComponent)
+                    if (!isInitComponent)
                     {
                         CHECKFALSE(SimulationCommon::ParseAttributeInt(componentElement, "offsetTime", offsetTime));
                         CHECKFALSE(0 <= offsetTime);
@@ -153,7 +176,7 @@ bool AgentConfigImporter::Import(const std::string &filename, std::map<int, cons
 
                     // retrieve component response time
                     int responseTime = 0; // must be set to 0 for init tasks for scheduler
-                    if(!isInitComponent)
+                    if (!isInitComponent)
                     {
                         CHECKFALSE(SimulationCommon::ParseAttributeInt(componentElement, "responseTime", responseTime));
                         CHECKFALSE(0 <= responseTime);
@@ -162,7 +185,7 @@ bool AgentConfigImporter::Import(const std::string &filename, std::map<int, cons
 
                     // retrieve component cycle time
                     int cycleTime = 0; // must be set to 0 for init tasks for scheduler
-                    if(!isInitComponent)
+                    if (!isInitComponent)
                     {
                         CHECKFALSE(SimulationCommon::ParseAttributeInt(componentElement, "cycleTime", cycleTime));
                         CHECKFALSE(0 < cycleTime);
@@ -183,12 +206,14 @@ bool AgentConfigImporter::Import(const std::string &filename, std::map<int, cons
 
                     // parse inputs
                     QDomElement componentInputsElement;
-                    CHECKFALSE(SimulationCommon::GetFirstChildElement(componentElement, "ComponentInputs", componentInputsElement));
+                    CHECKFALSE(SimulationCommon::GetFirstChildElement(componentElement, "ComponentInputs",
+                                                                      componentInputsElement));
 
                     QDomElement componentInputElement;
-                    if(SimulationCommon::GetFirstChildElement(componentInputsElement, "ComponentInput", componentInputElement))
+                    if (SimulationCommon::GetFirstChildElement(componentInputsElement, "ComponentInput",
+                                                               componentInputElement))
                     {
-                        while(!componentInputElement.isNull())
+                        while (!componentInputElement.isNull())
                         {
                             // retrieve input link id
                             int linkId;
@@ -208,12 +233,14 @@ bool AgentConfigImporter::Import(const std::string &filename, std::map<int, cons
 
                     // parse outputs
                     QDomElement componentOutputsElement;
-                    CHECKFALSE(SimulationCommon::GetFirstChildElement(componentElement, "ComponentOutputs", componentOutputsElement));
+                    CHECKFALSE(SimulationCommon::GetFirstChildElement(componentElement, "ComponentOutputs",
+                                                                      componentOutputsElement));
 
                     QDomElement componentOutputElement;
-                    if(SimulationCommon::GetFirstChildElement(componentOutputsElement, "ComponentOutput", componentOutputElement))
+                    if (SimulationCommon::GetFirstChildElement(componentOutputsElement, "ComponentOutput",
+                                                               componentOutputElement))
                     {
-                        while(!componentOutputElement.isNull())
+                        while (!componentOutputElement.isNull())
                         {
                             // retrieve output link id
                             int linkId;
@@ -233,12 +260,14 @@ bool AgentConfigImporter::Import(const std::string &filename, std::map<int, cons
 
                     // parse observations
                     QDomElement componentObservationsElement;
-                    CHECKFALSE(SimulationCommon::GetFirstChildElement(componentElement, "ComponentObservations", componentObservationsElement));
+                    CHECKFALSE(SimulationCommon::GetFirstChildElement(componentElement, "ComponentObservations",
+                                                                      componentObservationsElement));
 
                     QDomElement componentObservationElement;
-                    if(SimulationCommon::GetFirstChildElement(componentObservationsElement, "ComponentObservation", componentObservationElement))
+                    if (SimulationCommon::GetFirstChildElement(componentObservationsElement, "ComponentObservation",
+                                                               componentObservationElement))
                     {
-                        while(!componentObservationElement.isNull())
+                        while (!componentObservationElement.isNull())
                         {
                             // retrieve id
                             int linkId;
@@ -247,12 +276,14 @@ bool AgentConfigImporter::Import(const std::string &filename, std::map<int, cons
 
                             // retrieve reference
                             int observationRef;
-                            CHECKFALSE(SimulationCommon::ParseAttributeInt(componentObservationElement, "observationRef", observationRef));
+                            CHECKFALSE(SimulationCommon::ParseAttributeInt(componentObservationElement, "observationRef",
+                                                                           observationRef));
                             LOG_INTERN(LogLevel::DebugCore) << "  observation ref: " << observationRef;
 
                             component->AddObservationLink(observationRef, linkId);
 
-                            componentObservationElement = componentObservationElement.nextSiblingElement("ComponentObservation");
+                            componentObservationElement =
+                                componentObservationElement.nextSiblingElement("ComponentObservation");
                         } // observation loop
                     } // if observations exist
 
@@ -260,7 +291,8 @@ bool AgentConfigImporter::Import(const std::string &filename, std::map<int, cons
                     LOG_INTERN(LogLevel::DebugCore) << "import model parameters...";
 
                     QDomElement parametersElement;
-                    CHECKFALSE(SimulationCommon::GetFirstChildElement(componentElement, "ComponentParameters", parametersElement));
+                    CHECKFALSE(SimulationCommon::GetFirstChildElement(componentElement, "ComponentParameters",
+                                                                      parametersElement));
 
                     CHECKFALSE(SimulationCommon::ImportParameters(parametersElement, component->GetModelParameters()));
 

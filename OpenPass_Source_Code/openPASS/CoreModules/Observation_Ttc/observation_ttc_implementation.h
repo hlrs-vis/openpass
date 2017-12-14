@@ -16,7 +16,10 @@
 #include "agentInterface.h"
 #include "observationInterface.h"
 
-/** \addtogroup Observation_Ttc
+/**
+* \addtogroup CoreModules_Basic openPASS CoreModules basic
+* @{
+* \addtogroup Observation_Ttc
 * @{
 * \brief logs the time to collision (ttc) of all agents
 *
@@ -38,6 +41,7 @@
 * string | 1 | filename for temporary simulation output            | file name for the temporary file
 * string | 2 | filename for final simulation output (*.xml)        | file name for final result file
 *
+* @}
 * @} */
 
 /*!
@@ -59,16 +63,19 @@ public:
                                    WorldInterface *world,
                                    const ParameterInterface *parameters,
                                    const CallbackInterface *callbacks);
-    Observation_Ttc_Implementation(const Observation_Ttc_Implementation&) = delete;
-    Observation_Ttc_Implementation(Observation_Ttc_Implementation&&) = delete;
-    Observation_Ttc_Implementation& operator=(const Observation_Ttc_Implementation&) = delete;
-    Observation_Ttc_Implementation& operator=(Observation_Ttc_Implementation&&) = delete;
+    Observation_Ttc_Implementation(const Observation_Ttc_Implementation &) = delete;
+    Observation_Ttc_Implementation(Observation_Ttc_Implementation &&) = delete;
+    Observation_Ttc_Implementation &operator=(const Observation_Ttc_Implementation &) = delete;
+    Observation_Ttc_Implementation &operator=(Observation_Ttc_Implementation &&) = delete;
     virtual ~Observation_Ttc_Implementation() = default;
 
     //-----------------------------------------------------------------------------
     //! Called by framework in master before each simulation run starts
     //-----------------------------------------------------------------------------
-    virtual void MasterPreHook() {return;} //dummy
+    virtual void MasterPreHook()
+    {
+        return;   //dummy
+    }
 
     //-----------------------------------------------------------------------------
     //! Called by framework in master after each simulation run ends
@@ -76,7 +83,10 @@ public:
     //! @param[in]     filename      Name of file containing the simulation run results from the slave
     //-----------------------------------------------------------------------------
 
-    virtual void MasterPostHook(const std::string &filename) {Q_UNUSED(filename)} //dummy
+    virtual void MasterPostHook(const std::string &filename)
+    {
+        Q_UNUSED(filename)
+    } //dummy
 
     //-----------------------------------------------------------------------------
     //! Called by framework in slave before all simulation runs start
@@ -120,7 +130,10 @@ public:
     //!
     //! @return                      File to be transferred
 
-    virtual const std::string SlaveResultFile() {return "";} //dummy
+    virtual const std::string SlaveResultFile()
+    {
+        return "";   //dummy
+    }
 
     //-----------------------------------------------------------------------------
     //! Finds the ID of the agent that is exactly in front of the agent.

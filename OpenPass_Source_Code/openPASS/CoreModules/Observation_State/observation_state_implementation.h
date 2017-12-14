@@ -17,7 +17,10 @@
 #include "observationInterface.h"
 #include "observationtypes.h"
 
-/** \addtogroup Observation_State
+/**
+* \addtogroup CoreModules_Basic openPASS CoreModules basic
+* @{
+* \addtogroup Observation_State
 * @{
 * \brief logs the current X position of every agent at each time step.
 *
@@ -43,6 +46,7 @@
 * string | 2 | filename for final simulation output (*.xml)        | Par_finalFilename
 * bool   | 0 | flag if visualization data shall be written to file | Par_WriteOutputForVisualisation
 *
+* @}
 * @} */
 
 /*!
@@ -64,26 +68,29 @@ public:
     const std::string COMPONENTNAME = "Observation_State";
 
     Observation_State_Implementation(StochasticsInterface *stochastics,
-                                   WorldInterface *world,
-                                   const ParameterInterface *parameters,
-                                   const CallbackInterface *callbacks);
-    Observation_State_Implementation(const Observation_State_Implementation&) = delete;
-    Observation_State_Implementation(Observation_State_Implementation&&) = delete;
-    Observation_State_Implementation& operator=(const Observation_State_Implementation&) = delete;
-    Observation_State_Implementation& operator=(Observation_State_Implementation&&) = delete;
+                                     WorldInterface *world,
+                                     const ParameterInterface *parameters,
+                                     const CallbackInterface *callbacks);
+    Observation_State_Implementation(const Observation_State_Implementation &) = delete;
+    Observation_State_Implementation(Observation_State_Implementation &&) = delete;
+    Observation_State_Implementation &operator=(const Observation_State_Implementation &) = delete;
+    Observation_State_Implementation &operator=(Observation_State_Implementation &&) = delete;
     virtual ~Observation_State_Implementation() = default;
 
     //-----------------------------------------------------------------------------
     //! Called by framework in master before each simulation run starts
     //-----------------------------------------------------------------------------
-    virtual void MasterPreHook(){}
+    virtual void MasterPreHook() {}
 
     //-----------------------------------------------------------------------------
     //! Called by framework in master after each simulation run ends
     //!
     //! @param[in]     filename      Name of file containing the simulation run results from the slave
     //-----------------------------------------------------------------------------
-    virtual void MasterPostHook(const std::string &filename){Q_UNUSED(filename)}
+    virtual void MasterPostHook(const std::string &filename)
+    {
+        Q_UNUSED(filename)
+    }
 
     virtual void SlavePreHook(const std::string &path);
 
@@ -120,7 +127,10 @@ public:
     //!
     //! @return                      File to be transferred
     //-----------------------------------------------------------------------------
-    virtual const std::string SlaveResultFile(){return "";} //dummy
+    virtual const std::string SlaveResultFile()
+    {
+        return "";   //dummy
+    }
 
 private:
     void RecordAllAgents(int time);

@@ -61,7 +61,12 @@ extern "C" DYNAMICS_TWOTRACKSHARED_EXPORT ModelInterface *OpenPASS_CreateInstanc
 {
     Callbacks = callbacks;
 
-    try {
+    if (priority == 0)
+    {
+        priority = 1;
+    }
+    try
+    {
         return (ModelInterface *)(new (std::nothrow) Dynamics_TwoTrack_Implementation(
                                       componentId,
                                       isInit,
@@ -75,14 +80,20 @@ extern "C" DYNAMICS_TWOTRACKSHARED_EXPORT ModelInterface *OpenPASS_CreateInstanc
                                       observations,
                                       callbacks,
                                       agent));
-    } catch (const std::runtime_error &ex) {
-        if (Callbacks != nullptr) {
+    }
+    catch (const std::runtime_error &ex)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, ex.what());
         }
 
         return nullptr;
-    } catch (...) {
-        if (Callbacks != nullptr) {
+    }
+    catch (...)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, "unexpected exception");
         }
 
@@ -107,16 +118,23 @@ extern "C" DYNAMICS_TWOTRACKSHARED_EXPORT bool OpenPASS_UpdateInput(
     const std::shared_ptr<SignalInterface const> &data,
     int time)
 {
-    try {
+    try
+    {
         implementation->UpdateInput(localLinkId, data, time);
-    } catch (const std::runtime_error &ex) {
-        if (Callbacks != nullptr) {
+    }
+    catch (const std::runtime_error &ex)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, ex.what());
         }
 
         return false;
-    } catch (...) {
-        if (Callbacks != nullptr) {
+    }
+    catch (...)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, "unexpected exception");
         }
 
@@ -132,16 +150,23 @@ extern "C" DYNAMICS_TWOTRACKSHARED_EXPORT bool OpenPASS_UpdateOutput(
     std::shared_ptr<SignalInterface const> &data,
     int time)
 {
-    try {
+    try
+    {
         implementation->UpdateOutput(localLinkId, data, time);
-    } catch (const std::runtime_error &ex) {
-        if (Callbacks != nullptr) {
+    }
+    catch (const std::runtime_error &ex)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, ex.what());
         }
 
         return false;
-    } catch (...) {
-        if (Callbacks != nullptr) {
+    }
+    catch (...)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, "unexpected exception");
         }
 
@@ -155,16 +180,23 @@ extern "C" DYNAMICS_TWOTRACKSHARED_EXPORT bool OpenPASS_Trigger(
     ModelInterface *implementation,
     int time)
 {
-    try {
+    try
+    {
         implementation->Trigger(time);
-    } catch (const std::runtime_error &ex) {
-        if (Callbacks != nullptr) {
+    }
+    catch (const std::runtime_error &ex)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, ex.what());
         }
 
         return false;
-    } catch (...) {
-        if (Callbacks != nullptr) {
+    }
+    catch (...)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, "unexpected exception");
         }
 

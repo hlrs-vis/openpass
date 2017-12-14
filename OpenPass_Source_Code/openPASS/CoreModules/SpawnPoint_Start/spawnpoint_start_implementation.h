@@ -12,7 +12,10 @@
 #include <math.h>
 #include "spawnPointInterface.h"
 
-/** \addtogroup SpawnPoint_Start
+/**
+* \addtogroup CoreModules_Basic openPASS CoreModules basic
+* @{
+* \addtogroup SpawnPoint_Start
 * @{
 *
 * \brief Spawn agents at the beginning of road.
@@ -47,7 +50,7 @@
 * standardCycleTime | 100 | standard time for one cycle in ms
 *
 * \see SpawnPointInterface
-*
+*   @}
 *   @} */
 
 /*!
@@ -66,14 +69,14 @@ public:
     const std::string COMPONENTNAME = "SpawnPoint_Start";
 
     SpawnPoint_Start_Implementation(
-            StochasticsInterface *stochastics,
-            WorldInterface *world,
-            const ParameterInterface *parameters,
-            const CallbackInterface *callbacks);
-    SpawnPoint_Start_Implementation(const SpawnPoint_Start_Implementation&) = delete;
-    SpawnPoint_Start_Implementation(SpawnPoint_Start_Implementation&&) = delete;
-    SpawnPoint_Start_Implementation& operator=(const SpawnPoint_Start_Implementation&) = delete;
-    SpawnPoint_Start_Implementation& operator=(SpawnPoint_Start_Implementation&&) = delete;
+        StochasticsInterface *stochastics,
+        WorldInterface *world,
+        const ParameterInterface *parameters,
+        const CallbackInterface *callbacks);
+    SpawnPoint_Start_Implementation(const SpawnPoint_Start_Implementation &) = delete;
+    SpawnPoint_Start_Implementation(SpawnPoint_Start_Implementation &&) = delete;
+    SpawnPoint_Start_Implementation &operator=(const SpawnPoint_Start_Implementation &) = delete;
+    SpawnPoint_Start_Implementation &operator=(SpawnPoint_Start_Implementation &&) = delete;
     virtual ~SpawnPoint_Start_Implementation() = default;
 
     virtual void SetSpawnItem(SpawnItemParameterInterface &spawnItem, int maxIndex);
@@ -103,7 +106,7 @@ private:
     //! standard cycle time for spawning, update, trigger tasks
     int _standardCycleTime = 100;
     /**@}*/
-        /**@}*/
+    /**@}*/
 
     //! spawning car rate in cars/second
     double _carRate;

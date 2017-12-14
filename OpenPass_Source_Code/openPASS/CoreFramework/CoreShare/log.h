@@ -21,6 +21,8 @@
 #include <stdio.h>
 #include <iostream>
 #include <QMutex>
+#include <QThread>
+#include <QMap>
 
 #if defined(LOG_TIME_ENABLED)
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
@@ -30,13 +32,15 @@ inline std::string Log_NowTime()
 {
     const int MAX_LEN = 200;
     char buffer[MAX_LEN];
-    if(0 == GetTimeFormatA(LOCALE_USER_DEFAULT,
-                           0,
-                           0,
-                           "HH':'mm':'ss",
-                           buffer,
-                           MAX_LEN))
+    if (0 == GetTimeFormatA(LOCALE_USER_DEFAULT,
+                            0,
+                            0,
+                            "HH':'mm':'ss",
+                            buffer,
+                            MAX_LEN))
+    {
         return "Error in Log_NowTime()";
+    }
 
     char result[100] = { 0 };
     static DWORD first = GetTickCount();
@@ -88,10 +92,10 @@ class Log
 {
 public:
     Log() = default;
-    Log(const Log&) = delete;
-    Log(Log&&) = delete;
-    Log& operator=(const Log&) = delete;
-    Log& operator=(Log&&) = delete;
+    Log(const Log &) = delete;
+    Log(Log &&) = delete;
+    Log &operator=(const Log &) = delete;
+    Log &operator=(Log &&) = delete;
     virtual ~Log();
 
     //-----------------------------------------------------------------------------
@@ -105,7 +109,7 @@ public:
     //! @param[in]     level     Severity of log.
     //! @return                  Output stream for the log message
     //-----------------------------------------------------------------------------
-    std::ostringstream& Get(const char *file,
+    std::ostringstream &Get(const char *file,
                             int line,
                             LogLevel level = LogLevel::Warning);
 
@@ -117,7 +121,7 @@ public:
     //!
     //! @return                  Current severity limit
     //-----------------------------------------------------------------------------
-    static LogLevel& ReportingLevel();
+    static LogLevel &ReportingLevel();
 
     //-----------------------------------------------------------------------------
     //! Converts severity value to a string for printing purposes.
@@ -137,17 +141,19 @@ private:
 template<typename T> QMutex Log<T>::logGuard;
 
 template<typename T>
-std::ostringstream& Log<T>::Get(const char *file, int line, LogLevel level)
+std::ostringstream &Log<T>::Get(const char *file, int line, LogLevel level)
 {
 #if defined(LOG_TIME_ENABLED)
     os << Log_NowTime();
 #endif // LOG_TIME_ENABLED
     os << " " << ToString(level) << ": ";
 
-    if(static_cast<int>(LogLevel::Info) > static_cast<int>(level))
+    if (static_cast<int>(LogLevel::Info) > static_cast<int>(level))
     {
         os << "(" << file << ":" << line << ") ";
     }
+
+    os << "ThreadID: " << QThread::currentThreadId() << " ";
 
     return os;
 }
@@ -155,14 +161,14 @@ std::ostringstream& Log<T>::Get(const char *file, int line, LogLevel level)
 template <typename T>
 Log<T>::~Log()
 {
-    logGuard.lock();
+//    logGuard.lock();
     os << std::endl;
     T::Output(os.str());
-    logGuard.unlock();
+//    logGuard.unlock();
 }
 
 template <typename T>
-LogLevel& Log<T>::ReportingLevel()
+LogLevel &Log<T>::ReportingLevel()
 {
     static LogLevel reportingLevel = LogLevel::Warning;
     return reportingLevel;
@@ -171,7 +177,7 @@ LogLevel& Log<T>::ReportingLevel()
 template <typename T>
 std::string Log<T>::ToString(LogLevel level)
 {
-    static const char* const buffer[] =
+    static const char *const buffer[] =
     {
         "Error",
         "Warning",
@@ -193,7 +199,7 @@ public:
     //!
     //! @param[in]     fileName      Name of file where logs are stored
     //-----------------------------------------------------------------------------
-    static void SetFile(const std::string& fileName);
+    static void SetFile(const std::string &fileName);
 
     //-----------------------------------------------------------------------------
     //! Verifies if output file has already been opened.
@@ -207,30 +213,45 @@ public:
     //!
     //! @param[in]     message      Message to be logged.
     //-----------------------------------------------------------------------------
-    static void Output(const std::string& message);
+    static void Output(const std::string &message);
 
 private:
-    static std::ofstream logStream; //!< output file stream
+    static QMap<int, std::ofstream *> logStreamMap; //!< output file stream
 };
 
 inline void LogOutputPolicy::SetFile(const std::string &fileName)
-{    
-    logStream.open(fileName);
+{
+    int threadId = (int)QThread::currentThreadId();
+    std::ofstream *logStream = new std::ofstream();
+    logStream->open(fileName);
+    logStreamMap.insert(threadId, logStream);
 }
 
 inline bool LogOutputPolicy::IsOpen()
 {
-    return logStream.is_open();
+    int threadId = (int)QThread::currentThreadId();
+    if (logStreamMap.contains(threadId))
+    {
+        return logStreamMap[threadId]->is_open();
+    }
+    else
+    {
+        return false;
+    }
 }
 
-inline void LogOutputPolicy::Output(const std::string& message)
+inline void LogOutputPolicy::Output(const std::string &message)
 {
     // print to standard output
-    std::cout << message.c_str();
+//    std::cout << message.c_str();
 
     // print to file
-    logStream << message;
-    logStream.flush();
+    int threadId = (int)QThread::currentThreadId();
+    if (logStreamMap.contains(threadId))
+    {
+        *logStreamMap[threadId] << message;
+        logStreamMap[threadId]->flush();
+    }
 }
 
 //! Bind logging mechanism to file

@@ -42,9 +42,9 @@ defineReplace(getFiles) {
 }
 
 SUBDIRS +=  . \
-            ./PCM_Data \
             ../../Common \
             ../../Common_PCM \
+            ../../Common_PCM/PCM_Data \
             ../../Interfaces \
             ../../Interfaces/roadInterface
 

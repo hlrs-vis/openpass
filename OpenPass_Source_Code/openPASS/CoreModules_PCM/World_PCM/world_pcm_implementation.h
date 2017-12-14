@@ -13,10 +13,10 @@
 #include "worldInterface.h"
 #include "agentNetwork.h"
 #include "sceneryImporterPCM.h"
-#include "externalTrajectory.h"
+#include "Trajectory.h"
 
 /**
-* \addtogroup CoreModules openPASS CoreModules
+* \addtogroup CoreModules_PCM openPASS CoreModules pcm
 * @{
 * \addtogroup World_PCM
 *
@@ -128,7 +128,8 @@ protected:
              int line,
              const std::string &message)
     {
-        if (callbacks) {
+        if (callbacks)
+        {
             callbacks->Log(logLevel,
                            file,
                            line,
@@ -137,6 +138,8 @@ protected:
     }
 
 private:
+    void UpdatePcmAgentData();
+
     // world parameters
     int timeOfDay = 0;
     Weekday weekday = Weekday::Undefined;

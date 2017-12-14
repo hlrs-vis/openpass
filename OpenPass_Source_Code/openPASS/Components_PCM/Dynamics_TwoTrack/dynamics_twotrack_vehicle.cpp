@@ -24,7 +24,8 @@ VehicleSimpleTT::VehicleSimpleTT()
 
 VehicleSimpleTT::~VehicleSimpleTT()
 {
-    for (int i = 0; i < NUMBER_TIRES; ++i) {
+    for (int i = 0; i < NUMBER_TIRES; ++i)
+    {
         delete tires[i];
     }
 }
@@ -56,9 +57,10 @@ void VehicleSimpleTT::InitSetGeometry(double h_COG, double x_COG,
     positionTire[2].y = y_track / 2.0;
     positionTire[3].y = -positionTire[2].y;
 
-    forceTireVerticalStatic[0] = massTotal*accelVerticalEarth / 2.0 * x_COG / y_wheelbase;
+    forceTireVerticalStatic[0] = massTotal * accelVerticalEarth / 2.0 * x_COG / y_wheelbase;
     forceTireVerticalStatic[1] = forceTireVerticalStatic[0];
-    forceTireVerticalStatic[2] = massTotal*accelVerticalEarth / 2.0 * (y_wheelbase - x_COG) / y_wheelbase;
+    forceTireVerticalStatic[2] = massTotal * accelVerticalEarth / 2.0 * (y_wheelbase - x_COG) /
+                                 y_wheelbase;
     forceTireVerticalStatic[3] = forceTireVerticalStatic[2];
 
 }
@@ -66,7 +68,8 @@ void VehicleSimpleTT::InitSetGeometry(double h_COG, double x_COG,
 void VehicleSimpleTT::InitSetTire(double vel, double F_max, double F_slide, double s_max,
                                   double r_tire, double frictionScaleRoll)
 {
-    for (int i = 0; i < NUMBER_TIRES; ++i) {
+    for (int i = 0; i < NUMBER_TIRES; ++i)
+    {
         tires[i] = new Tire(forceTireVerticalStatic[i], F_max, F_slide, s_max, r_tire, frictionScaleRoll);
         rotationVelocityTireX[i] = vel / r_tire;
         rotationVelocityGradTireX[i] = 0.0;
@@ -81,25 +84,42 @@ void VehicleSimpleTT::SetVelocity(const double v_abs, const double slideAngle, c
     yawVelocity = w;
 }
 
-void VehicleSimpleTT::DriveTrain(double throttlePedal, double brakePedal)
+void VehicleSimpleTT::DriveTrain(double throttlePedal, double brakePedal,
+                                 std::vector<double> brakeSuperpose)
 {
 
     double torqueEngineMax;
     double rotVelMean = 0.5 * (rotationVelocityTireX[2] + rotationVelocityTireX[3]);
-    if (!qFuzzyIsNull(rotVelMean)) {
+    if (!qFuzzyIsNull(rotVelMean))
+    {
         torqueEngineMax = powerEngineMax / rotVelMean;
-    } else {
+    }
+    else
+    {
         torqueEngineMax = powerEngineMax / 0.001;
     }
 
     torqueEngineMax = Saturate(torqueEngineMax, 0.0, MAXMOMENT);
+    double brakePedalMod;
+    for (int i = 0; i < NUMBER_TIRES; ++i)
+    {
 
-    for (int i = 0; i < NUMBER_TIRES; ++i) {
+        // brake balance
+        if (i < 2)
+        {
+            brakePedalMod = brakeBalance * 2.0 * brakePedal;
+        }
+        else
+        {
+            brakePedalMod = (1.0 - brakeBalance) * 2.0 * brakePedal;
+        }
+        brakePedalMod += brakeSuperpose[i];
 
         // tire torque
-        torqueTireX[i] = brakePedal * torqueBrakeMin;
+        torqueTireX[i] = Saturate(brakePedalMod, 0.0, 1.0) * torqueBrakeMin;
 
-        if (i > 1) { // RWD with open differential
+        if (i > 1)   // RWD with open differential
+        {
             torqueTireX[i] += throttlePedal * torqueEngineMax / 2.0;
         }
 
@@ -121,7 +141,8 @@ void VehicleSimpleTT::ForceLocal(double timeStep, double angleTireFront)
 
     // slips + forces
     velocityCar.Rotate(-angleSlide); // car coordinates
-    for (int i = 0; i < NUMBER_TIRES; ++i) {
+    for (int i = 0; i < NUMBER_TIRES; ++i)
+    {
 
         tire_tmp = tires[i];
         slipTire[i].Scale(0.0);
@@ -152,8 +173,9 @@ void VehicleSimpleTT::ForceLocal(double timeStep, double angleTireFront)
 
         // roll friction
         bool posForce = forceTire[i].x > 0.0 ? true : false;
-        forceTire[i].x += tire_tmp->GetRollFriction(rotationVelocityTireX[i]*tire_tmp->radius, 0.0);
-        if ((forceTire[i].x<0.0 && posForce) || (forceTire[i].x>0.0 && !posForce)){
+        forceTire[i].x += tire_tmp->GetRollFriction(rotationVelocityTireX[i] * tire_tmp->radius, 0.0);
+        if ((forceTire[i].x < 0.0 && posForce) || (forceTire[i].x > 0.0 && !posForce))
+        {
             forceTire[i].x = 0.0;
         }
 
@@ -163,7 +185,7 @@ void VehicleSimpleTT::ForceLocal(double timeStep, double angleTireFront)
         momentTireZ[i] = positionTire[i].Cross(forceTire[i]);
 
         // rotational velocity
-        rotVelNew = velocityTire.x / (1-slipTire[i].x) / tire_tmp->radius;
+        rotVelNew = velocityTire.x / (1 - slipTire[i].x) / tire_tmp->radius;
 
         // memorize rotation velocity derivative for inertia torque
         rotationVelocityGradTireX[i] = (rotVelNew - rotationVelocityTireX[i]) / timeStep;
@@ -181,7 +203,8 @@ void VehicleSimpleTT::ForceGlobal()
 
     forceTotalXY.Scale(0.0);
     momentTotalZ = 0.0;
-    for (int i = 0; i < NUMBER_TIRES; ++i) {
+    for (int i = 0; i < NUMBER_TIRES; ++i)
+    {
         // total force
         forceTotalXY.Add(forceTire[i]);
 
@@ -191,7 +214,7 @@ void VehicleSimpleTT::ForceGlobal()
 
     // air drag
     double forceAirDrag = -0.5 * densityAir * coeffDrag * areaFace * velocityCar.Length() *
-            velocityCar.Length();
+                          velocityCar.Length();
 
     forceTotalXY.Rotate(angleSlide); // traj. CS
     forceTotalXY.x += forceAirDrag; // traj. CS

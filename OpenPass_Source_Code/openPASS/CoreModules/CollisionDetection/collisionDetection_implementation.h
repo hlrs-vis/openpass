@@ -14,7 +14,10 @@
 #include "collisionDetectionInterface.h"
 #include "callbackInterface.h"
 
-/** \addtogroup CollisionDetection
+/**
+* \addtogroup CoreModules_Basic openPASS CoreModules basic
+* @{
+* \addtogroup CollisionDetection
 * @{
 * \brief detect a collision between two agents
 *
@@ -40,6 +43,7 @@
 *
 * \see CollisionDetectionInterface
 *
+*   @}
 *   @} */
 
 /*!
@@ -58,10 +62,10 @@ public:
     CollisionDetection_Implementation(const CallbackInterface *callbacks)
         : callbacks(callbacks)
     {}
-    CollisionDetection_Implementation(const CollisionDetection_Implementation&) = delete;
-    CollisionDetection_Implementation(CollisionDetection_Implementation&&) = delete;
-    CollisionDetection_Implementation& operator=(const CollisionDetection_Implementation&) = delete;
-    CollisionDetection_Implementation& operator=(CollisionDetection_Implementation&&) = delete;
+    CollisionDetection_Implementation(const CollisionDetection_Implementation &) = delete;
+    CollisionDetection_Implementation(CollisionDetection_Implementation &&) = delete;
+    CollisionDetection_Implementation &operator=(const CollisionDetection_Implementation &) = delete;
+    CollisionDetection_Implementation &operator=(CollisionDetection_Implementation &&) = delete;
     virtual ~CollisionDetection_Implementation() = default;
 
     /*!
@@ -71,7 +75,7 @@ public:
      *
      * \param[in] agents        map of agents
      */
-    void SetAgents(const std::map<int, const AgentInterface*> &agents);
+    void SetAgents(const std::map<int, const AgentInterface *> &agents);
 
     /*!
      * \brief HandleCollisionsInAgents
@@ -98,7 +102,7 @@ protected:
              int line,
              const std::string &message)
     {
-        if(callbacks)
+        if (callbacks)
         {
             callbacks->Log(logLevel,
                            file,
@@ -118,9 +122,9 @@ private:
      * \param[out] resultNormals    vector of normals
      */
     void CalculateAgentGeometry(const AgentInterface *agent,
-                                       const Common::Vector2d &position,
-                                       std::array<Common::Vector2d, 4> &resultCorners,
-                                       std::array<Common::Vector2d, 2> &resultNormals);
+                                const Common::Vector2d &position,
+                                std::array<Common::Vector2d, 4> &resultCorners,
+                                std::array<Common::Vector2d, 2> &resultNormals);
 
     /*!
      * \brief GetAgentGeometry
@@ -131,8 +135,8 @@ private:
      * \param[out] resultNormals        vector of normals
      */
     void GetAgentGeometry(const AgentInterface *agent,
-                                 std::array<Common::Vector2d, 4> &resultCorners,
-                                 std::array<Common::Vector2d, 2> &resultNormals);
+                          std::array<Common::Vector2d, 4> &resultCorners,
+                          std::array<Common::Vector2d, 2> &resultNormals);
     /*!
      * \brief GetMinMax4
      * Retrieve the max and min value of an array of four.
@@ -142,8 +146,8 @@ private:
      * \param[out] minValue         minimal value
      */
     void GetMinMax4(std::array<double, 4> &input,
-                           double &maxValue,
-                           double &minValue);
+                    double &maxValue,
+                    double &minValue);
 
     /*!
      * \brief GetMinMax2
@@ -154,8 +158,8 @@ private:
      * \param[out] minValue         minimal value
      */
     void GetMinMax2(std::array<double, 2> &input,
-                           double &maxValue,
-                           double &minValue);
+                    double &maxValue,
+                    double &minValue);
 
     //-----------------------------------------------------------------------------
     //! Calculates distance of point of impact based on agent geometry.
@@ -169,9 +173,9 @@ private:
     //! @return                    true for success
     //-----------------------------------------------------------------------------
     bool CalculateDistOnBorder(const AgentInterface *agent,
-                                      int corner,
-                                      double cornerDistance,
-                                      double &result);
+                               int corner,
+                               double cornerDistance,
+                               double &result);
 
     //-----------------------------------------------------------------------------
     //! Calculates parameters of intersection point
@@ -208,15 +212,15 @@ private:
     //!                                      be calculated correctly
     //-----------------------------------------------------------------------------
     bool CalculateIntersectionPoints(const AgentInterface *agent,
-                                            const AgentInterface *other,
-                                            bool &intersected,
-                                            Common::Vector2d &intersectionPoint,
-                                            double &otherDistanceFromCorner,
-                                            int &otherFromCorner,
-                                            double &agentDistanceFromInitial,
-                                            Common::Vector2d &agentCOG,
-                                            Common::Vector2d &otherCOG,
-                                            int &agentPenetratingCorner);
+                                     const AgentInterface *other,
+                                     bool &intersected,
+                                     Common::Vector2d &intersectionPoint,
+                                     double &otherDistanceFromCorner,
+                                     int &otherFromCorner,
+                                     double &agentDistanceFromInitial,
+                                     Common::Vector2d &agentCOG,
+                                     Common::Vector2d &otherCOG,
+                                     int &agentPenetratingCorner);
 
     //-----------------------------------------------------------------------------
     //! Calculates parameters of point of contact
@@ -237,11 +241,11 @@ private:
     //!                                     calculated correctly
     //-----------------------------------------------------------------------------
     bool CalculatePointOfContact(const AgentInterface *agent,
-                                        const AgentInterface *other,
-                                        double &resultAgentDistOnBorder,
-                                        double &resultOtherDistOnBorder,
-                                        Common::Vector2d &resultAgentCOG,
-                                        Common::Vector2d &resultOtherCOG);
+                                 const AgentInterface *other,
+                                 double &resultAgentDistOnBorder,
+                                 double &resultOtherDistOnBorder,
+                                 Common::Vector2d &resultAgentCOG,
+                                 Common::Vector2d &resultOtherCOG);
 
     //-----------------------------------------------------------------------------
     //! Stores collision parameters
@@ -251,10 +255,10 @@ private:
     //! @param[out] runResult               reference to storage location
     //-----------------------------------------------------------------------------
     bool CreateResult(const AgentInterface *agent,
-                             const AgentInterface *other,
-                             RunResultInterface &runResult);
+                      const AgentInterface *other,
+                      RunResultInterface &runResult);
 
-    const std::map<int, const AgentInterface*> *agents = nullptr;
+    const std::map<int, const AgentInterface *> *agents = nullptr;
     const CallbackInterface *callbacks;
 };
 

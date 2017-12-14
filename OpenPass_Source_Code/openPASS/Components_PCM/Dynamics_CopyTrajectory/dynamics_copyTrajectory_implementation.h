@@ -13,7 +13,7 @@
 #include "modelInterface.h"
 #include "observationInterface.h"
 
-/** \addtogroup Components openPASS components
+/** \addtogroup Components_PCM openPASS components pcm
 * @{
 * \addtogroup Dynamics_CopyTrajectory
 * \brief Dynamic component to follow a exactly a given trajectory.
@@ -107,6 +107,7 @@ public:
 private:
 
     unsigned int counter;       //!< index, which waypoint has been given out already
+    double timeStep;            //!< Time step as double in s
 
     const std::vector<int>    *timeVec = nullptr;   //!< time vector of trajectory
     const std::vector<double> *xPosVec = nullptr;   //!< x coordinate vector of trajectory

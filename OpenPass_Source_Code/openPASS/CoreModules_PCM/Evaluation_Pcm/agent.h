@@ -550,7 +550,11 @@ public:
         return false;   //dummy
     }
 
-    virtual std::string GetTypeOfNearestMark() const
+    MarkType GetTypeOfNearestMark() const
+    {
+        return MarkType::NONE;
+    }//dummy
+    virtual std::string GetTypeOfNearestMarkString() const
     {
         return "";
     }//dummy
@@ -650,6 +654,110 @@ public:
         Q_UNUSED(range);
         return INFINITY;
     }//dummy
+    std::string GetTypeOfNearestObject(AgentViewDirection agentViewDirection,
+                                       double range) const
+    {
+        Q_UNUSED(agentViewDirection);
+        Q_UNUSED(range);
+
+        return "";
+    }//dummy
+    std::string GetTypeOfNearestObject(double mainViewDirection,
+                                       double range) const
+    {
+        Q_UNUSED(mainViewDirection);
+        Q_UNUSED(range);
+
+        return "";
+    }//dummy
+    double GetDistanceToNearestObjectInViewRange(ObjectType objectType,
+                                                 AgentViewDirection agentViewDirection,
+                                                 double range) const
+    {
+        Q_UNUSED(objectType);
+        Q_UNUSED(agentViewDirection);
+        Q_UNUSED(range);
+
+        return INFINITY;
+    }//dummy
+    double GetDistanceToNearestObjectInViewRange(ObjectType objectType,
+                                                 double mainViewDirection,
+                                                 double range) const
+    {
+        Q_UNUSED(objectType);
+        Q_UNUSED(mainViewDirection);
+        Q_UNUSED(range);
+
+        return INFINITY;
+    }//dummy
+    double GetViewDirectionToNearestObjectInViewRange(ObjectType objectType,
+                                                      AgentViewDirection agentViewDirection,
+                                                      double range) const
+    {
+        Q_UNUSED(objectType);
+        Q_UNUSED(agentViewDirection);
+        Q_UNUSED(range);
+
+        return INFINITY;
+    }//dummy
+    double GetViewDirectionToNearestObjectInViewRange(ObjectType objectType,
+                                                      double mainViewDirection,
+                                                      double range) const
+    {
+        Q_UNUSED(objectType);
+        Q_UNUSED(mainViewDirection);
+        Q_UNUSED(range);
+
+        return INFINITY;
+    }//dummy
+    int GetIdOfNearestAgent(AgentViewDirection agentViewDirection,
+                            double range) const
+    {
+        Q_UNUSED(agentViewDirection);
+        Q_UNUSED(range);
+
+        return -1;
+    }//dummy
+    int GetIdOfNearestAgent(double mainViewDirection,
+                            double range) const
+    {
+        Q_UNUSED(mainViewDirection);
+        Q_UNUSED(range);
+
+        return -1;
+    }//dummy
+    double GetDistanceToNearestAgentInViewRange(AgentViewDirection agentViewDirection,
+                                                double range) const
+    {
+        Q_UNUSED(agentViewDirection);
+        Q_UNUSED(range);
+
+        return INFINITY;
+    }//dummy
+    double GetDistanceToNearestAgentInViewRange(double mainViewDirection,
+                                                double range) const
+    {
+        Q_UNUSED(mainViewDirection);
+        Q_UNUSED(range);
+
+        return INFINITY;
+    }//dummy
+    double GetViewDirectionToNearestAgentInViewRange(AgentViewDirection agentViewDirection,
+                                                     double range) const
+    {
+        Q_UNUSED(agentViewDirection);
+        Q_UNUSED(range);
+
+        return INFINITY;
+    }//dummy
+    double GetViewDirectionToNearestAgentInViewRange(double mainViewDirection,
+                                                     double range) const
+    {
+        Q_UNUSED(mainViewDirection);
+        Q_UNUSED(range);
+
+        return INFINITY;
+    }//dummy
     double GetYawVelocity()
     {
         return 0;   //dummy
@@ -687,6 +795,47 @@ public:
         return nullptr;    //dummy
     }
 
+    void SetAccelerationIntention(double accelerationIntention)
+    {
+        Q_UNUSED(accelerationIntention);   //dummy
+    }
+
+    double GetAccelerationIntention() const
+    {
+        return 0;   //dummy
+    }
+    void SetDecelerationIntention(double decelerationIntention)
+    {
+        Q_UNUSED(decelerationIntention);   //dummy
+    }
+
+    double GetDecelerationIntention() const
+    {
+        return 0;   //dummy
+    }
+
+    void SetAngleIntention(double angleIntention)
+    {
+        Q_UNUSED(angleIntention);   //dummy
+    }
+
+    double GetAngleIntention() const
+    {
+        return 0;   //dummy
+    }
+
+    void SetCollisionState(bool collisionState)
+    {
+        Q_UNUSED(collisionState);   //dummy
+    }
+    bool GetCollisionState() const
+    {
+        return false;   //dummy
+    }
+    double GetAccelerationAbsolute() const
+    {
+        return 0;//dummy
+    }
 
 private:
     double positionX = 0.0;         //!< x-coordinate of the agent

@@ -13,7 +13,7 @@
 #include "componentPorts.h"
 
 /**
-* \addtogroup CoreModules openPASS CoreModules
+* \addtogroup CoreModules_PCM openPASS CoreModules pcm
 * @{
 * \addtogroup SpawnPoint_PCM
 *

@@ -13,7 +13,10 @@
 #include "worldInterface.h"
 #include "agentNetwork.h"
 
-/** \addtogroup World
+/**
+* \addtogroup CoreModules_Basic openPASS CoreModules basic
+* @{
+* \addtogroup World_Basic
 * @{
 * \brief implementation of a world interface
 *
@@ -42,6 +45,7 @@
 *
 * @see WorldInterface
 *
+* @}
 * @} */
 
 /*!
@@ -50,25 +54,31 @@
  * This class implements all function of the WorldInterface. It is responsible for all
  * dynamic and static objects in a given scenery.
  *
- * \ingroup World
+ * \ingroup World_Basic
  */
 class World_Basic_Implementation : public WorldInterface
 {
 public:
     World_Basic_Implementation(const CallbackInterface *callbacks);
-    World_Basic_Implementation(const World_Basic_Implementation&) = delete;
-    World_Basic_Implementation(World_Basic_Implementation&&) = delete;
-    World_Basic_Implementation& operator=(const World_Basic_Implementation&) = delete;
-    World_Basic_Implementation& operator=(World_Basic_Implementation&&) = delete;
+    World_Basic_Implementation(const World_Basic_Implementation &) = delete;
+    World_Basic_Implementation(World_Basic_Implementation &&) = delete;
+    World_Basic_Implementation &operator=(const World_Basic_Implementation &) = delete;
+    World_Basic_Implementation &operator=(World_Basic_Implementation &&) = delete;
     virtual ~World_Basic_Implementation();
 
-    virtual void* GetGlobalDrivingView() {return nullptr;} //dummy
+    virtual void *GetGlobalDrivingView()
+    {
+        return nullptr;   //dummy
+    }
 
-    virtual void* GetGlobalObjects() {return nullptr;} //dummy
+    virtual void *GetGlobalObjects()
+    {
+        return nullptr;   //dummy
+    }
 
-    bool AddAgent(int id,AgentInterface *agent);
+    bool AddAgent(int id, AgentInterface *agent);
     const AgentInterface *GetAgent(int id) const;
-    const std::map<int, const AgentInterface*> &GetAgents() const;
+    const std::map<int, const AgentInterface *> &GetAgents() const;
 
     // framework internal methods to access members without restrictions
     void SetParameter(WorldParameter *worldParameter);
@@ -83,7 +93,7 @@ public:
     Weekday GetWeekday() const;
 
     void QueueAgentUpdate(std::function<void(double)> func,
-                              double val);
+                          double val);
     void QueueAgentRemove(const AgentInterface *agent);
     void SyncGlobalData();
 
@@ -91,20 +101,35 @@ public:
 
     AgentInterface *CreateAgentAdapterForAgent();
 
-    const AgentInterface *GetSpecialAgent() {return nullptr;} //dummy
+    const AgentInterface *GetSpecialAgent()
+    {
+        return nullptr;   //dummy
+    }
 
-    const AgentInterface *GetLastCarInlane(int laneNumber) {Q_UNUSED(laneNumber);
-                                                            return nullptr;} //dummy
+    const AgentInterface *GetLastCarInlane(int laneNumber)
+    {
+        Q_UNUSED(laneNumber);
+        return nullptr;
+    } //dummy
 
-    const AgentInterface *GetBicycle() const {return nullptr;} //dummy
+    const AgentInterface *GetBicycle() const
+    {
+        return nullptr;   //dummy
+    }
 
     Position GetPositionByDistanceAndLane(double distance,
-                                          int laneNumber) const {Q_UNUSED(distance);
-                                                                 Q_UNUSED(laneNumber);
-                                                                 return Position();} //dummy
+                                          int laneNumber) const
+    {
+        Q_UNUSED(distance);
+        Q_UNUSED(laneNumber);
+        return Position();
+    } //dummy
 
-    bool CreateWorldScenery(const  std::string &sceneryFilename) {Q_UNUSED(sceneryFilename);
-                                                                 return false;} //dummy
+    bool CreateWorldScenery(const  std::string &sceneryFilename)
+    {
+        Q_UNUSED(sceneryFilename);
+        return false;
+    } //dummy
 
 protected:
     //-----------------------------------------------------------------------------
@@ -120,7 +145,7 @@ protected:
              int line,
              const std::string &message)
     {
-        if(callbacks)
+        if (callbacks)
         {
             callbacks->Log(logLevel,
                            file,

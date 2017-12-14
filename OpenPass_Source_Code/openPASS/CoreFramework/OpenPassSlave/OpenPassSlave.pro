@@ -25,8 +25,18 @@ QMAKE_CXXFLAGS += -std=c++11 -Dunix
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = OpenPassSlave
-CONFIG   -= app_bundle
-TEMPLATE = app
+
+###############################################################################
+# Use this line in Global.pri to build openPASS-Slave as library
+# CONFIG += USEOPENPASSSLAVEASLIBRARY
+###############################################################################
+
+USEOPENPASSSLAVEASLIBRARY {
+    TEMPLATE = lib
+    DEFINES += OPENPASSSLAVELIBRARY
+} else {
+    TEMPLATE = app
+}
 
 Release:DESTDIR = $$DIR_RELEASE
 Debug:DESTDIR = $$DIR_DEBUG

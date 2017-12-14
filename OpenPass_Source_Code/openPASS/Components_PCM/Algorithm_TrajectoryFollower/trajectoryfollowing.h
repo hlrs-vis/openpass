@@ -20,7 +20,7 @@
 #include "vec2d.h"
 #include "pid_controller.h"
 #include "lowpass.h"
-#include "externalTrajectory.h"
+#include "trajectory.h"
 
 const double GRAVITY = 9.81;                    //!< gravity constant G in m/s^2
 const double PI  = 3.141592653589793238463;     //!< the circle number \pi
@@ -45,8 +45,8 @@ public:
 
     //! Standard constructor
     CarStatistics():
-        weight(1), wheelbase(1), tireCoefficient1(1),tireCoefficient2(1),
-        distanceFrontAxleToCOG(1), distanceRearAxleToCOG(1), frontWheelAngleLimit(PI/2.)
+        weight(1), wheelbase(1), tireCoefficient1(1), tireCoefficient2(1),
+        distanceFrontAxleToCOG(1), distanceRearAxleToCOG(1), frontWheelAngleLimit(PI / 2.)
     {
         calculateDerivedParameters();
     }
@@ -64,7 +64,8 @@ public:
                   double frontWheelAngleLimit):
         weight(weight), wheelbase(wheelbase), tireCoefficient1(tireCoefficient1),
         tireCoefficient2(tireCoefficient2), distanceFrontAxleToCOG(distanceFrontAxleToCOG),
-        distanceRearAxleToCOG(wheelbase-distanceFrontAxleToCOG), frontWheelAngleLimit(frontWheelAngleLimit)
+        distanceRearAxleToCOG(wheelbase - distanceFrontAxleToCOG),
+        frontWheelAngleLimit(frontWheelAngleLimit)
     {
         calculateDerivedParameters();
     }
@@ -140,23 +141,23 @@ private:
 
     void calculateDerivedParameters()
     {
-        NormalForceFront = distanceRearAxleToCOG*weight*GRAVITY/wheelbase;
-        NormalForceRear = distanceFrontAxleToCOG*weight*GRAVITY/wheelbase;
+        NormalForceFront = distanceRearAxleToCOG * weight * GRAVITY / wheelbase;
+        NormalForceRear = distanceFrontAxleToCOG * weight * GRAVITY / wheelbase;
 
         CorneringStiffnessCoefficientFront =
-                tireCoefficient1*NormalForceFront*NormalForceFront/2 +
-                tireCoefficient2*NormalForceFront;
+            tireCoefficient1 * NormalForceFront * NormalForceFront / 2 +
+            tireCoefficient2 * NormalForceFront;
 
         CorneringStiffnessCoefficientRear =
-                tireCoefficient1*NormalForceRear*NormalForceRear/2 +
-                tireCoefficient2*NormalForceRear;
+            tireCoefficient1 * NormalForceRear * NormalForceRear / 2 +
+            tireCoefficient2 * NormalForceRear;
     }
 };
 
 //! Lightweight structure comprising all information on a way point within a trajectory
 struct WaypointData
 {
- Vec2D position;         //!< position (x- and y-coordinates)
+    Vec2D position;         //!< position (x- and y-coordinates)
     double velocity;        //!< velocity
     double time;            //!< timestamp
 
@@ -172,19 +173,20 @@ struct WaypointData
     //! @param[in]     velocity
     //! @param[in]     time
     WaypointData(double x, double y, double velocity, double time):
-        position(x,y), velocity(velocity), time(time)
+        position(x, y), velocity(velocity), time(time)
     {}
 };
 
 //! Lightweight structure comprising all information on positioning a vehicle
-struct PositionData {
+struct PositionData
+{
     Vec2D position;         //!< 2d vector with x- and y-coordinates
     double angle;           //!< angle
     double velocity;        //!< velocity
 
     //! Standard constructor
     PositionData():
-        position(),angle(0),velocity(0)
+        position(), angle(0), velocity(0)
     {}
 
     //! Constructor
@@ -219,7 +221,7 @@ struct ControlData
 
     //! Standard constructor
     ControlData():
-        frontWheelAngle(0),brake(0),gas(0)
+        frontWheelAngle(0), brake(0), gas(0)
     {}
 
     //! Constructor
@@ -440,12 +442,14 @@ private:
     CarStatistics &CarStats_;                       //!< struct with all information on the vehicle
     State CurrentState_;                            //!< struct comprising the position and the control data
     PIDController &GasPID_, &BrakePID_;             //!< control algorithms for the brake and gas pedal
-    LowPassFilter generalLowPassFilter;             //!< filter for filtering the results of the brake and gas
+    LowPassFilter
+    generalLowPassFilter;             //!< filter for filtering the results of the brake and gas
 
     double lookAheadTime_;                          //!< how far does the algorithm plan in advance
     int currentWayPointIndex_;                      //!< current target waypoint
     int previousWayPointIndex_;                     //!< waypoint previously passed
-    std::vector<double> distancesBetweenConsecutiveWayPoints;     //!< distances of consecutive way points
+    std::vector<double>
+    distancesBetweenConsecutiveWayPoints;     //!< distances of consecutive way points
 
     //! Function calculating the all distances between consecutive way points
     //!

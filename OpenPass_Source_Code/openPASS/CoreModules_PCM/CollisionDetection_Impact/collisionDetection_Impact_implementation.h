@@ -22,7 +22,7 @@
 #include "postCrashDynamic.h"
 
 /**
-* \addtogroup CoreModules openPASS CoreModules
+* \addtogroup CoreModules_PCM openPASS CoreModules pcm
 * @{
 * \addtogroup CollisionDetection_Impact
 *
@@ -120,7 +120,8 @@ protected:
              int line,
              const std::string &message)
     {
-        if (callbacks) {
+        if (callbacks)
+        {
             callbacks->Log(logLevel,
                            file,
                            line,

@@ -10,7 +10,6 @@
 
 World_PCM_Implementation::World_PCM_Implementation(const CallbackInterface *callbacks):
     agentNetwork(this, callbacks),
-    sceneryImporterPCM(callbacks),
     callbacks(callbacks)
 {}
 
@@ -44,7 +43,8 @@ void World_PCM_Implementation::Clear()
 {
     agentNetwork.Clear();
     pcmData.Clear();
-    for (auto &trajectoryItem : trajectories) {
+    for (auto &trajectoryItem : trajectories)
+    {
         trajectoryItem.second.Clear();
     }
 
@@ -70,6 +70,7 @@ void World_PCM_Implementation::QueueAgentRemove(const AgentInterface *agent)
 void World_PCM_Implementation::SyncGlobalData()
 {
     agentNetwork.SyncGlobalData();
+    UpdatePcmAgentData();
 }
 
 bool World_PCM_Implementation::CreateScenery(SceneryInterface &scenery)
@@ -118,4 +119,22 @@ const PCM_Data *World_PCM_Implementation::GetPCM_Data() const
 const Trajectory *World_PCM_Implementation::GetTrajectory(int agentId) const
 {
     return &trajectories.find(agentId)->second;
+}
+
+void World_PCM_Implementation::UpdatePcmAgentData()
+{
+    pcmData.ClearAgentData();
+    std::map<int, const AgentInterface *> agents = GetAgents();
+    for (std::map<int, const AgentInterface *>::iterator it = agents.begin();
+            it != agents.end(); ++it)
+    {
+
+        const AgentInterface *agent = it->second;
+        pcmData.AddPCM_Agent(agent->GetAgentId(),
+                             agent->GetPositionX(),
+                             agent->GetPositionY(),
+                             agent->GetYawAngle(),
+                             agent->GetWidth(),
+                             agent->GetHeight());
+    }
 }

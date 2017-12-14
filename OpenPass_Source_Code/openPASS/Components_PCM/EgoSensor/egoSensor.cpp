@@ -37,7 +37,12 @@ extern "C" EGO_SENSOR_SHARED_EXPORT ModelInterface *OpenPASS_CreateInstance(int 
 {
     Callbacks = callbacks;
 
-    try {
+    if (priority == 0)
+    {
+        priority = 203;
+    }
+    try
+    {
         return (ModelInterface *)(new (std::nothrow) EgoSensor_Implementation(
                                       componentId,
                                       isInit,
@@ -51,14 +56,20 @@ extern "C" EGO_SENSOR_SHARED_EXPORT ModelInterface *OpenPASS_CreateInstance(int 
                                       observations,
                                       callbacks,
                                       agent));
-    } catch (const std::runtime_error &ex) {
-        if (Callbacks != nullptr) {
+    }
+    catch (const std::runtime_error &ex)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, ex.what());
         }
 
         return nullptr;
-    } catch (...) {
-        if (Callbacks != nullptr) {
+    }
+    catch (...)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, "unexpected exception");
         }
 
@@ -76,16 +87,23 @@ extern "C" EGO_SENSOR_SHARED_EXPORT bool OpenPASS_UpdateInput(ModelInterface *im
                                                               const std::shared_ptr<SignalInterface const> &data,
                                                               int time)
 {
-    try {
+    try
+    {
         implementation->UpdateInput(localLinkId, data, time);
-    } catch (const std::runtime_error &ex) {
-        if (Callbacks != nullptr) {
+    }
+    catch (const std::runtime_error &ex)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, ex.what());
         }
 
         return false;
-    } catch (...) {
-        if (Callbacks != nullptr) {
+    }
+    catch (...)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, "unexpected exception");
         }
 
@@ -100,16 +118,23 @@ extern "C" EGO_SENSOR_SHARED_EXPORT bool OpenPASS_UpdateOutput(ModelInterface *i
                                                                std::shared_ptr<SignalInterface const> &data,
                                                                int time)
 {
-    try {
+    try
+    {
         implementation->UpdateOutput(localLinkId, data, time);
-    } catch (const std::runtime_error &ex) {
-        if (Callbacks != nullptr) {
+    }
+    catch (const std::runtime_error &ex)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, ex.what());
         }
 
         return false;
-    } catch (...) {
-        if (Callbacks != nullptr) {
+    }
+    catch (...)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, "unexpected exception");
         }
 
@@ -122,16 +147,23 @@ extern "C" EGO_SENSOR_SHARED_EXPORT bool OpenPASS_UpdateOutput(ModelInterface *i
 extern "C" EGO_SENSOR_SHARED_EXPORT bool OpenPASS_Trigger(ModelInterface *implementation,
                                                           int time)
 {
-    try {
+    try
+    {
         implementation->Trigger(time);
-    } catch (const std::runtime_error &ex) {
-        if (Callbacks != nullptr) {
+    }
+    catch (const std::runtime_error &ex)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, ex.what());
         }
 
         return false;
-    } catch (...) {
-        if (Callbacks != nullptr) {
+    }
+    catch (...)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, "unexpected exception");
         }
 

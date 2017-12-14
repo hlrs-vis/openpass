@@ -17,50 +17,36 @@
 
 #include <string>
 #include <list>
+#include "slaveConfig.h"
 
-namespace SimulationMaster
-{
+namespace SimulationMaster {
 
 class FrameworkConfig
 {
-public:    
+public:
 
-    FrameworkConfig(const std::string &libraryPath,
-                    const std::string &observationResultPath,
-                    const std::string &agentConfigFile,
-                    const std::string &runConfigFile,
-                    const std::string &sceneryConfigFile,
-                    const std::string &logFileMaster,
-                    const std::string &logFileSlave,
+    FrameworkConfig(const std::string &logFileMaster,
                     int logLevel,
-                    const std::string &slavePath);
+                    const std::string &slavePath,
+                    std::list<SlaveConfig> &slaveConfigList);
 
-    FrameworkConfig(const FrameworkConfig&) = delete;
-    FrameworkConfig(FrameworkConfig&&) = delete;
-    FrameworkConfig& operator=(const FrameworkConfig&) = delete;
-    FrameworkConfig& operator=(FrameworkConfig&&) = delete;
+    FrameworkConfig(const FrameworkConfig &) = delete;
+    FrameworkConfig(FrameworkConfig &&) = delete;
+    FrameworkConfig &operator=(const FrameworkConfig &) = delete;
+    FrameworkConfig &operator=(FrameworkConfig &&) = delete;
     virtual ~FrameworkConfig();
 
-    const std::string &GetLibraryPath() const;
-    const std::string &GetObservationResultPath() const;
-    const std::string &GetAgentConfigFile() const;
-    const std::string &GetRunConfigFile() const;
-    const std::string &GetSceneryConfigFile() const;
     const std::string &GetLogFileMaster() const;
-    const std::string &GetLogFileSlave() const;
     int GetLogLevel() const;
     const std::string &GetSlavePath() const;
 
+    std::list<SlaveConfig> GetSlaveConfigList() const;
+
 private:
-    std::string libraryPath;
-    std::string observationResultPath;
-    std::string agentConfigFile;
-    std::string runConfigFile;
-    std::string sceneryConfigFile;
     std::string logFileMaster;
-    std::string logFileSlave;
     int logLevel;
     std::string slavePath;
+    std::list<SlaveConfig> slaveConfigList;
 };
 
 } // namespace SimulationMaster

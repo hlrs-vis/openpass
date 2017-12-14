@@ -35,6 +35,7 @@ Dynamics_CopyTrajectory_Implementation::Dynamics_CopyTrajectory_Implementation(i
                       callbacks,
                       agent)
 {
+    timeStep = static_cast<double> (GetCycleTime()) / 1000.0;
     counter = 0;
     timeVec = GetAgent()->GetTrajectoryTime();
     xPosVec = GetAgent()->GetTrajectoryXPos();
@@ -65,7 +66,7 @@ void Dynamics_CopyTrajectory_Implementation::Trigger(int time)
 {
     Q_UNUSED(time);
 
-    if (counter < timeVec->size() - 1)
+    if (counter < timeVec->size())
     {
         AgentInterface *ownAgent = GetAgent();
 
@@ -81,5 +82,22 @@ void Dynamics_CopyTrajectory_Implementation::Trigger(int time)
 
         counter++;
     }
+    else
+    {
+        AgentInterface *ownAgent = GetAgent();
+
+        ownAgent->SetPositionX(GetAgent()->GetPositionX() + timeStep * velVec->at(counter - 1)
+                               * cos(psiVec->at(counter - 1)));
+        ownAgent->SetPositionY(GetAgent()->GetPositionY() + timeStep * velVec->at(counter - 1)
+                               * sin(psiVec->at(counter - 1)));
+        ownAgent->SetVelocityX(velVec->at(counter - 1));
+        ownAgent->SetYawAngle(psiVec->at(counter - 1));
+
+        std::stringstream log;
+        log << GetComponentId() << " (agent " << ownAgent->GetAgentId() << "): newX = " << xPosVec->at(
+                counter - 1) << ", newY = " << yPosVec->at(counter - 1);
+        LOG(CbkLogLevel::Debug, log.str());
+    }
+
 }
 
