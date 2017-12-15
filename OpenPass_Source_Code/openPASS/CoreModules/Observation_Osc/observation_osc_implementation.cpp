@@ -13,6 +13,11 @@
 #include <fstream>
 #include "observation_osc_implementation.h"
 #include <list>
+#include <stdlib.h>
+
+#include <chrono>
+#include <ctime>
+#include <locale>
 
 const std::string Observation_Osc_Implementation::PeriodicTypeStrings[] =
 {
@@ -106,6 +111,13 @@ void Observation_Osc_Implementation::SlavePreHook(const std::string &path)
     {
         QFile::remove(QString::fromStdString(finalXoscPath));
     }
+    // create Date
+    auto datenow = std::chrono::system_clock::now();
+    std::time_t date = std::chrono::system_clock::to_time_t(datenow);
+    auto ds = std::localtime(&date);
+
+    //2016-10-18T10:00:00
+    dateAttributeValue = QString::number(ds->tm_year+1900) + "-" + QString::number(ds->tm_mon+1) + "-" + QString::number(ds->tm_mday) + "T" + QString::number(ds->tm_hour) + ":" +QString::number(ds->tm_min) + ":" + QString::number(ds->tm_sec);
 
 
 
@@ -277,13 +289,16 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
     //      Define Agents (Entities)
     fileStreamXosc->writeStartElement(EntitiesTag);
     for(int agentID = 0; agentID<AgentLists.size(); agentID++){
+
+        randomCarModelIndex = rand() % CarModel.size();
+
         ObjectNameValue = "Agent" + QString::number(agentID);
 
         fileStreamXosc->writeStartElement(ObjectTag);
         fileStreamXosc->writeAttribute(NameAttribute,ObjectNameValue);
         fileStreamXosc->writeStartElement(CatalogReferenceTag);
         fileStreamXosc->writeAttribute(CatalogReferenceAttribute,VehicleCatalogTag);
-        fileStreamXosc->writeAttribute(entryNameAttribute,carModel);
+        fileStreamXosc->writeAttribute(entryNameAttribute,CarModel[randomCarModelIndex]);
         fileStreamXosc->writeEndElement(); //EndCatalogRefernce
         fileStreamXosc->writeStartElement(ControllerTag);
         fileStreamXosc->writeStartElement(CatalogReferenceTag);
@@ -335,9 +350,12 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
     fileStreamXosc->writeEndElement(); //End ActionsTag
     fileStreamXosc->writeEndElement(); //End initTag
 
+    fileStreamXosc->writeStartElement(StoryTag);
+    fileStreamXosc->writeAttribute(NameAttribute, StoryNameValue);
 
     for(int agentID = 0; agentID<AgentLists.size(); agentID++){
         TrajectoryNameAttributeValue = "Agent_" + QString::number(agentID) + "_Trajectory";
+
 
 
         std::list<VehicleState> agentData = AgentLists[agentID];
@@ -347,8 +365,7 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         SimulationTimeEnd = 400; //lastTimeStep->gettime();
 
         // XOSC File
-        StoryNameValue = "MyStory" + QString::number(agentID);
-        StoryOwnerValue = "Agent" + QString::number(agentID);
+        EntityNameValue = "Agent" + QString::number(agentID);
         ActNameValue = "MyAct" + QString::number(agentID);
         SequenceNameValue = "MySequence" + QString::number(agentID);
         ManeuverNameValue = "laneChange" + QString::number(agentID);
@@ -356,9 +373,8 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         ActionNameValue = "MyLaneChangeAction" + QString::number(agentID);
 
 
-        fileStreamXosc->writeStartElement(StoryTag);
-        fileStreamXosc->writeAttribute(NameAttribute, StoryNameValue);
-        fileStreamXosc->writeAttribute(ownerAttribute, StoryOwnerValue);
+
+
         fileStreamXosc->writeStartElement(ActTag);
         fileStreamXosc->writeAttribute(NameAttribute, ActNameValue);
         fileStreamXosc->writeStartElement(SequenceTag);
@@ -447,7 +463,6 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         fileStreamXosc->writeEndElement(); //End EndTag
         fileStreamXosc->writeEndElement(); //End ConditionsTag
         fileStreamXosc->writeEndElement(); //End ActTag
-        fileStreamXosc->writeEndElement(); //End StoryTag
 
         // Trajectory File
         fileStream->writeStartElement(TrajectoryTag);
@@ -465,37 +480,24 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
 
             // Agent Stories
 
-            x = 0;
-            y = 0;
-            yaw = 0;
 
             std::list<VehicleState>::iterator t; // iterator
             for(t = agentData.begin(); t != agentData.end(); ++t)
             {
                 time = t->gettime();
-                xnew = t->getxpos();
-                ynew = t->getypos();
-                yawnew = t->getyawangle();
-
-
-                dx = xnew-x;
-                dy = ynew-y;
-                dyaw = yawnew-yaw;
-
-                // set current coordinates to previous coordinates for the next timestep
-                x = xnew;
-                y = ynew;
-                yaw = yawnew;
+                x = t->getxpos();
+                y = t->getypos();
+                yaw = t->getyawangle();
 
 
 
                 fileStream->writeStartElement(VertexTag);
                 fileStream->writeStartElement(PositionTag);
                 fileStream->writeStartElement(WorldTag);
-                fileStream->writeAttribute("x", QString::number(dx));
-                fileStream->writeAttribute("y", QString::number(dy));
+                fileStream->writeAttribute("x", QString::number(x));
+                fileStream->writeAttribute("y", QString::number(y));
                 fileStream->writeAttribute("z", "0");
-                fileStream->writeAttribute("h", QString::number(dyaw));
+                fileStream->writeAttribute("h", QString::number(yaw));
                 fileStream->writeAttribute("p", "0");
                 fileStream->writeAttribute("r", "0");
                 fileStream->writeEndElement();
@@ -523,6 +525,8 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
 
 
     }
+    fileStreamXosc->writeEndElement(); //End StoryTag
+
     fileStreamXosc->writeStartElement(EndTag);
     fileStreamXosc->writeStartElement(ConditionGroupTag);
     fileStreamXosc->writeStartElement(ConditionTag);

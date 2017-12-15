@@ -17,7 +17,7 @@
 #include "observationInterface.h"
 #include "observationtypes.h"
 #include <list>
-
+#include <stdlib.h>
 
 /** \addtogroup Observation_Osc
 * @{
@@ -205,7 +205,7 @@ private:
     const QString revMinorAttributeValue = "0";
 
     const QString dateAttribute = "date";
-    const QString dateAttributeValue = "2017-01-01T01:01:01+01:00";
+    QString dateAttributeValue;
         //#include <chrono> //auto end = std::chrono::system_clock::now();
     const QString descriptionAttribute = "description";
     const QString descriptionAttributeValue = "Studienarbeit";
@@ -280,8 +280,8 @@ private:
     const QString CatalogReferenceAttribute = "catalogName";
     const QString entryNameAttribute = "entryName";
 
-    //std::list<std::string> CarModel {"golf","seat","volvo"};
-    const QString carModel = "golf";
+    std::vector<QString> CarModel {"golf","seat","volvo"};
+    //const QString carModel = "golf";
     const QString ControllerTag = "Controller";
     const QString driverModel = "DefaultDriver";
 
@@ -310,10 +310,10 @@ private:
     const QString laneIdValue = "1";
     const QString offsetValue = "0.0";
     const QString roadIdValue = "0";
-    const QString sValue = "10.0";
+    const QString sValue = "0";
 
     const QString StoryTag = "Story";
-    QString StoryNameValue; // = "MyStoryX"
+    const QString StoryNameValue = "MyStory";
     const QString ownerAttribute = "owner";
     QString StoryOwnerValue; // = "AgentX"
     const QString ActTag = "Act";
@@ -324,7 +324,7 @@ private:
     const QString numOfExecValue = "1";
     const QString ActorsTag = "Actors";
     const QString EntityTag = "Entity";
-    const QString EntityNameValue = "$owner";
+    QString EntityNameValue;
     const QString ManeuverTag = "Maneuver";
     QString ManeuverNameValue;
     const QString EventTag = "Event";
@@ -357,7 +357,7 @@ private:
     double SimulationTimeEnd;
 
 
-
+    int randomCarModelIndex;
 
     //!< run number
     int runNumber = 0;
@@ -383,17 +383,6 @@ private:
     double y;
     double yaw;
     double time;
-
-    // coordinates of current timestep
-    double xnew;
-    double ynew;
-    double yawnew;
-
-    // delta of current and previous timestep
-    double dx;
-    double dy;
-    double dyaw;
-
 
 
 };
