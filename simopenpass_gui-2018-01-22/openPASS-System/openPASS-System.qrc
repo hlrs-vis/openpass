@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Views/ComponentListButton.png</file>
+    </qresource>
+</RCC>

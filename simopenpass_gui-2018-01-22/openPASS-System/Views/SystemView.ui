@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SystemView</class>
+ <widget class="QWidget" name="SystemView">
+  <property name="styleSheet">
+   <string notr="true">QPushButton {
+  background-color: #e5e5e5;
+  border: 0;
+}
+
+QPushButton:hover {
+  background-color: #dedede;
+}
+
+QPushButton:pressed {
+  background-color: #b7b7b7;
+}
+
+QPushButton:checked {
+  background-color: #cdcdcd;
+}</string>
+  </property>
+  <layout class="QHBoxLayout" name="layout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
