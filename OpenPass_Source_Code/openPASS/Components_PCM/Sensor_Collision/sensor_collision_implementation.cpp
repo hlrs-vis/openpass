@@ -34,13 +34,17 @@ Sensor_Collision_Implementation::Sensor_Collision_Implementation(int componentId
                     callbacks,
                     agent)
 {
-    try {
+    try
+    {
         std::map<int, int> parameterMapIntExternal = GetParameters()->GetParametersInt();
-        foreach (auto &iterator, parameterMapInt) {
+        foreach (auto &iterator, parameterMapInt)
+        {
             int id = iterator.first;
             parameterMapInt.at(id)->SetValue(parameterMapIntExternal.at(id));
         }
-    } catch (...) {
+    }
+    catch (...)
+    {
         const std::string msg = COMPONENTNAME + " could not init parameters";
         LOG(CbkLogLevel::Error, msg);
         throw std::runtime_error(msg);
@@ -74,10 +78,13 @@ void Sensor_Collision_Implementation::UpdateOutput(int localLinkId,
 
     bool success = outputPorts.at(localLinkId)->GetSignalValue(data);
 
-    if (success) {
+    if (success)
+    {
         log << COMPONENTNAME << " UpdateOutput successful";
         LOG(CbkLogLevel::Debug, log.str());
-    } else {
+    }
+    else
+    {
         log << COMPONENTNAME << " UpdateOutput failed";
         LOG(CbkLogLevel::Error, log.str());
     }
@@ -87,7 +94,8 @@ void Sensor_Collision_Implementation::Trigger(int time)
 {
     std::vector<int> collisionPartners = GetAgent()->GetCollisionPartners();
     int numberOfCollisionData = 0;
-    for (size_t i = 0; i < collisionPartners.size(); i++) {
+    for (size_t i = 0; i < collisionPartners.size(); i++)
+    {
         std::vector<void *> collisionData = GetAgent()->GetCollisionData(collisionPartners.at(i),
                                                                          POSTCRASHDYNAMICID);
         numberOfCollisionData += collisionData.size();
@@ -95,14 +103,21 @@ void Sensor_Collision_Implementation::Trigger(int time)
 
     CollisionState nextState = CollisionState::NOCOLLISION;
 
-    switch (collisionState) {
+    switch (collisionState)
+    {
     case CollisionState::NOCOLLISION:
-        if (previousNumberOfCollisionData == numberOfCollisionData) {
+        if (previousNumberOfCollisionData == numberOfCollisionData)
+        {
             nextState = CollisionState::NOCOLLISION;
-        } else {
-            if (penetrationTime.GetValue() < GetCycleTime()) {
+        }
+        else
+        {
+            if (penetrationTime.GetValue() < GetCycleTime())
+            {
                 nextState = CollisionState::COLLISION;
-            } else {
+            }
+            else
+            {
                 timeOfFirstCollision = time;
                 nextState = CollisionState::COLLISIONPENETRATING;
             }
@@ -111,28 +126,37 @@ void Sensor_Collision_Implementation::Trigger(int time)
     case CollisionState::COLLISIONPENETRATING:
         if (((time - timeOfFirstCollision) < (penetrationTime.GetValue() -
                                               GetCycleTime())) // collision penetration time is not over
-                && (previousNumberOfCollisionData != numberOfCollisionData)) { // collision is still happening
+                && (previousNumberOfCollisionData != numberOfCollisionData))   // collision is still happening
+        {
             nextState = CollisionState::COLLISIONPENETRATING;
-        } else {
+        }
+        else
+        {
             nextState = CollisionState::COLLISION;
         }
         break;
     case CollisionState::COLLISION:
-        if (previousNumberOfCollisionData == numberOfCollisionData) {
+        if (previousNumberOfCollisionData == numberOfCollisionData)
+        {
             nextState = CollisionState::NOCOLLISION;
-        } else {
+        }
+        else
+        {
             nextState = CollisionState::COLLISION;
         }
         break;
     }
 
-    switch (nextState) {
+    switch (nextState)
+    {
     case CollisionState::NOCOLLISION:
     case CollisionState::COLLISIONPENETRATING:
         collisionOccured.SetValue(false);
+        GetAgent()->SetCollisionState(false);
         break;
     case CollisionState::COLLISION:
         collisionOccured.SetValue(true);
+        GetAgent()->SetCollisionState(true);
         break;
     }
 

@@ -12,6 +12,7 @@
 #include "modelInterface.h"
 #include "observationInterface.h"
 #include "primitiveSignals.h"
+#include "vectorSignals.h"
 #include "vector2d.h"
 #include "componentPorts.h"
 #include "dynamics_twotrack_vehicle.h"
@@ -19,7 +20,7 @@
 using namespace Common;
 
 /**
- * \addtogroup Components openPASS components
+ * \addtogroup Components_PCM openPASS components pcm
  * @{
  * \addtogroup Dynamics_TwoTrack
  * \brief Dynamic component to model the dynamic of a two track vehicle.
@@ -53,18 +54,18 @@ public:
     //! @param[in]     callbacks      Pointer to the callbacks
     //! @param[in]     agent          Pointer to the agent in which the module is situated
     Dynamics_TwoTrack_Implementation(
-            int componentId,
-            bool isInit,
-            int priority,
-            int offsetTime,
-            int responseTime,
-            int cycleTime,
-            StochasticsInterface *stochastics,
-            WorldInterface *world,
-            const ParameterInterface *parameters,
-            const std::map<int, ObservationInterface *> *observations,
-            const CallbackInterface *callbacks,
-            AgentInterface *agent);
+        int componentId,
+        bool isInit,
+        int priority,
+        int offsetTime,
+        int responseTime,
+        int cycleTime,
+        StochasticsInterface *stochastics,
+        WorldInterface *world,
+        const ParameterInterface *parameters,
+        const std::map<int, ObservationInterface *> *observations,
+        const CallbackInterface *callbacks,
+        AgentInterface *agent);
     Dynamics_TwoTrack_Implementation(const Dynamics_TwoTrack_Implementation &) = delete;
     Dynamics_TwoTrack_Implementation(Dynamics_TwoTrack_Implementation &&) = delete;
     Dynamics_TwoTrack_Implementation &operator=(const Dynamics_TwoTrack_Implementation &) = delete;
@@ -132,6 +133,7 @@ private:
     InputPort<DoubleSignal, double> throttlePedal {0, &inputPorts}; //!< State of the gas pedal [0...1]
     InputPort<DoubleSignal, double> brakePedal {1, &inputPorts}; //!< State of the brake pedal [0...1]
     InputPort<DoubleSignal, double> angleTireFront {2, &inputPorts}; //!< Mean pointing angle of the front tires in car coordinate system [rad]
+    InputPort<SignalVectorDouble, std::vector<double>> brakeSuperpose {3, &inputPorts}; //!< Brake superposition (e.g. correction of the trajectory by lane assist)
     /**
      *      @}
      *  @}

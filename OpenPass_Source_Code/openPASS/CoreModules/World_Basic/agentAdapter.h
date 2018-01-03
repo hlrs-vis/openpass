@@ -154,10 +154,12 @@ public:
     void UpdateCollision(int collisionPartnerId)
     {
         auto findIter = std::find_if(idsCollisionPartners.begin(), idsCollisionPartners.end(),
-        [collisionPartnerId](const int &idInList) {
+                                     [collisionPartnerId](const int &idInList)
+        {
             return collisionPartnerId == idInList;
         });
-        if (findIter == idsCollisionPartners.end()) {
+        if (findIter == idsCollisionPartners.end())
+        {
             // not in list yet
             idsCollisionPartners.push_back(collisionPartnerId);
         }
@@ -191,7 +193,8 @@ public:
 
     void SetPositionX(double positionX)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdatePositionX(arg);
         },
         positionX);
@@ -199,7 +202,8 @@ public:
 
     void SetPositionY(double positionY)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdatePositionY(arg);
         },
         positionY);
@@ -207,7 +211,8 @@ public:
 
     void SetWidth(double width)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdateWidth(arg);
         },
         width);
@@ -215,7 +220,8 @@ public:
 
     void SetLength(double length)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdateLength(arg);
         },
         length);
@@ -223,7 +229,8 @@ public:
 
     void SetHeight(double height)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdateHeight(arg);
         },
         height);
@@ -231,7 +238,8 @@ public:
 
     void SetVelocityX(double velocityX)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdateVelocityX(arg);
         },
         velocityX);
@@ -239,7 +247,8 @@ public:
 
     void SetVelocityY(double velocityY)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdateVelocityY(arg);
         },
         velocityY);
@@ -247,7 +256,8 @@ public:
 
     void SetDistanceCOGtoFrontAxle(double distanceCOGtoFrontAxle)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdateDistanceCOGtoFrontAxle(arg);
         },
         distanceCOGtoFrontAxle);
@@ -255,7 +265,8 @@ public:
 
     void SetWeight(double weight)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdateWeight(arg);
         },
         weight);
@@ -263,7 +274,8 @@ public:
 
     void SetHeightCOG(double heightCOG)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdateHeightCOG(arg);
         },
         heightCOG);
@@ -271,7 +283,8 @@ public:
 
     void SetWheelbase(double wheelbase)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdateWheelbase(arg);
         },
         wheelbase);
@@ -279,7 +292,8 @@ public:
 
     void SetMomentInertiaRoll(double momentInertiaRoll)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdateMomentInertiaRoll(arg);
         },
         momentInertiaRoll);
@@ -287,7 +301,8 @@ public:
 
     void SetMomentInertiaPitch(double momentInertiaPitch)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdateMomentInertiaPitch(arg);
         },
         momentInertiaPitch);
@@ -295,7 +310,8 @@ public:
 
     void SetMomentInertiaYaw(double momentInertiaYaw)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdateMomentInertiaYaw(arg);
         },
         momentInertiaYaw);
@@ -303,7 +319,8 @@ public:
 
     void SetFrictionCoeff(double frictionCoeff)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdateFrictionCoeff(arg);
         },
         frictionCoeff);
@@ -311,7 +328,8 @@ public:
 
     void SetTrackWidth(double trackWidth)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdateTrackWidth(arg);
         },
         trackWidth);
@@ -319,7 +337,8 @@ public:
 
     void SetDistanceCOGtoLeadingEdge(double distanceCOGtoLeadingEdge)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdateDistanceCOGtoLeadingEdge(arg);
         },
         distanceCOGtoLeadingEdge);
@@ -327,7 +346,8 @@ public:
 
     void SetAccelerationX(double accelerationX)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdateAccelerationX(arg);
         },
         accelerationX);
@@ -335,7 +355,8 @@ public:
 
     void SetAccelerationY(double accelerationY)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdateAccelerationY(arg);
         },
         accelerationY);
@@ -343,7 +364,8 @@ public:
 
     void SetYawAngle(double yawAngle)
     {
-        world->QueueAgentUpdate([this](double arg) {
+        world->QueueAgentUpdate([this](double arg)
+        {
             UpdateYawAngle(arg);
         },
         yawAngle);
@@ -740,7 +762,11 @@ public:
     {
         return false;   //dummy
     }
-    virtual std::string GetTypeOfNearestMark() const
+    MarkType GetTypeOfNearestMark() const
+    {
+        return MarkType::NONE;
+    }//dummy
+    virtual std::string GetTypeOfNearestMarkString() const
     {
         return "";
     }//dummy
@@ -846,6 +872,110 @@ public:
         Q_UNUSED(range);
         return INFINITY;
     }//dummy
+    std::string GetTypeOfNearestObject(AgentViewDirection agentViewDirection,
+                                       double range) const
+    {
+        Q_UNUSED(agentViewDirection);
+        Q_UNUSED(range);
+
+        return "";
+    }//dummy
+    std::string GetTypeOfNearestObject(double mainViewDirection,
+                                       double range) const
+    {
+        Q_UNUSED(mainViewDirection);
+        Q_UNUSED(range);
+
+        return "";
+    }//dummy
+    double GetDistanceToNearestObjectInViewRange(ObjectType objectType,
+                                                 AgentViewDirection agentViewDirection,
+                                                 double range) const
+    {
+        Q_UNUSED(objectType);
+        Q_UNUSED(agentViewDirection);
+        Q_UNUSED(range);
+
+        return INFINITY;
+    }//dummy
+    double GetDistanceToNearestObjectInViewRange(ObjectType objectType,
+                                                 double mainViewDirection,
+                                                 double range) const
+    {
+        Q_UNUSED(objectType);
+        Q_UNUSED(mainViewDirection);
+        Q_UNUSED(range);
+
+        return INFINITY;
+    }//dummy
+    double GetViewDirectionToNearestObjectInViewRange(ObjectType objectType,
+                                                      AgentViewDirection agentViewDirection,
+                                                      double range) const
+    {
+        Q_UNUSED(objectType);
+        Q_UNUSED(agentViewDirection);
+        Q_UNUSED(range);
+
+        return INFINITY;
+    }//dummy
+    double GetViewDirectionToNearestObjectInViewRange(ObjectType objectType,
+                                                      double mainViewDirection,
+                                                      double range) const
+    {
+        Q_UNUSED(objectType);
+        Q_UNUSED(mainViewDirection);
+        Q_UNUSED(range);
+
+        return INFINITY;
+    }//dummy
+    int GetIdOfNearestAgent(AgentViewDirection agentViewDirection,
+                            double range) const
+    {
+        Q_UNUSED(agentViewDirection);
+        Q_UNUSED(range);
+
+        return -1;
+    }//dummy
+    int GetIdOfNearestAgent(double mainViewDirection,
+                            double range) const
+    {
+        Q_UNUSED(mainViewDirection);
+        Q_UNUSED(range);
+
+        return -1;
+    }//dummy
+    double GetDistanceToNearestAgentInViewRange(AgentViewDirection agentViewDirection,
+                                                double range) const
+    {
+        Q_UNUSED(agentViewDirection);
+        Q_UNUSED(range);
+
+        return INFINITY;
+    }//dummy
+    double GetDistanceToNearestAgentInViewRange(double mainViewDirection,
+                                                double range) const
+    {
+        Q_UNUSED(mainViewDirection);
+        Q_UNUSED(range);
+
+        return INFINITY;
+    }//dummy
+    double GetViewDirectionToNearestAgentInViewRange(AgentViewDirection agentViewDirection,
+                                                     double range) const
+    {
+        Q_UNUSED(agentViewDirection);
+        Q_UNUSED(range);
+
+        return INFINITY;
+    }//dummy
+    double GetViewDirectionToNearestAgentInViewRange(double mainViewDirection,
+                                                     double range) const
+    {
+        Q_UNUSED(mainViewDirection);
+        Q_UNUSED(range);
+
+        return INFINITY;
+    }//dummy
     double GetYawVelocity()
     {
         return 0;   //dummy
@@ -882,6 +1012,41 @@ public:
     {
         return nullptr;    //dummy
     }
+    void SetAccelerationIntention(double accelerationIntention)
+    {
+        Q_UNUSED(accelerationIntention);   //dummy
+    }
+    double GetAccelerationIntention() const
+    {
+        return 0;   //dummy
+    }
+    void SetDecelerationIntention(double decelerationIntention)
+    {
+        Q_UNUSED(decelerationIntention);   //dummy
+    }
+    double GetDecelerationIntention() const
+    {
+        return 0;   //dummy
+    }
+    void SetAngleIntention(double angleIntention)
+    {
+        Q_UNUSED(angleIntention);   //dummy
+    }
+    double GetAngleIntention() const
+    {
+        return 0;   //dummy
+    }
+    void SetCollisionState(bool collisionState)
+    {
+        Q_UNUSED(collisionState);   //dummy
+    }
+    bool GetCollisionState() const
+    {
+        return false;   //dummy
+    }
+    double GetAccelerationAbsolute() const{
+        return 0;//dummy
+    }
 
 protected:
     //-----------------------------------------------------------------------------
@@ -897,7 +1062,8 @@ protected:
              int line,
              const std::string &message)
     {
-        if (callbacks) {
+        if (callbacks)
+        {
             callbacks->Log(logLevel,
                            file,
                            line,

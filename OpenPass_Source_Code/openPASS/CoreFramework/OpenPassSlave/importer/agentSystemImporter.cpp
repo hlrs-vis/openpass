@@ -6,12 +6,14 @@
 * http://www.eclipse.org/legal/epl-v10.html
 ******************************************************************************/
 
+#include <QApplication>
 #include <climits>
 #include <cfloat>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <QDomDocument>
+#include <QDir>
 #include <QFile>
 #include "agentSystemImporter.h"
 #include "componentType.h"
@@ -40,8 +42,28 @@ bool AgentSystemImporter::Import(const std::string &filename,
 {
     std::locale::global(std::locale("C"));
 
-    QFile xmlFile(filename.c_str()); // automatic object will be closed on destruction
-    if (!xmlFile.open(QIODevice::ReadOnly)) {
+    QString absoluteFilePath = "";
+
+    if (QFileInfo(QString::fromStdString(filename)).isRelative())
+    {
+        QDir baseDir = QCoreApplication::applicationDirPath();
+        absoluteFilePath = baseDir.absoluteFilePath(QString::fromStdString(filename));
+        absoluteFilePath = baseDir.cleanPath(absoluteFilePath);
+    }
+    else
+    {
+        absoluteFilePath = QString::fromStdString(filename);
+    }
+
+    if (!QFileInfo(absoluteFilePath).exists())
+    {
+        LOG_INTERN(LogLevel::Error) << "System Config does not exist.";
+        return nullptr;
+    }
+
+    QFile xmlFile(absoluteFilePath); // automatic object will be closed on destruction
+    if (!xmlFile.open(QIODevice::ReadOnly))
+    {
         LOG_INTERN(LogLevel::Warning) << "an error occurred during agent type import";
         return false;
     }
@@ -50,21 +72,25 @@ bool AgentSystemImporter::Import(const std::string &filename,
     QDomDocument document;
     QString errorMsg;
     int errorLine;
-    if (!document.setContent(xmlData, &errorMsg, &errorLine)) {
+    if (!document.setContent(xmlData, &errorMsg, &errorLine))
+    {
         LOG_INTERN(LogLevel::Warning) << "invalid xml file format of file " << filename;
         LOG_INTERN(LogLevel::Warning) << "in line " << errorLine << " : " << errorMsg.toStdString();
         return false;
     }
 
     QDomElement documentRoot = document.documentElement();
-    if (documentRoot.isNull()) {
+    if (documentRoot.isNull())
+    {
         return false;
     }
 
     // parse agents
     QDomElement systemElement;
-    if (SimulationCommon::GetFirstChildElement(documentRoot, "system", systemElement)) {
-        while (!systemElement.isNull()) {
+    if (SimulationCommon::GetFirstChildElement(documentRoot, "system", systemElement))
+    {
+        while (!systemElement.isNull())
+        {
             // retrieve agent id
             int agentId;
             CHECKFALSE(SimulationCommon::ParseInt(systemElement, "id", agentId));
@@ -91,8 +117,10 @@ bool AgentSystemImporter::Import(const std::string &filename,
             CHECKFALSE(SimulationCommon::GetFirstChildElement(systemElement, "components", componentsElement));
 
             QDomElement componentElement;
-            if (SimulationCommon::GetFirstChildElement(componentsElement, "component", componentElement)) {
-                while (!componentElement.isNull()) {
+            if (SimulationCommon::GetFirstChildElement(componentsElement, "component", componentElement))
+            {
+                while (!componentElement.isNull())
+                {
                     // retrieve component id
                     int componentId;
                     CHECKFALSE(SimulationCommon::ParseInt(componentElement, "id", componentId));
@@ -105,13 +133,13 @@ bool AgentSystemImporter::Import(const std::string &filename,
                     CHECKFALSE(!library.empty());
                     LOG_INTERN(LogLevel::DebugCore) << "library: " << library;
 
+                    QDomElement scheduleElement = componentElement.firstChildElement("schedule");
+
                     // retrieve component priority
                     int componentPriority;
-                    CHECKFALSE(SimulationCommon::ParseInt(componentElement, "priority", componentPriority));
+                    CHECKFALSE(SimulationCommon::ParseInt(scheduleElement, "priority", componentPriority));
                     CHECKFALSE(0 <= componentPriority);
                     LOG_INTERN(LogLevel::DebugCore) << "component priority: " << componentPriority;
-
-                    QDomElement scheduleElement = componentElement.firstChildElement("schedule");
 
                     // retrieve component offset time
                     int offsetTime = 0; // must be set to 0 for init tasks for scheduler
@@ -132,7 +160,8 @@ bool AgentSystemImporter::Import(const std::string &filename,
                     LOG_INTERN(LogLevel::DebugCore) << "cycle time: " << cycleTime;
 
                     bool isInitComponent = false;
-                    if (cycleTime == 0) {
+                    if (cycleTime == 0)
+                    {
                         isInitComponent = true;
                     }
 
@@ -170,8 +199,10 @@ bool AgentSystemImporter::Import(const std::string &filename,
 
             std::map<std::pair<int, int>, int> channelMap;
             QDomElement connectionElement;
-            if (SimulationCommon::GetFirstChildElement(connectionsElement, "connection", connectionElement)) {
-                while (!connectionElement.isNull()) {
+            if (SimulationCommon::GetFirstChildElement(connectionsElement, "connection", connectionElement))
+            {
+                while (!connectionElement.isNull())
+                {
                     QDomElement targetElement = connectionElement.firstChildElement("target");
                     int targetId = targetElement.firstChildElement("component").text().toInt();
                     int targetInputId = targetElement.firstChildElement("input").text().toInt();
@@ -185,13 +216,16 @@ bool AgentSystemImporter::Import(const std::string &filename,
                     std::map<std::pair<int, int>, int>::iterator channelIterator;
                     channelIterator = channelMap.find(componentPair);
 
-                    if (channelIterator == channelMap.end()) {
+                    if (channelIterator == channelMap.end())
+                    {
                         channelId = channelMap.size();
                         channelMap.emplace(std::make_pair(componentPair, channelId));
                         agent->AddChannel(channelId);
 
                         agent->GetComponents().at(sourceId)->AddOutputLink(channelId, sourceOutputId);
-                    } else {
+                    }
+                    else
+                    {
                         channelId = channelIterator->second;
                     }
                     agent->GetComponents().at(targetId)->AddInputLink(channelId, targetInputId);

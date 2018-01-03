@@ -41,55 +41,64 @@ using namespace SimulationSlave;
 //! @return                program error code / result
 //-----------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
-{
-    QCoreApplication application(argc, argv);
 
+#ifndef OPENPASSSLAVELIBRARY
+int run(int argc, char *argv[])
+#else
+extern "C" Q_DECL_EXPORT int run(int argc, char *argv[])
+#endif //OPENPASSSLAVELIBRARY
+
+{
     QElapsedTimer timer;
     timer.start();
 
     //import frameworkConfigutation either via XML or application arguments,
     //in this case via application arguments given by starting the executable
-    FrameworkConfig *frameworkConfig = FrameworkConfigImporter::Import(application);
 
-    if(!frameworkConfig)
+    FrameworkConfig *frameworkConfig = FrameworkConfigImporter::Import(argc, argv);
+
+    if (!frameworkConfig)
     {
         LOG_INTERN(LogLevel::Error) << "could not import framework configuration";
         exit(EXIT_FAILURE);
     }
 
-    LogOutputPolicy::SetFile(frameworkConfig->GetLogFile().c_str());
+    LogOutputPolicy::SetFile(frameworkConfig->GetLogFile());
     LogFile::ReportingLevel() = static_cast<LogLevel>(frameworkConfig->GetLogLevel());
     LOG_INTERN(LogLevel::DebugCore) << std::endl << std::endl << "### slave start ##";
     LOG_INTERN(LogLevel::DebugCore) << "library path: " << frameworkConfig->GetLibraryPath();
     LOG_INTERN(LogLevel::DebugCore) << "agent configuration: " << frameworkConfig->GetAgentConfigFile();
-    LOG_INTERN(LogLevel::DebugCore) << "observation result path: " << frameworkConfig->GetObservationResultPath();
+    LOG_INTERN(LogLevel::DebugCore) << "observation result path: " <<
+                                    frameworkConfig->GetObservationResultPath();
     LOG_INTERN(LogLevel::DebugCore) << "run configuration: " << frameworkConfig->GetRunConfigFile();
-    LOG_INTERN(LogLevel::DebugCore) << "scenery configuration: " << frameworkConfig->GetSceneryConfigFile();
+    LOG_INTERN(LogLevel::DebugCore) << "scenery configuration: " <<
+                                    frameworkConfig->GetSceneryConfigFile();
 
     // create folders for files which are generated during runtime
-    if(!QDir(QString::fromStdString(frameworkConfig->GetLibraryPath())).exists())
+    if (!QDir(QString::fromStdString(frameworkConfig->GetLibraryPath())).exists())
     {
-        LOG_INTERN(LogLevel::DebugCore) << "created folder";
-        QDir().mkpath(QString::fromStdString(frameworkConfig->GetLibraryPath()));
+        LOG_INTERN(LogLevel::Error) << "Library path does not exist. ";
+        return -1;
     }
 
-    if(!QDir(QFileInfo(QString::fromStdString(frameworkConfig->GetAgentConfigFile())).absolutePath()).exists())
+    if (!QFileInfo(QString::fromStdString(
+                       frameworkConfig->GetAgentConfigFile())).exists())
     {
-        LOG_INTERN(LogLevel::DebugCore) << "created folder";
-        QDir().mkpath(QFileInfo(QString::fromStdString(frameworkConfig->GetAgentConfigFile())).absolutePath());
+        LOG_INTERN(LogLevel::Error) << "Agent Config File does not exist. ";
+        return -1;
     }
 
-    if(!QDir(QString::fromStdString(frameworkConfig->GetObservationResultPath())).exists())
+    if (!QDir(QString::fromStdString(frameworkConfig->GetObservationResultPath())).exists())
     {
         LOG_INTERN(LogLevel::DebugCore) << "created folder";
         QDir().mkpath(QString::fromStdString(frameworkConfig->GetObservationResultPath()));
     }
 
-    if(!QDir(QFileInfo(QString::fromStdString(frameworkConfig->GetRunConfigFile())).absolutePath()).exists())
+    if (!QFileInfo(QString::fromStdString(
+                       frameworkConfig->GetRunConfigFile())).exists())
     {
-        LOG_INTERN(LogLevel::DebugCore) << "created folder";
-        QDir().mkpath(QFileInfo(QString::fromStdString(frameworkConfig->GetRunConfigFile())).absolutePath());
+        LOG_INTERN(LogLevel::Error) << "Run Config File does not exist. ";
+        return -1;
     }
 
     // setup framework infrastructure
@@ -129,21 +138,32 @@ int main(int argc, char *argv[])
     spawnPointNetwork.Clear();
     agentFactory.Clear();
 
-    if(runInstantiator.ExecuteRun())
+    int exitCode = 0;
+    if (runInstantiator.ExecuteRun())
     {
         LOG_INTERN(LogLevel::DebugCore) << "simulation finished successfully";
     }
     else
     {
         LOG_INTERN(LogLevel::Error) << "simulation failed";
+        exitCode = -1;
     }
 
     delete frameworkConfig;
 
-    qDebug() <<"Simulation time elapsed: "<< timer.elapsed() << " ms";
+    qDebug() << "Simulation time elapsed: " << timer.elapsed() << " ms";
 
-    LOG_INTERN(LogLevel::DebugCore) << "Simulation time elapsed: "<< timer.elapsed() << " ms";
+    LOG_INTERN(LogLevel::DebugCore) << "Simulation time elapsed: " << timer.elapsed() << " ms";
     LOG_INTERN(LogLevel::DebugCore) << "end slave";
 
-    return 0;
+    return exitCode;
 }
+
+#ifndef OPENPASSSLAVELIBRARY
+int main(int argc, char *argv[])
+{
+    QCoreApplication app(argc, argv);
+
+    return run(argc, argv);
+}
+#endif //OPENPASSSLAVELIBRARY

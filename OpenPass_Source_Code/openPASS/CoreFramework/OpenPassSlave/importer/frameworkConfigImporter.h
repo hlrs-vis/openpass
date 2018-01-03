@@ -17,8 +17,7 @@
 #include <QCoreApplication>
 #include <string>
 
-namespace SimulationSlave
-{
+namespace SimulationSlave {
 
 class FrameworkConfig;
 
@@ -27,30 +26,23 @@ class FrameworkConfig;
 //-----------------------------------------------------------------------------
 class FrameworkConfigImporter
 {
-public:    
+public:
     FrameworkConfigImporter() = default;
-    FrameworkConfigImporter(const FrameworkConfigImporter&) = delete;
-    FrameworkConfigImporter(FrameworkConfigImporter&&) = delete;
-    FrameworkConfigImporter& operator=(const FrameworkConfigImporter&) = delete;
-    FrameworkConfigImporter& operator=(FrameworkConfigImporter&&) = delete;
+    FrameworkConfigImporter(const FrameworkConfigImporter &) = delete;
+    FrameworkConfigImporter(FrameworkConfigImporter &&) = delete;
+    FrameworkConfigImporter &operator=(const FrameworkConfigImporter &) = delete;
+    FrameworkConfigImporter &operator=(FrameworkConfigImporter &&) = delete;
     virtual ~FrameworkConfigImporter() = default;
 
     //-----------------------------------------------------------------------------
-    //! Imports the XML framework configuration from the provided file path and returns
-    //! an object with the imported infos.
-    //!
-    //! @param[in]  filename            Path to the file with the XML framework config
-    //! @return                         Object containing the framework config
-    //-----------------------------------------------------------------------------
-    static FrameworkConfig *Import(const std::string &filename);
-    //-----------------------------------------------------------------------------
-    //! Imports the framework configuration from the commandline arguments of the application
+    //! Imports the framework configuration from the commandline arguments
     //! returns an object with the imported infos.
     //!
-    //! @param[in]  application         application containing the cmdline arguments
+    //! @param[in]  argc                argument count
+    //! @param[in]  argv                argument values
     //! @return                         Object containing the framework config
     //-----------------------------------------------------------------------------
-    static FrameworkConfig *Import(QCoreApplication &application);
+    static FrameworkConfig *Import(int argc, char *argv[]);
 };
 
 } // namespace SimulationSlave

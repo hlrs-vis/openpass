@@ -14,18 +14,18 @@
 #define NO_YAW_RATE
 
 Dynamics_TwoTrack_Implementation::Dynamics_TwoTrack_Implementation(
-        int componentId,
-        bool isInit,
-        int priority,
-        int offsetTime,
-        int responseTime,
-        int cycleTime,
-        StochasticsInterface *stochastics,
-        WorldInterface *world,
-        const ParameterInterface *parameters,
-        const std::map<int, ObservationInterface *> *observations,
-        const CallbackInterface *callbacks,
-        AgentInterface *agent) :
+    int componentId,
+    bool isInit,
+    int priority,
+    int offsetTime,
+    int responseTime,
+    int cycleTime,
+    StochasticsInterface *stochastics,
+    WorldInterface *world,
+    const ParameterInterface *parameters,
+    const std::map<int, ObservationInterface *> *observations,
+    const CallbackInterface *callbacks,
+    AgentInterface *agent) :
     DynamicsInterface(
         componentId,
         isInit,
@@ -60,6 +60,15 @@ Dynamics_TwoTrack_Implementation::Dynamics_TwoTrack_Implementation(
     vehicle->InitSetTire(agent->GetVelocityX(),
                          forceTireMaxStatic, forceTireSlideStatic,
                          slipTireMax, radiusTire, agent->GetFrictionCoeff());
+
+    std::vector<double> defaultBrake = {0.0, 0.0, 0.0, 0.0};
+    if (!brakeSuperpose.SetDefaultValue(defaultBrake))
+    {
+        std::stringstream log;
+        log << COMPONENTNAME << " Default value set failed";
+        LOG(CbkLogLevel::Error, log.str());
+    }
+
 }
 
 Dynamics_TwoTrack_Implementation::~Dynamics_TwoTrack_Implementation()
@@ -79,10 +88,13 @@ void Dynamics_TwoTrack_Implementation::UpdateInput(int localLinkId,
 
     bool success = inputPorts.at(localLinkId)->SetSignalValue(data);
 
-    if (success) {
+    if (success) // no need for the brake superpose signal
+    {
         log << COMPONENTNAME << " UpdateInput successful";
         LOG(CbkLogLevel::Debug, log.str());
-    } else {
+    }
+    else
+    {
         log << COMPONENTNAME << " UpdateInput failed";
         LOG(CbkLogLevel::Error, log.str());
     }
@@ -101,6 +113,10 @@ void Dynamics_TwoTrack_Implementation::Trigger(int time)
 
     Q_UNUSED(time);
 
+    GetAgent()->SetAccelerationIntention(throttlePedal.GetValue());
+    GetAgent()->SetDecelerationIntention(brakePedal.GetValue());
+    GetAgent()->SetAngleIntention(angleTireFront.GetValue());
+
     ReadPreviousState();
 
     // transfer to trajectory CS
@@ -109,7 +125,8 @@ void Dynamics_TwoTrack_Implementation::Trigger(int time)
 
     // drive
     vehicle->DriveTrain(Saturate(throttlePedal.GetValue(), 0.0, 1.0),
-                        Saturate(brakePedal.GetValue(), 0.0, 1.0));
+                        Saturate(brakePedal.GetValue(), 0.0, 1.0),
+                        brakeSuperpose.GetValue());
 
     // road
     vehicle->ForceLocal(timeStep, angleTireFront.GetValue());
@@ -141,13 +158,21 @@ void Dynamics_TwoTrack_Implementation::ReadPreviousState()
 
 void Dynamics_TwoTrack_Implementation::SetNextState()
 {
+    // save inputs
+    GetAgent()->SetAccelerationIntention(throttlePedal.GetValue());
+    GetAgent()->SetDecelerationIntention(brakePedal.GetValue());
+    GetAgent()->SetAngleIntention(angleTireFront.GetValue());
 
     // update geometry
     velocityCar.Rotate(angleSlide + yawAngle);
-    //velocityCar.Rotate(yawAngle);
-    GetAgent()->SetPositionX( positionCar.x + timeStep * velocityCar.x );
-    GetAgent()->SetPositionY( positionCar.y + timeStep * velocityCar.y );
-    GetAgent()->SetYawAngle( yawAngle + timeStep * yawVelocity);
+
+    // update position (constant acceleration step)
+    GetAgent()->SetPositionX( positionCar.x + timeStep * velocityCar.x + 0.5 * accelerationCar.x *
+                              timeStep * timeStep);
+    GetAgent()->SetPositionY( positionCar.y + timeStep * velocityCar.y + 0.5 * accelerationCar.x *
+                              timeStep * timeStep);
+    GetAgent()->SetYawAngle( yawAngle + timeStep * yawVelocity + 0.5 * yawAcceleration * timeStep *
+                             timeStep);
 
     // update velocity
     velocityCar.Rotate(- angleSlide - yawAngle);

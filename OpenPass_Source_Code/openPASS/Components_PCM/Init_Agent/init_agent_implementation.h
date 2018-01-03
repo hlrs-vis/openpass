@@ -11,12 +11,13 @@
 
 #include "modelInterface.h"
 #include "observationInterface.h"
-#include "externalTrajectory.h"
+#include "trajectory.h"
+#include "trajectorySignal.h"
 #include "primitiveSignals.h"
 #include "componentPorts.h"
 
 /**
- * \addtogroup Components openPASS components
+ * \addtogroup Components_PCM openPASS components pcm
  * @{
  * \addtogroup Init_Agent
  *

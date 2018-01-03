@@ -8,8 +8,7 @@
 
 #include "frameworkConfig.h"
 
-namespace SimulationSlave
-{
+namespace SimulationSlave {
 
 FrameworkConfig::FrameworkConfig(const std::string &libraryPath,
                                  const std::string &observationResultPath,
@@ -17,15 +16,16 @@ FrameworkConfig::FrameworkConfig(const std::string &libraryPath,
                                  const std::string &sceneryConfigFile,
                                  const std::string &runConfigFile,
                                  const std::string &logFile,
-                                 int logLevel) :
-    libraryPath(libraryPath),
-    observationResultPath(observationResultPath),
-    agentConfigFile(agentConfigFile),
-    sceneryConfigFile(sceneryConfigFile),
-    runConfigFile(runConfigFile),
-    logFile(logFile),
-    logLevel(logLevel)
-{}
+                                 int logLevel)
+{
+    SetLibraryPath(libraryPath);
+    SetObservationResultPath(observationResultPath);
+    SetAgentConfigFile(agentConfigFile);
+    SetSceneryConfigFile(sceneryConfigFile);
+    SetRunConfigFile(runConfigFile);
+    SetLogFile(logFile);
+    SetLogLevel(logLevel);
+}
 
 const std::string &FrameworkConfig::GetLibraryPath() const
 {
@@ -64,22 +64,97 @@ int FrameworkConfig::GetLogLevel() const
 
 void FrameworkConfig::SetLibraryPath(const std::string &modelLibraryPath)
 {
-    this->libraryPath = modelLibraryPath;
+    if (QDir(QString::fromStdString(modelLibraryPath)).isRelative())
+    {
+        QDir baseDir = QCoreApplication::applicationDirPath();
+        QString absolutePath = baseDir.absoluteFilePath(QString::fromStdString(modelLibraryPath));
+        absolutePath = baseDir.cleanPath(absolutePath);
+        this->libraryPath = absolutePath.toStdString();
+    }
+    else
+    {
+        this->libraryPath = modelLibraryPath;
+    }
+}
+
+void FrameworkConfig::SetObservationResultPath(const std::string &observationResultPath)
+{
+    if (QDir(QString::fromStdString(observationResultPath)).isRelative())
+    {
+        QDir baseDir = QCoreApplication::applicationDirPath();
+        QString absolutePath = baseDir.absoluteFilePath(QString::fromStdString(observationResultPath));
+        absolutePath = baseDir.cleanPath(absolutePath);
+        this->observationResultPath = absolutePath.toStdString();
+    }
+    else
+    {
+        this->observationResultPath = observationResultPath;
+    }
 }
 
 void FrameworkConfig::SetAgentConfigFile(const std::string &agentConfigFile)
 {
-    this->agentConfigFile = agentConfigFile;
+    if (QDir(QString::fromStdString(agentConfigFile)).isRelative())
+    {
+        QDir baseDir = QCoreApplication::applicationDirPath();
+        QString absolutePath = baseDir.absoluteFilePath(QString::fromStdString(agentConfigFile));
+        absolutePath = baseDir.cleanPath(absolutePath);
+        this->agentConfigFile = absolutePath.toStdString();
+    }
+    else
+    {
+        this->agentConfigFile = agentConfigFile;
+    }
 }
 
 void FrameworkConfig::SetSceneryConfigFile(const std::string &sceneryConfigFile)
 {
-    this->sceneryConfigFile = sceneryConfigFile;
+    if (QDir(QString::fromStdString(sceneryConfigFile)).isRelative())
+    {
+        QDir baseDir = QCoreApplication::applicationDirPath();
+        QString absolutePath = baseDir.absoluteFilePath(QString::fromStdString(sceneryConfigFile));
+        absolutePath = baseDir.cleanPath(absolutePath);
+        this->sceneryConfigFile = absolutePath.toStdString();
+    }
+    else
+    {
+        this->sceneryConfigFile = sceneryConfigFile;
+    }
 }
 
 void FrameworkConfig::SetRunConfigFile(const std::string &runConfigFile)
 {
-    this->runConfigFile = runConfigFile;
+    if (QDir(QString::fromStdString(runConfigFile)).isRelative())
+    {
+        QDir baseDir = QCoreApplication::applicationDirPath();
+        QString absolutePath = baseDir.absoluteFilePath(QString::fromStdString(runConfigFile));
+        absolutePath = baseDir.cleanPath(absolutePath);
+        this->runConfigFile = absolutePath.toStdString();
+    }
+    else
+    {
+        this->runConfigFile = runConfigFile;
+    }
+}
+
+void FrameworkConfig::SetLogFile(const std::string &logFile)
+{
+    if (QDir(QString::fromStdString(logFile)).isRelative())
+    {
+        QDir baseDir = QCoreApplication::applicationDirPath();
+        QString absolutePath = baseDir.absoluteFilePath(QString::fromStdString(logFile));
+        absolutePath = baseDir.cleanPath(absolutePath);
+        this->logFile = absolutePath.toStdString();
+    }
+    else
+    {
+        this->logFile = logFile;
+    }
+}
+
+void FrameworkConfig::SetLogLevel(int logLevel)
+{
+    this->logLevel = logLevel;
 }
 
 } // namespace SimulationSlave

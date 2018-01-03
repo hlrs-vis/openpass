@@ -8,27 +8,16 @@
 
 #include "frameworkConfig.h"
 
-namespace SimulationMaster
-{
+namespace SimulationMaster {
 
-FrameworkConfig::FrameworkConfig(const std::string &libraryPath,
-                                 const std::string &observationResultPath,
-                                 const std::string &agentConfigFile,
-                                 const std::string &runConfigFile,
-                                 const std::string &sceneryConfigFile,
-                                 const std::string &logFileMaster,
-                                 const std::string &logFileSlave,
+FrameworkConfig::FrameworkConfig(const std::string &logFileMaster,
                                  int logLevel,
-                                 const std::string &slavePath) :
-    libraryPath(libraryPath),
-    observationResultPath(observationResultPath),
-    agentConfigFile(agentConfigFile),
-    runConfigFile(runConfigFile),
-    sceneryConfigFile(sceneryConfigFile),
+                                 const std::string &slavePath,
+                                 std::list<SlaveConfig> &slaveConfigList) :
     logFileMaster(logFileMaster),
-    logFileSlave(logFileSlave),
     logLevel(logLevel),
-    slavePath(slavePath)
+    slavePath(slavePath),
+    slaveConfigList(slaveConfigList)
 {}
 
 FrameworkConfig::~FrameworkConfig()
@@ -36,38 +25,9 @@ FrameworkConfig::~FrameworkConfig()
 
 }
 
-const std::string &FrameworkConfig::GetLibraryPath() const
-{
-    return libraryPath;
-}
-
-const std::string &FrameworkConfig::GetObservationResultPath() const
-{
-    return observationResultPath;
-}
-
-const std::string &FrameworkConfig::GetAgentConfigFile()const {
-    return agentConfigFile;
-}
-
-const std::string &FrameworkConfig::GetRunConfigFile() const
-{
-    return runConfigFile;
-}
-
-const std::string &FrameworkConfig::GetSceneryConfigFile() const
-{
-    return sceneryConfigFile;
-}
-
 const std::string &FrameworkConfig::GetLogFileMaster() const
 {
     return logFileMaster;
-}
-
-const std::string &FrameworkConfig::GetLogFileSlave() const
-{
-    return logFileSlave;
 }
 
 int FrameworkConfig::GetLogLevel() const
@@ -80,5 +40,9 @@ const std::string &FrameworkConfig::GetSlavePath() const
     return slavePath;
 }
 
+std::list<SlaveConfig> FrameworkConfig::GetSlaveConfigList() const
+{
+    return slaveConfigList;
+}
 
 } // namespace SimulationMaster

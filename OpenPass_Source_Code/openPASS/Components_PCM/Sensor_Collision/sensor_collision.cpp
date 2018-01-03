@@ -38,7 +38,12 @@ extern "C" SENSOR_COLLISION_SHARED_EXPORT ModelInterface *OpenPASS_CreateInstanc
 {
     Callbacks = callbacks;
 
-    try {
+    if (priority == 0)
+    {
+        priority = 201;
+    }
+    try
+    {
         return (ModelInterface *)(new (std::nothrow) Sensor_Collision_Implementation(componentId,
                                                                                      isInit,
                                                                                      priority,
@@ -51,14 +56,20 @@ extern "C" SENSOR_COLLISION_SHARED_EXPORT ModelInterface *OpenPASS_CreateInstanc
                                                                                      observations,
                                                                                      callbacks,
                                                                                      agent));
-    } catch (const std::runtime_error &ex) {
-        if (Callbacks != nullptr) {
+    }
+    catch (const std::runtime_error &ex)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, ex.what());
         }
 
         return nullptr;
-    } catch (...) {
-        if (Callbacks != nullptr) {
+    }
+    catch (...)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, "unexpected exception");
         }
 
@@ -77,16 +88,23 @@ extern "C" SENSOR_COLLISION_SHARED_EXPORT bool OpenPASS_UpdateInput(ModelInterfa
                                                                     const std::shared_ptr<SignalInterface const> &data,
                                                                     int time)
 {
-    try {
+    try
+    {
         implementation->UpdateInput(localLinkId, data, time);
-    } catch (const std::runtime_error &ex) {
-        if (Callbacks != nullptr) {
+    }
+    catch (const std::runtime_error &ex)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, ex.what());
         }
 
         return false;
-    } catch (...) {
-        if (Callbacks != nullptr) {
+    }
+    catch (...)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, "unexpected exception");
         }
 
@@ -101,16 +119,23 @@ extern "C" SENSOR_COLLISION_SHARED_EXPORT bool OpenPASS_UpdateOutput(ModelInterf
                                                                      std::shared_ptr<SignalInterface const> &data,
                                                                      int time)
 {
-    try {
+    try
+    {
         implementation->UpdateOutput(localLinkId, data, time);
-    } catch (const std::runtime_error &ex) {
-        if (Callbacks != nullptr) {
+    }
+    catch (const std::runtime_error &ex)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, ex.what());
         }
 
         return false;
-    } catch (...) {
-        if (Callbacks != nullptr) {
+    }
+    catch (...)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, "unexpected exception");
         }
 
@@ -123,16 +148,23 @@ extern "C" SENSOR_COLLISION_SHARED_EXPORT bool OpenPASS_UpdateOutput(ModelInterf
 extern "C" SENSOR_COLLISION_SHARED_EXPORT bool OpenPASS_Trigger(ModelInterface *implementation,
                                                                 int time)
 {
-    try {
+    try
+    {
         implementation->Trigger(time);
-    } catch (const std::runtime_error &ex) {
-        if (Callbacks != nullptr) {
+    }
+    catch (const std::runtime_error &ex)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, ex.what());
         }
 
         return false;
-    } catch (...) {
-        if (Callbacks != nullptr) {
+    }
+    catch (...)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, "unexpected exception");
         }
 

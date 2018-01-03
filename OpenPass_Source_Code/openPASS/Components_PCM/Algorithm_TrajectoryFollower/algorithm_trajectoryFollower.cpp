@@ -58,7 +58,12 @@ ModelInterface *OpenPASS_CreateInstance(int componentId,
 {
     Q_UNUSED(world);
     Callbacks = callbacks;
-    try {
+    try
+    {
+        if (priority == 0)
+        {
+            priority = 105;
+        }
         return (ModelInterface *)(new (std::nothrow) Algorithm_TrajectoryFollower_Implementation(
                                       componentId,
                                       isInit,
@@ -71,14 +76,20 @@ ModelInterface *OpenPASS_CreateInstance(int componentId,
                                       observations,
                                       callbacks,
                                       agent->GetAgentId()));
-    } catch (const std::runtime_error &ex) {
-        if (Callbacks != nullptr) {
+    }
+    catch (const std::runtime_error &ex)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, ex.what());
         }
 
         return nullptr;
-    } catch (...) {
-        if (Callbacks != nullptr) {
+    }
+    catch (...)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, "unexpected exception");
         }
 
@@ -102,16 +113,23 @@ extern "C" ALGORITHM_TRAJECTORYFOLLOWER_SHARED_EXPORT bool OpenPASS_UpdateInput(
     const std::shared_ptr<SignalInterface const> &data,
     int time)
 {
-    try {
+    try
+    {
         implementation->UpdateInput(localLinkId, data, time);
-    } catch (const std::runtime_error &ex) {
-        if (Callbacks != nullptr) {
+    }
+    catch (const std::runtime_error &ex)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, ex.what());
         }
 
         return false;
-    } catch (...) {
-        if (Callbacks != nullptr) {
+    }
+    catch (...)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, "unexpected exception");
         }
 
@@ -127,16 +145,23 @@ extern "C" ALGORITHM_TRAJECTORYFOLLOWER_SHARED_EXPORT bool OpenPASS_UpdateOutput
     std::shared_ptr<SignalInterface const> &data,
     int time)
 {
-    try {
+    try
+    {
         implementation->UpdateOutput(localLinkId, data, time);
-    } catch (const std::runtime_error &ex) {
-        if (Callbacks != nullptr) {
+    }
+    catch (const std::runtime_error &ex)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, ex.what());
         }
 
         return false;
-    } catch (...) {
-        if (Callbacks != nullptr) {
+    }
+    catch (...)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, "unexpected exception");
         }
 
@@ -150,16 +175,23 @@ extern "C" ALGORITHM_TRAJECTORYFOLLOWER_SHARED_EXPORT bool OpenPASS_Trigger(
     ModelInterface *implementation,
     int time)
 {
-    try {
+    try
+    {
         implementation->Trigger(time);
-    } catch (const std::runtime_error &ex) {
-        if (Callbacks != nullptr) {
+    }
+    catch (const std::runtime_error &ex)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, ex.what());
         }
 
         return false;
-    } catch (...) {
-        if (Callbacks != nullptr) {
+    }
+    catch (...)
+    {
+        if (Callbacks != nullptr)
+        {
             Callbacks->Log(CbkLogLevel::Error, __FILE__, __LINE__, "unexpected exception");
         }
 

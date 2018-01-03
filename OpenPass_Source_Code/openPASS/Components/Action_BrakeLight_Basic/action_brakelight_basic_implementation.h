@@ -13,7 +13,10 @@
 #include "observationInterface.h"
 #include "primitiveSignals.h"
 
-/*! \addtogroup Action_BrakeLight_Basic
+/*!
+* \addtogroup Components_Basic openPASS components basic
+* @{
+* \addtogroup Action_BrakeLight_Basic
 * @{
 * \brief sets the brake light
 *
@@ -47,8 +50,8 @@
 *
 * \section Action_BrakeLight_Basic_ConfigParameters Parameters to be specified in agentConfiguration.xml
 * none
-*
-*   @} */
+*  @}
+*  @} */
 
 /*!
  * \brief sets the brake light
@@ -58,16 +61,18 @@
  *
  * \ingroup Action_BrakeLight_Basic
  * */
-class Action_BrakeLight_Basic_Implementation : public ActionInterface 
+class Action_BrakeLight_Basic_Implementation : public ActionInterface
 {
 public:
     const std::string COMPONENTNAME = "Action_BrakeLight_Basic";
 
     using ActionInterface::ActionInterface;
-    Action_BrakeLight_Basic_Implementation(const Action_BrakeLight_Basic_Implementation&) = delete;
-    Action_BrakeLight_Basic_Implementation(Action_BrakeLight_Basic_Implementation&&) = delete;
-    Action_BrakeLight_Basic_Implementation& operator=(const Action_BrakeLight_Basic_Implementation&) = delete;
-    Action_BrakeLight_Basic_Implementation& operator=(Action_BrakeLight_Basic_Implementation&&) = delete;
+    Action_BrakeLight_Basic_Implementation(const Action_BrakeLight_Basic_Implementation &) = delete;
+    Action_BrakeLight_Basic_Implementation(Action_BrakeLight_Basic_Implementation &&) = delete;
+    Action_BrakeLight_Basic_Implementation &operator=(const Action_BrakeLight_Basic_Implementation &) =
+        delete;
+    Action_BrakeLight_Basic_Implementation &operator=(Action_BrakeLight_Basic_Implementation &&) =
+        delete;
     virtual ~Action_BrakeLight_Basic_Implementation() = default;
 
     /*!
@@ -82,7 +87,8 @@ public:
      * \param[in]     data           Referenced signal (copied by sending component)
      * \param[in]     time           Current scheduling time
      */
-    virtual void UpdateInput(int localLinkId, const std::shared_ptr<SignalInterface const> &data, int time);
+    virtual void UpdateInput(int localLinkId, const std::shared_ptr<SignalInterface const> &data,
+                             int time);
 
     /*!
      * \brief Update outputs.

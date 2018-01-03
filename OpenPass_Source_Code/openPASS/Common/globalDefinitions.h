@@ -19,7 +19,8 @@
 //-----------------------------------------------------------------------------
 //! @brief Containing the three possible states regarding lane change
 //-----------------------------------------------------------------------------
-enum class LaneChangeState {
+enum class LaneChangeState
+{
     NoLaneChange = 0,
     LaneChangeLeft,
     LaneChangeRight
@@ -28,7 +29,8 @@ enum class LaneChangeState {
 //-----------------------------------------------------------------------------
 //! weekday type
 //-----------------------------------------------------------------------------
-enum class Weekday {
+enum class Weekday
+{
     Undefined = 0,
     Monday,
     Tuesday,
@@ -42,7 +44,9 @@ enum class Weekday {
 //-----------------------------------------------------------------------------
 //! Agent type classification
 //-----------------------------------------------------------------------------
-enum class AgentVehicleType {
+enum class AgentVehicleType
+{
+    NONE = -1,
     Undefined = 0,
     Car,
     Pedestrian,
@@ -52,20 +56,23 @@ enum class AgentVehicleType {
 };
 
 //! State of indicator lever
-enum class IndicatorLever {
+enum class IndicatorLever
+{
     IndicatorLever_Off = 0,
     IndicatorLever_Left = 1,
     IndicatorLever_Right = -1
 };
 
-enum class IndicatorState {
+enum class IndicatorState
+{
     IndicatorState_Off = 0,
     IndicatorState_Left = 1,
     IndicatorState_Right = 2,
     IndicatorState_Warn = 3
 };
 
-struct Position {
+struct Position
+{
     double xPos;
     double yPos;
     double yawAngle;
@@ -75,7 +82,8 @@ struct Position {
 //! @brief Areas of interest for surrounding data.
 //! \details "Downstream" is a gaze state, but not an area of interest for surrounding data.
 //! The downstream gaze state is used to obtain data for anticipation.
-enum class AreaOfInterest {
+enum class AreaOfInterest
+{
     LEFT_FRONT = 0,
     RIGHT_FRONT,
     LEFT_REAR,
@@ -89,9 +97,8 @@ enum class AreaOfInterest {
 };
 
 //! Enum of potential types of marks.
-//! If MarkType is modified, convertMarkTypeToDBString() and convertStringToMarkType()
-//! in commonTools.h has to be modified too to stay consistent.
-enum class MarkType {
+enum class MarkType
+{
     NONE,
     CONTINUOUS,
     INTERRUPTED_LONG,
@@ -100,8 +107,18 @@ enum class MarkType {
     NumberOfMarkTypes
 };
 
+//! Enum of potential types of objects.
+enum class ObjectType
+{
+    NONE,
+    OBJECT,
+    VIEWOBJECT,
+    NumberOfObjectTypes
+};
+
 //! Possibile direction of view angle with agent in center.
-enum class AgentViewDirection {
+enum class AgentViewDirection
+{
     none,
     front,
     left,

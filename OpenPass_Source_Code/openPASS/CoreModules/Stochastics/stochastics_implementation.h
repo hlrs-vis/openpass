@@ -14,7 +14,7 @@
 #include "stochasticsInterface.h"
 
 /**
-* \addtogroup CoreModules openPASS CoreModules
+* \addtogroup CoreModules_Basic openPASS CoreModules basic
 * @{
 * \addtogroup Stochastics
 *
@@ -65,7 +65,8 @@ protected:
              int line,
              const std::string &message)
     {
-        if (callbacks) {
+        if (callbacks)
+        {
             callbacks->Log(logLevel,
                            file,
                            line,

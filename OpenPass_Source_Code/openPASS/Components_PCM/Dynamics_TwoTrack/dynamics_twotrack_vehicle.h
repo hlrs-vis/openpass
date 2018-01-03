@@ -58,7 +58,7 @@ public:
      *    @{
     */
     //! Calculate local tire torques
-    void DriveTrain(double throttlePedal, double brakePedal);
+    void DriveTrain(double throttlePedal, double brakePedal, std::vector<double> brakeSuperpose);
     //! Local forces and moments transferred onto road
     void ForceLocal(double timeStep, double);
     //! Global force and moment
@@ -120,6 +120,8 @@ private:
     const double accelVerticalEarth = -9.81;
     //! Toe-in/-out
     const double anglePreSet = 0.0;//0.003;
+    //! Toe-in/-out
+    const double brakeBalance = 0.67;//0.003;
     /**
      *  @}
     */

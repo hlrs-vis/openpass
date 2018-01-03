@@ -18,7 +18,7 @@
 #include "observationInterface.h"
 
 /**
-* \addtogroup CoreModules openPASS CoreModules
+* \addtogroup CoreModules_PCM openPASS CoreModules pcm
 * @{
 * \addtogroup Observation_Collision
 *
@@ -41,26 +41,30 @@ public:
     const std::string COMPONENTNAME = "Observation_Collision";
 
     Observation_Collision_Implementation(StochasticsInterface *stochastics,
-                                   WorldInterface *world,
-                                   const ParameterInterface *parameters,
-                                   const CallbackInterface *callbacks);
-    Observation_Collision_Implementation(const Observation_Collision_Implementation&) = delete;
-    Observation_Collision_Implementation(Observation_Collision_Implementation&&) = delete;
-    Observation_Collision_Implementation& operator=(const Observation_Collision_Implementation&) = delete;
-    Observation_Collision_Implementation& operator=(Observation_Collision_Implementation&&) = delete;
+                                         WorldInterface *world,
+                                         const ParameterInterface *parameters,
+                                         const CallbackInterface *callbacks);
+    Observation_Collision_Implementation(const Observation_Collision_Implementation &) = delete;
+    Observation_Collision_Implementation(Observation_Collision_Implementation &&) = delete;
+    Observation_Collision_Implementation &operator=(const Observation_Collision_Implementation &) =
+        delete;
+    Observation_Collision_Implementation &operator=(Observation_Collision_Implementation &&) = delete;
     virtual ~Observation_Collision_Implementation() = default;
 
     //-----------------------------------------------------------------------------
     //! Called by framework in master before each simulation run starts
     //-----------------------------------------------------------------------------
-    virtual void MasterPreHook(){}
+    virtual void MasterPreHook() {}
 
     //-----------------------------------------------------------------------------
     //! Called by framework in master after each simulation run ends
     //!
     //! @param[in]     filename      Name of file containing the simulation run results from the slave
     //-----------------------------------------------------------------------------
-    virtual void MasterPostHook(const std::string &filename){Q_UNUSED(filename)}
+    virtual void MasterPostHook(const std::string &filename)
+    {
+        Q_UNUSED(filename)
+    }
 
     virtual void SlavePreHook(const std::string &path);
 
@@ -97,7 +101,10 @@ public:
     //!
     //! @return                      File to be transferred
     //-----------------------------------------------------------------------------
-    virtual const std::string SlaveResultFile(){return "";} //dummy
+    virtual const std::string SlaveResultFile()
+    {
+        return "";   //dummy
+    }
 
 private:
     std::map<int, externalParameter<double>*> parameterMapDouble;

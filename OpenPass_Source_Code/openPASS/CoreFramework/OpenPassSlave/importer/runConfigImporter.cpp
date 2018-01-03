@@ -6,9 +6,11 @@
 * http://www.eclipse.org/legal/epl-v10.html
 ******************************************************************************/
 
+#include <QApplication>
 #include <memory>
 #include <iostream>
 #include <QDomDocument>
+#include <QDir>
 #include <QFile>
 #include "log.h"
 #include "runConfigImporter.h"
@@ -28,37 +30,39 @@
     } \
     while(0);
 
-namespace
-{
+namespace {
 
-bool ImportObservations(QDomElement &observationsElement, SimulationCommon::RunConfig &configuration)
+bool ImportObservations(QDomElement &observationsElement,
+                        SimulationCommon::RunConfig &configuration)
 {
     QDomElement observationElement;
-    if(SimulationCommon::GetFirstChildElement(observationsElement, "Observation", observationElement))
+    if (SimulationCommon::GetFirstChildElement(observationsElement, "Observation", observationElement))
     {
-        while(!observationElement.isNull())
+        while (!observationElement.isNull())
         {
             int observationId;
-            if(!SimulationCommon::ParseAttributeInt(observationElement, "id", observationId))
+            if (!SimulationCommon::ParseAttributeInt(observationElement, "id", observationId))
             {
                 return false;
             }
 
             std::string libraryName;
-            if(!SimulationCommon::ParseAttributeString(observationElement, "library", libraryName))
+            if (!SimulationCommon::ParseAttributeString(observationElement, "library", libraryName))
             {
                 return false;
             }
 
             LOG_INTERN(LogLevel::DebugCore) << "import observation: library " << libraryName;
 
-            SimulationCommon::RunConfig::ObservationInstance *observationInstance = new (std::nothrow) SimulationCommon::RunConfig::ObservationInstance(observationId,                                                                                                                                                     libraryName);
-            if(!observationInstance)
+            SimulationCommon::RunConfig::ObservationInstance *observationInstance = new (
+                std::nothrow) SimulationCommon::RunConfig::ObservationInstance(observationId,
+                                                                               libraryName);
+            if (!observationInstance)
             {
                 return false;
             }
 
-            if(!configuration.AddObservationInstance(observationId, observationInstance))
+            if (!configuration.AddObservationInstance(observationId, observationInstance))
             {
                 return false;
             }
@@ -67,12 +71,13 @@ bool ImportObservations(QDomElement &observationsElement, SimulationCommon::RunC
             LOG_INTERN(LogLevel::DebugCore) << "import observation parameters...";
 
             QDomElement parametersElement;
-            if(!SimulationCommon::GetFirstChildElement(observationElement, "ObservationParameters", parametersElement))
+            if (!SimulationCommon::GetFirstChildElement(observationElement, "ObservationParameters",
+                                                        parametersElement))
             {
                 return false;
             }
 
-            if(!ImportParameters(parametersElement, observationInstance->GetObservationParameters()))
+            if (!ImportParameters(parametersElement, observationInstance->GetObservationParameters()))
             {
                 return false;
             }
@@ -86,15 +91,33 @@ bool ImportObservations(QDomElement &observationsElement, SimulationCommon::RunC
 
 } // namespace
 
-namespace SimulationCommon
-{
+namespace SimulationCommon {
 
 RunConfig *RunConfigImporter::Import(const std::string &filename)
 {
     std::locale::global(std::locale("C"));
 
-    QFile xmlFile(filename.c_str()); // automatic object will be closed on destruction
-    if(!xmlFile.open(QIODevice::ReadOnly))
+    QString absoluteFilePath = "";
+
+    if (QFileInfo(QString::fromStdString(filename)).isRelative())
+    {
+        QDir baseDir = QCoreApplication::applicationDirPath();
+        absoluteFilePath = baseDir.absoluteFilePath(QString::fromStdString(filename));
+        absoluteFilePath = baseDir.cleanPath(absoluteFilePath);
+    }
+    else
+    {
+        absoluteFilePath = QString::fromStdString(filename);
+    }
+
+    if (!QFileInfo(absoluteFilePath).exists())
+    {
+        LOG_INTERN(LogLevel::Error) << "Run Config does not exist.";
+        return nullptr;
+    }
+
+    QFile xmlFile(absoluteFilePath); // automatic object will be closed on destruction
+    if (!xmlFile.open(QIODevice::ReadOnly))
     {
         LOG_INTERN(LogLevel::Warning) << "an error occurred during run configuration import";
         return nullptr;
@@ -102,14 +125,14 @@ RunConfig *RunConfigImporter::Import(const std::string &filename)
 
     QByteArray xmlData(xmlFile.readAll());
     QDomDocument document;
-    if(!document.setContent(xmlData))
+    if (!document.setContent(xmlData))
     {
         LOG_INTERN(LogLevel::Warning) << "invalid xml file format of file " << filename;
         return nullptr;
     }
 
     QDomElement documentRoot = document.documentElement();
-    if(documentRoot.isNull())
+    if (documentRoot.isNull())
     {
         return nullptr;
     }
@@ -149,31 +172,31 @@ RunConfig *RunConfigImporter::Import(const std::string &filename)
     CHECKFALSE(ParseString(documentRoot, "Weekday", weekdayStr));
 
     Weekday weekday = Weekday::Undefined;
-    if(0 == weekdayStr.compare("Monday"))
+    if (0 == weekdayStr.compare("Monday"))
     {
         weekday = Weekday::Monday;
     }
-    else if(0 == weekdayStr.compare("Tuesday"))
+    else if (0 == weekdayStr.compare("Tuesday"))
     {
         weekday = Weekday::Tuesday;
     }
-    else if(0 == weekdayStr.compare("Wednesday"))
+    else if (0 == weekdayStr.compare("Wednesday"))
     {
         weekday = Weekday::Wednesday;
     }
-    else if(0 == weekdayStr.compare("Thursday"))
+    else if (0 == weekdayStr.compare("Thursday"))
     {
         weekday = Weekday::Thursday;
     }
-    else if(0 == weekdayStr.compare("Friday"))
+    else if (0 == weekdayStr.compare("Friday"))
     {
         weekday = Weekday::Friday;
     }
-    else if(0 == weekdayStr.compare("Saturday"))
+    else if (0 == weekdayStr.compare("Saturday"))
     {
         weekday = Weekday::Saturday;
     }
-    else if(0 == weekdayStr.compare("Sunday"))
+    else if (0 == weekdayStr.compare("Sunday"))
     {
         weekday = Weekday::Sunday;
     }
@@ -194,13 +217,16 @@ RunConfig *RunConfigImporter::Import(const std::string &filename)
     LOG_INTERN(LogLevel::DebugCore) << "WorldLibraryName: " << worldLibraryName;
 
     // create configuration
-    WorldParameter *worldParameter = new (std::nothrow) WorldParameter(weekday, timeOfDay, worldLibraryName);
+    WorldParameter *worldParameter = new (std::nothrow) WorldParameter(weekday, timeOfDay,
+                                                                       worldLibraryName);
     CHECKFALSE(worldParameter);
 
-    RunConfig::StochasticsInstance *stochasticInstance = new (std::nothrow) RunConfig::StochasticsInstance(stochasticsLibrary);
+    RunConfig::StochasticsInstance *stochasticInstance = new (std::nothrow)
+    RunConfig::StochasticsInstance(stochasticsLibrary);
     CHECKFALSE(stochasticInstance);
 
-    RunConfig::CollisionDetectionInstance *collisionDetectionInstance = new (std::nothrow) RunConfig::CollisionDetectionInstance(collisionDetectionLibrary);
+    RunConfig::CollisionDetectionInstance *collisionDetectionInstance = new (
+        std::nothrow) RunConfig::CollisionDetectionInstance(collisionDetectionLibrary);
     CHECKFALSE(collisionDetectionInstance);
 
     std::unique_ptr<RunConfig> configuration(new (std::nothrow) RunConfig(startTime,
@@ -210,7 +236,7 @@ RunConfig *RunConfigImporter::Import(const std::string &filename)
                                                                           worldParameter,
                                                                           stochasticInstance,
                                                                           collisionDetectionInstance));
-    if(!configuration)
+    if (!configuration)
     {
         delete worldParameter;
         delete stochasticInstance;
@@ -225,9 +251,9 @@ RunConfig *RunConfigImporter::Import(const std::string &filename)
     CHECKFALSE(GetFirstChildElement(documentRoot, "SpawnPoints", spawnPointsElement));
 
     QDomElement spawnPointElement;
-    if(GetFirstChildElement(spawnPointsElement, "SpawnPoint", spawnPointElement))
+    if (GetFirstChildElement(spawnPointsElement, "SpawnPoint", spawnPointElement))
     {
-        while(!spawnPointElement.isNull())
+        while (!spawnPointElement.isNull())
         {
             int spawnPointId;
             CHECKFALSE(ParseAttributeInt(spawnPointElement, "id", spawnPointId));
@@ -237,8 +263,9 @@ RunConfig *RunConfigImporter::Import(const std::string &filename)
 
             LOG_INTERN(LogLevel::DebugCore) << "import spawn point: library " << libraryName;
 
-            RunConfig::SpawnPointInstance *spawnPointInstance = new (std::nothrow) RunConfig::SpawnPointInstance(spawnPointId,
-                                                                                                                 libraryName);
+            RunConfig::SpawnPointInstance *spawnPointInstance = new (std::nothrow)
+            RunConfig::SpawnPointInstance(spawnPointId,
+                                          libraryName);
             CHECKFALSE(spawnPointInstance);
             CHECKFALSE(configuration->AddSpawnPointInstance(spawnPointInstance));
 
@@ -247,9 +274,9 @@ RunConfig *RunConfigImporter::Import(const std::string &filename)
             CHECKFALSE(GetFirstChildElement(spawnPointElement, "AgentRefs", agentRefsElement));
 
             QDomElement agentRefElement;
-            if(GetFirstChildElement(agentRefsElement, "AgentRef", agentRefElement))
+            if (GetFirstChildElement(agentRefsElement, "AgentRef", agentRefElement))
             {
-                while(!agentRefElement.isNull())
+                while (!agentRefElement.isNull())
                 {
                     int agentRef;
                     CHECKFALSE(ParseCurrentInt(agentRefElement, agentRef));
@@ -278,9 +305,9 @@ RunConfig *RunConfigImporter::Import(const std::string &filename)
     CHECKFALSE(GetFirstChildElement(documentRoot, "Agents", agentsElement));
 
     QDomElement agentElement;
-    if(GetFirstChildElement(agentsElement, "Agent", agentElement))
+    if (GetFirstChildElement(agentsElement, "Agent", agentElement))
     {
-        while(!agentElement.isNull())
+        while (!agentElement.isNull())
         {
             int agentId;
             CHECKFALSE(ParseAttributeInt(agentElement, "id", agentId));
@@ -292,23 +319,23 @@ RunConfig *RunConfigImporter::Import(const std::string &filename)
             CHECKFALSE(ParseString(agentElement, "Type", vehicleTypeStr));
 
             AgentVehicleType vehicleType = AgentVehicleType::Undefined;
-            if(0 == vehicleTypeStr.compare("Car"))
+            if (0 == vehicleTypeStr.compare("Car"))
             {
                 vehicleType = AgentVehicleType::Car;
             }
-            else if(0 == vehicleTypeStr.compare("Pedestrian"))
+            else if (0 == vehicleTypeStr.compare("Pedestrian"))
             {
                 vehicleType = AgentVehicleType::Pedestrian;
             }
-            else if(0 == vehicleTypeStr.compare("Motorbike"))
+            else if (0 == vehicleTypeStr.compare("Motorbike"))
             {
                 vehicleType = AgentVehicleType::Motorbike;
             }
-            else if(0 == vehicleTypeStr.compare("Bicycle"))
+            else if (0 == vehicleTypeStr.compare("Bicycle"))
             {
                 vehicleType = AgentVehicleType::Bicycle;
             }
-            else if(0 == vehicleTypeStr.compare("Truck"))
+            else if (0 == vehicleTypeStr.compare("Truck"))
             {
                 vehicleType = AgentVehicleType::Truck;
             }
@@ -353,7 +380,8 @@ RunConfig *RunConfigImporter::Import(const std::string &filename)
             double distanceCOGtoLeadingEdge;
             CHECKFALSE(ParseDouble(agentElement, "DistanceCOGtoLeadingEdge", distanceCOGtoLeadingEdge));
 
-            LOG_INTERN(LogLevel::DebugCore) << "import agent library " << agentRef << ", vehicle type " << vehicleTypeStr;
+            LOG_INTERN(LogLevel::DebugCore) << "import agent library " << agentRef << ", vehicle type " <<
+                                            vehicleTypeStr;
 
             AgentSpawnItem *agentSpawnItem = new (std::nothrow) AgentSpawnItem(agentId, agentRef);
             CHECKFALSE(agentSpawnItem);

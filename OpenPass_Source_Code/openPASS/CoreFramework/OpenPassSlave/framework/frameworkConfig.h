@@ -16,13 +16,15 @@
 #define FRAMEWORKCONFIG_H
 
 #include <string>
+#include <QApplication>
+#include <QDir>
+#include <QFileInfo>
 
-namespace SimulationSlave
-{
+namespace SimulationSlave {
 
 class FrameworkConfig
 {
-public:    
+public:
     FrameworkConfig(const std::string &libraryPath,
                     const std::string &observationResultPath,
                     const std::string &agentConfigFile,
@@ -30,10 +32,10 @@ public:
                     const std::string &runConfigFile,
                     const std::string &logFile,
                     int logLevel);
-    FrameworkConfig(const FrameworkConfig&) = delete;
-    FrameworkConfig(FrameworkConfig&&) = delete;
-    FrameworkConfig& operator=(const FrameworkConfig&) = delete;
-    FrameworkConfig& operator=(FrameworkConfig&&) = delete;
+    FrameworkConfig(const FrameworkConfig &) = delete;
+    FrameworkConfig(FrameworkConfig &&) = delete;
+    FrameworkConfig &operator=(const FrameworkConfig &) = delete;
+    FrameworkConfig &operator=(FrameworkConfig &&) = delete;
     virtual ~FrameworkConfig() = default;
 
     const std::string &GetLibraryPath() const;
@@ -45,10 +47,14 @@ public:
     int GetLogLevel() const;
     const std::string &GetPort() const;
 
+
     void SetLibraryPath(const std::string &libraryPath);
+    void SetObservationResultPath(const std::string &observationResultPath);
     void SetAgentConfigFile(const std::string &agentConfigFile);
     void SetSceneryConfigFile(const std::string &sceneryConfigFile);
     void SetRunConfigFile(const std::string &runConfigFile);
+    void SetLogFile(const std::string &logFile);
+    void SetLogLevel(int logLevel);
 
 private:
     std::string libraryPath;
