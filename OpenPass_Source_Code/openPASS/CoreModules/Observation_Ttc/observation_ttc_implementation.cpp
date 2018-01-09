@@ -87,13 +87,17 @@ void Observation_Ttc_Implementation::SlaveUpdateHook(int time, RunResultInterfac
 
         double deltaX = frontAgent->GetPositionX() - agent->GetPositionX();
         double deltaV = frontAgent->GetVelocityX() - agent->GetVelocityX();
-
         double ttc = - deltaX / deltaV;
 
         if(ttc < 0){// a negative ttc means that there will never be a collision
             ttc = INFINITY;
         }
 
+        if(agent->GetCollisionPartners().size() > 0){
+            //collisin occured
+            ttc = 0;
+
+        }
         // save the minimal ttc
         std::map<int, double>::iterator agentsMinIterator = agentsMinTtc.find(id);
         if(agentsMinIterator == agentsMinTtc.end()){

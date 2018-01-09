@@ -253,11 +253,6 @@ void Observation_Osc_Implementation::SlavePreRunHook()
     fileStreamXosc->writeEndElement();
     fileStreamXosc->writeEndElement();
 
-    //      RoadNetwork Definitions//    fileStreamXosc->writeEndDocument();
-    //    xoscfile->flush();
-    //    xoscfile->close();
-
-    //    xoscfile->rename(QString::fromStdString(finalXoscPath));
     fileStreamXosc->writeStartElement(RoadNetworkTag);
     fileStreamXosc->writeStartElement(LogicsTag);
     fileStreamXosc->writeAttribute(filepathAttribute,LogicsFilePathValue);
@@ -484,6 +479,9 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
             std::list<VehicleState>::iterator t; // iterator
             for(t = agentData.begin(); t != agentData.end(); ++t)
             {
+                if (t == agentData.begin()) {
+                    continue;
+                }
                 time = t->gettime();
                 x = t->getxpos();
                 y = t->getypos();
