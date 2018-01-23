@@ -196,47 +196,18 @@ private:
     std::shared_ptr<QXmlStreamWriter> fileStreamXosc;
 
     // XML Tags/Attributes/Values
-    const QString OpenSCENARIOTag = "OpenSCENARIO";
-
-    const QString FileHeaderTag = "FileHeader";
-    const QString revMajorAttribute = "revMajor";
-    const QString revMinorAttribute = "revMinor";
-    const QString revMajorAttributeValue = "0";
-    const QString revMinorAttributeValue = "0";
-
-    const QString dateAttribute = "date";
     QString dateAttributeValue;
         //#include <chrono> //auto end = std::chrono::system_clock::now();
-    const QString descriptionAttribute = "description";
-    const QString descriptionAttributeValue = "Studienarbeit";
-    const QString authorAttribute = "author";
-    const QString authorAttributeValue = "Christoph Kirsch";
-
-    const QString ParameterDeclarationTag = "ParameterDeclaration";
 
     // Tags and Attributes for Trajectory file only
-    const QString CatalogTag = "Catalog";
-    const QString CatalogNameAttribute = "name";
     QString CatalogNameAttributeValue;
 
-    const QString TrajectoryTag = "Trajectory";
-    const QString NameAttribute = "name";
     QString TrajectoryNameAttributeValue; // = Agent_X_Trajectory
 
 
-    const QString VertexTag = "Vertex";
-    const QString PositionTag = "Position";
 
-    const QString WorldTag = "World";
-    const QString ShapeTag = "Shape";
-    const QString referenceAttribute = "reference";
-    const QString PolylineTag = "Polyline";
 
     // Tags and Attributes for XOSC file only
-    const QString CatalogsTag = "Catalogs";
-    const QString DirectoryTag = "Directory";
-    const QString DirectoryAttribute = "path";
-
     const QString VehicleCatalogTag = "VehicleCatalog";
     const QString VehicleCatalogValue = "Catalogs/VehicleCatalogs";
 
@@ -264,96 +235,37 @@ private:
     const QString RouteCatalogTag = "RouteCatalog";
     const QString RouteCatalogValue = "Catalogs/RoutingCatalogs";
 
-    const QString RoadNetworkTag = "RoadNetwork";
-    const QString LogicsTag = "Logics";
-    const QString filepathAttribute = "filepath";
     const QString LogicsFilePathValue = "szenario.xodr";
 
-    const QString SceneGraphTag = "SceneGraph";
     const QString SceneGraphFilepathValue = "Tracks/Bin/RQ31_130Limit/RQ31_130Limit.opt.osgb";
 
-    const QString EntitiesTag = "Entities";
-    const QString ObjectTag = "Object";
     QString ObjectNameValue; //= AgentX
 
-    const QString CatalogReferenceTag = "CatalogReference";
-    const QString CatalogReferenceAttribute = "catalogName";
-    const QString entryNameAttribute = "entryName";
 
     std::vector<QString> CarModel {"golf","seat","volvo"};
-    //const QString carModel = "golf";
-    const QString ControllerTag = "Controller";
     const QString driverModel = "DefaultDriver";
 
-    const QString StoryboardTag = "Storyboard";
-    const QString InitTag = "Init";
-    const QString ActionsTag = "Actions";
-    const QString PrivteTag = "Private";
-    const QString objectAttribute = "object";
-    const QString ActionTag = "Action";
-    const QString LongitudinalTag = "Longitudinal";
-    const QString SpeedTag = "Speed";
-    const QString DynamicsTag = "Dynamics";
-    const QString rateAttribute = "rate";
-    const QString shapeAttribute = "shape";
-    const QString DynamicsRateValue = "0";
-    const QString DynamicsShapeValue = "step";
-    const QString TargetTag = "Target";
-    const QString AbsoluteTag = "Absolute";
-    const QString AbsoluteValueValue = "0";
-    const QString valueAttribute = "value";
-    const QString LaneTag = "Lane";
-    const QString laneIDAttribue = "laneId";
-    const QString offsetAttribute = "offset";
-    const QString roadIdAttribute = "roadId";
-    const QString sAttribute = "s";
+    // Init Position rel Street
     const QString laneIdValue = "1";
     const QString offsetValue = "0.0";
     const QString roadIdValue = "0";
     const QString sValue = "0";
 
-    const QString StoryTag = "Story";
     const QString StoryNameValue = "MyStory";
-    const QString ownerAttribute = "owner";
     QString StoryOwnerValue; // = "AgentX"
-    const QString ActTag = "Act";
     QString ActNameValue;
-    const QString SequenceTag = "Sequence";
     QString SequenceNameValue;
-    const QString numOfExecAttribute = "numberOfExecutions";
-    const QString numOfExecValue = "1";
-    const QString ActorsTag = "Actors";
-    const QString EntityTag = "Entity";
+
+
     QString EntityNameValue;
-    const QString ManeuverTag = "Maneuver";
     QString ManeuverNameValue;
-    const QString EventTag = "Event";
+
     QString EventNameValue;
-    const QString EventPrioAttribute = "priority";
-    const QString EventPrioValue = "overwrite";
+
+
     QString ActionNameValue;
-    const QString RoutingTag = "Routing";
-    const QString FollowTrajectoryTag = "FollowTrajectory";
-    const QString Nonetag = "None";
-    const QString LateralTag = "Lateral";
-    const QString purposeAttribute = "purpose";
-    const QString LateralPurposeValue = "position";
-    const QString ConditionsTag = "Conditions";
-    const QString StartTag = "Start";
-    const QString ConditionGroupTag = "ConditionGroup";
-    const QString ConditionTag = "Condition";
-    const QString delayAttribute = "delay";
-    const QString ConditionDelayValue = "0.00";
-    const QString edgeAttribute = "edge";
-    const QString ConditionEdgeValue = "rising";
-    const QString ConditionNameValue = "";
-    const QString ByValueTag = "ByValue";
-    const QString SimulationTimeTag = "SimulationTime";
-    const QString ruleAttribute = "rule";
-    const QString SimulationTimeRuleValue = "equal-to";
+
     double SimulationTimeStart;
-    const QString SimulationStartDelay = "5.0";
-    const QString EndTag = "End";
     double SimulationTimeEnd;
 
 
