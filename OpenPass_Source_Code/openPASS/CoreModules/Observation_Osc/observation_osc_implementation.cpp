@@ -416,6 +416,57 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         fileStreamXosc->writeEndElement(); //End ConditionsTag
         fileStreamXosc->writeEndElement(); //End EventTag
         fileStreamXosc->writeEndElement(); //End ManeuverTag
+
+        // here ends the Trajectory Maneuver in the XOSC File
+        // add additional Maneuver to break at the end of the Trajectory
+        fileStreamXosc->writeStartElement("Maneuver");
+        fileStreamXosc->writeAttribute("name", "break");
+        fileStreamXosc->writeStartElement("Event");
+        fileStreamXosc->writeAttribute("name", EventNameValue);
+        fileStreamXosc->writeAttribute("priority", "overwrite");
+        fileStreamXosc->writeStartElement("Action");
+        fileStreamXosc->writeAttribute("name", ActionNameValue);
+        fileStreamXosc->writeStartElement("Private");
+        fileStreamXosc->writeStartElement("Longitudinal");
+        fileStreamXosc->writeStartElement("Speed");
+        fileStreamXosc->writeStartElement("Dynamics");
+        fileStreamXosc->writeAttribute("distance","0");
+        fileStreamXosc->writeAttribute("rate","0");
+        fileStreamXosc->writeAttribute("shape","step");
+        fileStreamXosc->writeAttribute("time","0");
+        fileStreamXosc->writeEndElement(); //End DynamicsTag
+        fileStreamXosc->writeStartElement("Target");
+        fileStreamXosc->writeStartElement("Absolute");
+        fileStreamXosc->writeAttribute("value","0");
+        fileStreamXosc->writeEndElement(); //End AbsoluteTag
+        fileStreamXosc->writeEndElement(); //End targetTag
+        fileStreamXosc->writeEndElement(); //End SpeedTag
+        fileStreamXosc->writeEndElement(); //End LongitudinalTag
+        fileStreamXosc->writeEndElement(); //End PrivateTag
+        fileStreamXosc->writeEndElement(); //End ActionTag
+        // write Conditions of Break Maneuver
+        fileStreamXosc->writeStartElement("Conditions");
+        fileStreamXosc->writeStartElement("Start");
+        fileStreamXosc->writeStartElement("ConditionGroup");
+        fileStreamXosc->writeStartElement("Condition");
+        fileStreamXosc->writeAttribute("delay", "0");
+        fileStreamXosc->writeAttribute("edge", "rising");
+        fileStreamXosc->writeAttribute("name", "");
+        fileStreamXosc->writeStartElement("ByState");
+        fileStreamXosc->writeStartElement("AfterTermination");
+        fileStreamXosc->writeAttribute("name", ManeuverNameValue);
+        fileStreamXosc->writeAttribute("rule", "end");
+        fileStreamXosc->writeAttribute("type", "maneuver");
+        fileStreamXosc->writeEndElement(); //End AfterTerminationTag
+        fileStreamXosc->writeEndElement(); //End ByState
+        fileStreamXosc->writeEndElement(); //End ConditionTag
+        fileStreamXosc->writeEndElement(); //End ConditionGroupTag
+        fileStreamXosc->writeEndElement(); //End StartTag
+        fileStreamXosc->writeEndElement(); //End ConditionsTag
+        fileStreamXosc->writeEndElement(); //End EventTag
+        fileStreamXosc->writeEndElement(); //End ManeuverTag
+
+        // write Start and End Conditions of Act
         fileStreamXosc->writeEndElement(); //End SequenceTag
         fileStreamXosc->writeStartElement("Conditions");
         fileStreamXosc->writeStartElement("Start");
@@ -481,7 +532,7 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
                 y = t->getypos();
                 yaw = t->getyawangle();
 
-
+                // write Trajectory Coordinates to XML
                 fileStream->writeStartElement("Vertex");
                 fileStream->writeStartElement("Position");
                 fileStream->writeStartElement("World");
@@ -516,6 +567,7 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
 
 
     }
+    // continue with XOSC File
     fileStreamXosc->writeEndElement(); //End StoryTag
 
     fileStreamXosc->writeStartElement("End");
@@ -594,6 +646,7 @@ QString Observation_Osc_Implementation::getStrDate(){
 }
 
 QString Observation_Osc_Implementation::getCarModel(){
+    // pick random car from CarModelList
     randomCarModelIndex = rand() % CarModelList.size();
     CarModel = CarModelList[randomCarModelIndex];
     return CarModel;
