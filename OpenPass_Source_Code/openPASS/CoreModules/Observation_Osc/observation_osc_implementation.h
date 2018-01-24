@@ -173,6 +173,8 @@ public:
 private:
     void RecordAllAgents(int time);
     void RecordAgentState(int time, const AgentInterface *agent);
+    QString getStrDate();
+    QString getCarModel();
 
 
 
@@ -242,7 +244,9 @@ private:
     QString ObjectNameValue; //= AgentX
 
 
-    std::vector<QString> CarModel {"golf","seat","volvo"};
+    std::vector<QString> CarModelList {"golf","seat","volvo"};
+    QString CarModel;
+
     const QString driverModel = "DefaultDriver";
 
     // Init Position rel Street
@@ -256,12 +260,10 @@ private:
     QString ActNameValue;
     QString SequenceNameValue;
 
-
     QString EntityNameValue;
     QString ManeuverNameValue;
 
     QString EventNameValue;
-
 
     QString ActionNameValue;
 

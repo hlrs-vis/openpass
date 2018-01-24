@@ -111,14 +111,7 @@ void Observation_Osc_Implementation::SlavePreHook(const std::string &path)
     {
         QFile::remove(QString::fromStdString(finalXoscPath));
     }
-    // create Date
-    auto datenow = std::chrono::system_clock::now();
-    std::time_t date = std::chrono::system_clock::to_time_t(datenow);
-    auto ds = std::localtime(&date);
-
-    //2016-10-18T10:00:00
-    dateAttributeValue = QString::number(ds->tm_year+1900) + "-" + QString::number(ds->tm_mon+1) + "-" + QString::number(ds->tm_mday) + "T" + QString::number(ds->tm_hour) + ":" +QString::number(ds->tm_min) + ":" + QString::number(ds->tm_sec);
-
+    dateAttributeValue = getStrDate();
 
 
     runNumber = 0;
@@ -285,7 +278,6 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
     fileStreamXosc->writeStartElement("Entities");
     for(int agentID = 0; agentID<AgentLists.size(); agentID++){
 
-        randomCarModelIndex = rand() % CarModel.size();
 
         ObjectNameValue = "Agent" + QString::number(agentID);
 
@@ -293,7 +285,7 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         fileStreamXosc->writeAttribute("name",ObjectNameValue);
         fileStreamXosc->writeStartElement("CatalogReference");
         fileStreamXosc->writeAttribute("catalogName",VehicleCatalogTag);
-        fileStreamXosc->writeAttribute("entryName",CarModel[randomCarModelIndex]);
+        fileStreamXosc->writeAttribute("entryName",getCarModel());
         fileStreamXosc->writeEndElement(); //EndCatalogRefernce
         fileStreamXosc->writeStartElement("Controller");
         fileStreamXosc->writeStartElement("CatalogReference");
@@ -589,5 +581,23 @@ void Observation_Osc_Implementation::RecordAgentState(int time, const AgentInter
     AgentLists[agentId].push_back(AgentX);
 
 }
+
+QString Observation_Osc_Implementation::getStrDate(){
+    // create Date
+    auto datenow = std::chrono::system_clock::now();
+    std::time_t date = std::chrono::system_clock::to_time_t(datenow);
+    auto ds = std::localtime(&date);
+
+    //2016-10-18T10:00:00
+    QString dateAttributeValue_temp = QString::number(ds->tm_year+1900) + "-" + QString::number(ds->tm_mon+1) + "-" + QString::number(ds->tm_mday) + "T" + QString::number(ds->tm_hour) + ":" +QString::number(ds->tm_min) + ":" + QString::number(ds->tm_sec);
+    return dateAttributeValue_temp;
+}
+
+QString Observation_Osc_Implementation::getCarModel(){
+    randomCarModelIndex = rand() % CarModelList.size();
+    CarModel = CarModelList[randomCarModelIndex];
+    return CarModel;
+}
+
 
 
