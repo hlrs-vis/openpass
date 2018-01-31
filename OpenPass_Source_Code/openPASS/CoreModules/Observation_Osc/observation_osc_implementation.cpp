@@ -303,6 +303,11 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
     fileStreamXosc->writeStartElement("Actions");
 
     for(int agentID = 0; agentID<AgentLists.size(); agentID++){
+        std::list<VehicleState> agentData = AgentLists[agentID];
+        VehicleState firstTimeStep = agentData.front();
+        init_xPos = firstTimeStep.getxpos();
+        init_yPos = firstTimeStep.getypos();
+
         ObjectNameValue = "Agent" + QString::number(agentID);
 
         fileStreamXosc->writeStartElement("Private");
@@ -324,11 +329,20 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         fileStreamXosc->writeEndElement(); //End ActionTag
         fileStreamXosc->writeStartElement("Action");
         fileStreamXosc->writeStartElement("Position");
-        fileStreamXosc->writeStartElement("Lane");
-        fileStreamXosc->writeAttribute("laneId",laneIdValue);
-        fileStreamXosc->writeAttribute("offset",offsetValue);
-        fileStreamXosc->writeAttribute("roadId",roadIdValue);
-        fileStreamXosc->writeAttribute("s",sValue);
+
+        // intialize agents with absolute world coorinates
+        fileStreamXosc->writeStartElement("World");
+        fileStreamXosc->writeAttribute("x",QString::number(init_xPos));
+        fileStreamXosc->writeAttribute("y",QString::number(init_yPos));
+        fileStreamXosc->writeAttribute("z",QString::number(init_zPos));
+
+        // intialize agent road relative
+//        fileStreamXosc->writeStartElement("Lane");
+//        fileStreamXosc->writeAttribute("laneId",laneIdValue);
+//        fileStreamXosc->writeAttribute("offset",offsetValue);
+//        fileStreamXosc->writeAttribute("roadId",roadIdValue);
+//        fileStreamXosc->writeAttribute("s",QString::number(sValue));
+
         fileStreamXosc->writeEndElement(); //End LaneTag
         fileStreamXosc->writeEndElement(); //End "Position"
         fileStreamXosc->writeEndElement(); //End ActionTag
@@ -343,13 +357,11 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
     for(int agentID = 0; agentID<AgentLists.size(); agentID++){
         TrajectoryNameAttributeValue = "Agent_" + QString::number(agentID) + "_Trajectory";
 
-
-
         std::list<VehicleState> agentData = AgentLists[agentID];
-        std::list<VehicleState>::iterator firstTimeStep = agentData.begin();
-        std::list<VehicleState>::iterator lastTimeStep = agentData.end();
-        SimulationTimeStart = firstTimeStep->gettime()+5;
-        SimulationTimeEnd = 400; //lastTimeStep->gettime();
+        VehicleState firstTimeStep = agentData.front();
+        VehicleState lastTimeStep = agentData.back();
+        SimulationTimeStart = firstTimeStep.gettime()+5;
+        SimulationTimeEnd = lastTimeStep.gettime()+10; //lastTimeStep->gettime();
 
         // XOSC File
         EntityNameValue = "Agent" + QString::number(agentID);
@@ -465,6 +477,7 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         fileStreamXosc->writeEndElement(); //End ConditionsTag
         fileStreamXosc->writeEndElement(); //End EventTag
         fileStreamXosc->writeEndElement(); //End ManeuverTag
+        // end of break maneuver
 
         // write Start and End Conditions of Act
         fileStreamXosc->writeEndElement(); //End SequenceTag

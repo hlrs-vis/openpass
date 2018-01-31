@@ -91,11 +91,13 @@ bool Algorithm_TrajectoryFollower_Implementation::Init()
     State startState( startPosition, startControl );
 
     if ( carStats != nullptr && brakeController != nullptr && gasController != nullptr ) {
+        auto test = lookAheadTime.GetValue();
         trajectoryController = new TrajectoryFollowingControl( *carStats,
                                                                 startState,
                                                                 *gasController,
                                                                 *brakeController,
-                                                                lookAheadTime.GetValue()
+                                                                //lookAheadTime.GetValue()
+                                                               test
                                                               );
     } else {
         // should not be reached

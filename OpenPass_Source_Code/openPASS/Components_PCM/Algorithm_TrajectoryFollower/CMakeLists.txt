@@ -1,5 +1,5 @@
-SET (SOURCES algorithm_trajectoryFollower.cpp algorithm_trajectoryFollower_implementation.cpp)
-SET (HEADERS algorithm_trajectoryFollower_global.h algorithm_trajectoryFollower.h algorithm_trajectoryFollower_implementation.h)
+SET (SOURCES algorithm_trajectoryFollower.cpp algorithm_trajectoryFollower_implementation.cpp trajectoryfollowing.cpp)
+SET (HEADERS algorithm_trajectoryFollower_global.h algorithm_trajectoryFollower.h algorithm_trajectoryFollower_implementation.h trajectoryfollowing.h)
 
 
 add_definitions(-DALGORITHM_TRAJECTORYFOLLOWER_LIBRARY)

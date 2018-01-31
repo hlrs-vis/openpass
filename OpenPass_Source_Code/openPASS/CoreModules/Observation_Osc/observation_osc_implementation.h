@@ -251,9 +251,15 @@ private:
 
     // Init Position rel Street
     const QString laneIdValue = "1";
-    const QString offsetValue = "0.0";
+    const QString offsetValue = "0";
     const QString roadIdValue = "0";
-    const QString sValue = "0";
+    double sValue;
+
+    // init Position with world coordinates
+    double init_xPos;
+    double init_yPos;
+    double init_zPos = 0; // no output of z-Coordinate
+
 
     const QString StoryNameValue = "MyStory";
     QString StoryOwnerValue; // = "AgentX"
