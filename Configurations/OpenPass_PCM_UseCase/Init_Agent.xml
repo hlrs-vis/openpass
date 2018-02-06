@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+  <type>Sensor</type>
+  <title>Init_Agent</title>
+  <schedule>
+    <offset>0</offset>
+    <cycle>0</cycle>
+    <response>0</response>
+  </schedule>
+  <parameters/>
+  <inputs/>
+  <outputs>
+    <output>
+      <id>100</id>
+      <type>Trajectory</type>
+      <title>Trajectory</title>
+      <unit></unit>
+    </output>
+	<output>
+      <id>101</id>
+      <type>double</type>
+      <title>Weight</title>
+      <unit></unit>
+    </output>
+	<output>
+      <id>102</id>
+      <type>double</type>
+      <title>Wheelbase</title>
+      <unit></unit>
+    </output>
+	<output>
+      <id>103</id>
+      <type>double</type>
+      <title>DistanceFrontAxleToCOG</title>
+      <unit></unit>
+    </output>
+  </outputs>
+</component>

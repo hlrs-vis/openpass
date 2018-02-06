@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<systems>
+  <system>
+    <id>0</id>
+    <title></title>
+    <priority>0</priority>
+    <components>
+      <component>
+        <id>0</id>
+        <library>Dynamics_CopyTrajectory</library>
+        <title>Dynamics_CopyTrajectory</title>      
+        <schedule>
+		  <priority>0</priority>
+          <offset>0</offset>
+          <cycle>10</cycle>
+          <response>0</response>
+        </schedule>
+        <parameters/>
+        <position>
+          <x>662</x>
+          <y>46</y>
+        </position>
+      </component>
+    </components>
+    <connections>
+    </connections>
+  </system>
+</systems>
