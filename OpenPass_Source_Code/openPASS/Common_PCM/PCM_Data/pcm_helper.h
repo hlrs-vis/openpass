@@ -13,7 +13,7 @@ class PCM_Helper
 {
 public:
 
-    //! Retrieve a QString of the name of the mark type.
+    //! Retrieve a string of the name of the mark type.
     //!
     //! @param[in]     markType mark type to convert
     //! @return                 QString which is equivalent to the String in the
@@ -43,10 +43,10 @@ public:
         return markTypeName;
     }
 
-    //! Retrieve a MarktType equivalent to a String.
+    //! Retrieve a MarktType equivalent to a string.
     //!
     //! @param[in]     markTypeString   String to convert
-    //! @return                         MarkType which is equivalent to the String
+    //! @return                         MarkType which is equivalent to the string
     static MarkType ConvertStringToMarkType(std::string markTypeString)
     {
         if (markTypeString.compare("marks_continuous"))
@@ -71,10 +71,10 @@ public:
         }
     }
 
-    //! Retrieve a QString of the name of the object type.
+    //! Retrieve a string of the name of the object type.
     //!
     //! @param[in]     objectType mark type to convert
-    //! @return                 QString which is equivalent to the String in the
+    //! @return                 QString which is equivalent to the string in the
     //!                         database of this type of objects
     static std::string ConvertObjectTypeToDBString(ObjectType objectType)
     {
@@ -95,10 +95,10 @@ public:
         return objectTypeName;
     }
 
-    //! Retrieve a ObjectType equivalent to a String.
+    //! Retrieve a ObjectType equivalent to a string.
     //!
     //! @param[in]     objectTypeString   String to convert
-    //! @return                           ObjectType which is equivalent to the String
+    //! @return                           ObjectType which is equivalent to the string
     static ObjectType ConvertStringToObjectType(std::string objectTypeString)
     {
         if (objectTypeString.compare("objects"))
@@ -113,6 +113,18 @@ public:
         {
             return ObjectType::NONE;
         }
+    }
+
+    //! Retrieve a string of the name of the globalData in the database.
+    static std::string GetGlobalDataDBString()
+    {
+        return "global_data";
+    }
+
+    //! Retrieve a string of the name of the intended_course in the database.
+    static std::string GetIntendedCourseDBString()
+    {
+        return "intended_course";
     }
 
     //! Transform a pcm point to a vector.

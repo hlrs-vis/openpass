@@ -52,7 +52,7 @@ extern "C" Q_DECL_EXPORT int run(int argc, char *argv[])
     QElapsedTimer timer;
     timer.start();
 
-    //import frameworkConfigutation either via XML or application arguments,
+    //import frameworkConfiguration either via XML or application arguments,
     //in this case via application arguments given by starting the executable
 
     FrameworkConfig *frameworkConfig = FrameworkConfigImporter::Import(argc, argv);
@@ -73,6 +73,8 @@ extern "C" Q_DECL_EXPORT int run(int argc, char *argv[])
     LOG_INTERN(LogLevel::DebugCore) << "run configuration: " << frameworkConfig->GetRunConfigFile();
     LOG_INTERN(LogLevel::DebugCore) << "scenery configuration: " <<
                                     frameworkConfig->GetSceneryConfigFile();
+    LOG_INTERN(LogLevel::DebugCore) << "openScenario configuration: " <<
+                                    frameworkConfig->GetOpenScenarioConfigFile();
 
     // create folders for files which are generated during runtime
     if (!QDir(QString::fromStdString(frameworkConfig->GetLibraryPath())).exists())

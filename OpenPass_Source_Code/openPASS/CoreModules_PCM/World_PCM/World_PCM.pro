@@ -45,6 +45,7 @@ SUBDIRS +=  . \
             ../../Common \
             ../../Common_PCM \
             ../../Common_PCM/PCM_Data \
+            ../../Common_PCM/PCM_Importer \
             ../../Interfaces \
             ../../Interfaces/roadInterface
 

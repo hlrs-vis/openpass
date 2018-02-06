@@ -29,6 +29,7 @@ public:
                     const std::string &observationResultPath,
                     const std::string &agentConfigFile,
                     const std::string &sceneryConfigFile,
+                    const std::string &openScenarioConfigFile,
                     const std::string &runConfigFile,
                     const std::string &logFile,
                     int logLevel);
@@ -42,6 +43,7 @@ public:
     const std::string &GetObservationResultPath() const;
     const std::string &GetAgentConfigFile() const;
     const std::string &GetSceneryConfigFile() const;
+    const std::string &GetOpenScenarioConfigFile() const;
     const std::string &GetRunConfigFile() const;
     const std::string &GetLogFile() const;
     int GetLogLevel() const;
@@ -52,6 +54,7 @@ public:
     void SetObservationResultPath(const std::string &observationResultPath);
     void SetAgentConfigFile(const std::string &agentConfigFile);
     void SetSceneryConfigFile(const std::string &sceneryConfigFile);
+    void SetOpenScenarioConfigFile(const std::string &openScenarioConfigFile);
     void SetRunConfigFile(const std::string &runConfigFile);
     void SetLogFile(const std::string &logFile);
     void SetLogLevel(int logLevel);
@@ -61,6 +64,7 @@ private:
     std::string observationResultPath;
     std::string agentConfigFile;
     std::string sceneryConfigFile;
+    std::string openScenarioConfigFile;
     std::string runConfigFile;
     std::string logFile;
     int logLevel;

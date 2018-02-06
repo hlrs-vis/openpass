@@ -18,7 +18,7 @@
 #include <QDomDocument>
 #include <sstream>
 #include "pcm_data.h"
-#include "Trajectory.h"
+#include "pcm_trajectory.h"
 #include "globalDefinitions.h"
 #include "pcm_helper.h"
 
@@ -45,7 +45,7 @@ public:
     //-----------------------------------------------------------------------------
     bool Import(const std::string &filename,
                 PCM_Data &pcmData,
-                std::map<int, Trajectory> &trajectories);
+                std::map<int, PCM_Trajectory> &trajectories);
 
 private:
 
@@ -103,7 +103,7 @@ private:
     //! \param[in] trajectoryNode    node with trajectory
     //! \param[in,out] trajectories  trajectories map to be filled
     //! \return true for success
-    bool ParseTrajectories(QDomNode trajectoryNode, std::map<int, Trajectory> &trajectories);
+    bool ParseTrajectories(QDomNode trajectoryNode, std::map<int, PCM_Trajectory> &trajectories);
 
     //! Parse int vector.
     //!

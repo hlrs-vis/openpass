@@ -16,6 +16,7 @@
 #include "agentInterface.h"
 #include "observationInterface.h"
 #include "componentPorts.h"
+#include "XoscWriter/openScenarioWriter.h"
 
 /**
  * \addtogroup CoreModules_PCM openPASS CoreModules pcm
@@ -31,8 +32,8 @@
  */
 
 /*!
- * \copydoc Action_ScopeLogger
- * \ingroup Action_ScopeLogger
+ * \copydoc Observation_ScopeLogger
+ * \ingroup Observation_ScopeLogger
  */
 class Observation_ScopeLogger_Implementation : public ObservationInterface
 {
@@ -116,6 +117,8 @@ public:
         return "";   //dummy
     }
 
+private:
+
     //-----------------------------------------------------------------------------
     //! Save all Data of one time Step
     //! @param[in]  time             current time step
@@ -126,7 +129,17 @@ public:
     void SaveTimeStepData(int time, const AgentInterface *agent,
                           std::map<int, std::vector<std::pair<QString, QVariant> > > &timeStepData);
 
-private:
+    //-----------------------------------------------------------------------------
+    //! Write simulation results to csv
+    //!
+    //! @return
+    void WriteResultCSV();
+
+    //-----------------------------------------------------------------------------
+    //! Write simulation results to openScenario File
+    //!
+    //! @return
+    void WriteResultXosc();
 
     //! A map of all agents and their positions at every time.
     std::map<int, std::map<int, std::pair<double, double>>> agentsPositions;

@@ -49,6 +49,10 @@ defineReplace(getFiles) {
 SUBDIRS +=  . \
             ../../Common \
             ../../Common_PCM \
+            ../../Common_PCM/PCM_Data \
+            ../../Common_PCM/DataStructuresBase \
+            ../../Common_PCM/DataStructuresXosc \
+            ../../Common_PCM/XoscWriter \
             ../../Interfaces \
 
 INCLUDEPATH += $$SUBDIRS \

@@ -14,9 +14,10 @@
 
 #include "modelInterface.h"
 #include "primitiveSignals.h"
-#include "trajectory.h"
+#include "pcm_trajectory.h"
 #include "trajectorySignal.h"
 #include "componentPorts.h"
+#include "vector2d.h"
 
 #include "trajectoryfollowing.h"
 
@@ -138,7 +139,7 @@ private:
     InputPort<DoubleSignal, double> positionY {1, &inputPorts}; //!< current y-coordinate of agent
     InputPort<DoubleSignal, double> yawAngle {2, &inputPorts}; //!< current yaw angle of agent
     InputPort<DoubleSignal, double> velocityX {3, &inputPorts}; //!< current velocity of agent in straight direction of his local coordinate system
-    InputPort<TrajectorySignal, Trajectory> trajectory {100, &inputPorts}; //!< given trajectory to follow
+    InputPort<TrajectorySignal, PCM_Trajectory> trajectory {100, &inputPorts}; //!< given trajectory to follow
     InputPort<DoubleSignal, double> weight {101, &inputPorts}; //!< weight of the agent in kg
     InputPort<DoubleSignal, double> wheelbase {102, &inputPorts}; //!< wheelbase of the agent in m
     InputPort<DoubleSignal, double> distanceToCOG {103, &inputPorts}; //!< distance to COG of the agent in m

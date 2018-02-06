@@ -48,14 +48,14 @@ public:
     //! @param[in]     line     PCM_Line to add
     //! @return                 true on success
     //-----------------------------------------------------------------------------
-    bool AddPCM_Line(const PCM_Line *line);
+    bool AddPCM_Line(PCM_Line *line);
 
     //-----------------------------------------------------------------------------
     //! Get the vector of lines.
     //!
     //! @return                 vector of points
     //-----------------------------------------------------------------------------
-    const std::map<int, const PCM_Line *> *GetLineMap() const;
+    const std::map<int, PCM_Line *> *GetLineMap() const;
 
     //-----------------------------------------------------------------------------
     //! Check if a line with this id is already present.
@@ -64,7 +64,7 @@ public:
     //! @return                 true if line already exists,
     //!                         false else
     //-----------------------------------------------------------------------------
-    bool isLinePresent(int id) const;
+    bool IsLinePresent(int id) const;
 
     //-----------------------------------------------------------------------------
     //! Get a line by the id
@@ -73,7 +73,7 @@ public:
     //! @return                 pointer the the PCM_Line with this id,
     //!                         nullptr if line does not exist
     //-----------------------------------------------------------------------------
-    const PCM_Line *GetLineById(int id) const;
+    PCM_Line *GetLineById(int id) const;
 
     //-----------------------------------------------------------------------------
     //! Retrieve the nearest line segment(two points of a line) from a pcm point
@@ -107,7 +107,7 @@ public:
                               double range = INFINITY) const;
 
 private:
-    std::map<int, const PCM_Line *> lineMap;    //!< map of lines
+    std::map<int, PCM_Line *> lineMap;    //!< map of lines
 };
 
 #endif // PCM_LINECONTAINER_H

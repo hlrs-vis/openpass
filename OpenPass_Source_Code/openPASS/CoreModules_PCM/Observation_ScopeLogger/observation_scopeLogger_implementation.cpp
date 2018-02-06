@@ -79,6 +79,36 @@ void Observation_ScopeLogger_Implementation::SlavePostRunHook(const RunResultInt
 {
     Q_UNUSED(runResult);
 
+    WriteResultCSV();
+
+    WriteResultXosc();
+}
+
+void Observation_ScopeLogger_Implementation::SlavePostHook()
+{
+
+}
+
+void Observation_ScopeLogger_Implementation::SaveTimeStepData(int time, const AgentInterface *agent,
+                                                              std::map<int, std::vector<std::pair<QString, QVariant>>> &timeStepData)
+{
+    std::vector<std::pair<QString, QVariant>> dataVector;
+
+    dataVector.push_back(std::make_pair("XPos", agent->GetPositionX()));
+    dataVector.push_back(std::make_pair("YPos", agent->GetPositionY()));
+    dataVector.push_back(std::make_pair("YawAngle", agent->GetYawAngle()));
+    dataVector.push_back(std::make_pair("Velocity", agent->GetVelocityAbsolute()));
+    dataVector.push_back(std::make_pair("AccelerationIntention", agent->GetAccelerationIntention()));
+    dataVector.push_back(std::make_pair("DecelerationIntention", agent->GetDecelerationIntention()));
+    dataVector.push_back(std::make_pair("AngleIntention", agent->GetAngleIntention()));
+    dataVector.push_back(std::make_pair("CollisionOccured", agent->GetCollisionState()));
+
+    timeStepData.emplace(std::make_pair(time, dataVector));
+
+}
+
+void Observation_ScopeLogger_Implementation::WriteResultCSV()
+{
     std::string sep = ";";
     std::string endLine = "\n";
 
@@ -126,7 +156,14 @@ void Observation_ScopeLogger_Implementation::SlavePostRunHook(const RunResultInt
 
             for (const std::pair<QString, QVariant> &dataVector : timeStep.second)
             {
-                resultFile << sep << dataVector.second.toString().toStdString();
+                if (dataVector.second.type() == QVariant::Double)
+                {
+                    resultFile << sep << QString::number(dataVector.second.toDouble(), 'g', 10).toStdString();
+                }
+                else
+                {
+                    resultFile << sep << dataVector.second.toString().toStdString();
+                }
             }
             resultFile << endLine;
         }
@@ -135,25 +172,61 @@ void Observation_ScopeLogger_Implementation::SlavePostRunHook(const RunResultInt
     }
 }
 
-void Observation_ScopeLogger_Implementation::SlavePostHook()
+void Observation_ScopeLogger_Implementation::WriteResultXosc()
 {
+    // Xosc output of simulation result
+    QString resultFileName = QString::fromStdString(resultFolder)
+                             + "/dataLog.xosc";
 
-}
+    if (QFile::exists(resultFileName))
+    {
+        QFile::remove(resultFileName);
+    }
 
-void Observation_ScopeLogger_Implementation::SaveTimeStepData(int time, const AgentInterface *agent,
-                                                              std::map<int, std::vector<std::pair<QString, QVariant>>> &timeStepData)
-{
-    std::vector<std::pair<QString, QVariant>> dataVector;
+    std::vector<PCM_Trajectory *> trajectories;
+    for (auto const &agent : agentData)
+    {
+        std::vector<int> *timeVec = new std::vector<int>;
+        std::vector<double> *xPosVec = new std::vector<double>;
+        std::vector<double> *yPosVec = new std::vector<double>;
+        std::vector<double> *uVelVec = new std::vector<double>;
+        std::vector<double> *vVelVec = new std::vector<double>;
+        std::vector<double> *psiVec = new std::vector<double>;
 
-    dataVector.push_back(std::make_pair("XPos", agent->GetPositionX()));
-    dataVector.push_back(std::make_pair("YPos", agent->GetPositionY()));
-    dataVector.push_back(std::make_pair("YawAngle", agent->GetYawAngle()));
-    dataVector.push_back(std::make_pair("Velocity", agent->GetVelocityAbsolute()));
-    dataVector.push_back(std::make_pair("AccelerationIntention", agent->GetAccelerationIntention()));
-    dataVector.push_back(std::make_pair("DecelerationIntention", agent->GetDecelerationIntention()));
-    dataVector.push_back(std::make_pair("AngleIntention", agent->GetAngleIntention()));
-    dataVector.push_back(std::make_pair("CollisionOccured", agent->GetCollisionState()));
+        for (auto const &timeStep : agent.second)
+        {
+            timeVec->push_back(timeStep.first);
+            for (const std::pair<QString, QVariant> &dataVector : timeStep.second)
+            {
+                if (dataVector.first == "XPos")
+                {
+                    xPosVec->push_back(dataVector.second.toDouble());
+                }
+                if (dataVector.first == "YPos")
+                {
+                    yPosVec->push_back(dataVector.second.toDouble());
+                }
+                if (dataVector.first == "YawAngle")
+                {
+                    psiVec->push_back(dataVector.second.toDouble());
+                }
+            }
+        }
+        trajectories.push_back(new PCM_Trajectory(timeVec,
+                                                  xPosVec,
+                                                  yPosVec,
+                                                  uVelVec,
+                                                  vVelVec,
+                                                  psiVec));
+    }
 
-    timeStepData.emplace(std::make_pair(time, dataVector));
+    OpenScenarioWriter openScenarioWriter;
+    openScenarioWriter.CreateScenarioFile(resultFileName,
+                                          trajectories);
 
+    for (PCM_Trajectory *trajectory : trajectories)
+    {
+        trajectory->Clear();
+        delete trajectory;
+    }
 }

@@ -110,6 +110,8 @@ extern "C" Q_DECL_EXPORT int run(int argc, char *argv[])
         LOG_INTERN(LogLevel::DebugCore) << "run configuration: " << slaveConfig.GetRunConfigFile();
         LOG_INTERN(LogLevel::DebugCore) << "scenery configuration: " <<
                                         slaveConfig.GetSceneryConfigFile();
+        LOG_INTERN(LogLevel::DebugCore) << "openScenario configuration: " <<
+                                        slaveConfig.GetOpenScenarioConfigFile();
         LOG_INTERN(LogLevel::DebugCore) << "log file Slave: " << slaveConfig.GetLogFileSlave();
 
         // create folders for files which are generated during runtime
@@ -125,6 +127,7 @@ extern "C" Q_DECL_EXPORT int run(int argc, char *argv[])
                   << "--observationResultPath" << slaveConfig.GetObservationResultPath().c_str()
                   << "--runConfiguration" << slaveConfig.GetRunConfigFile().c_str()
                   << "--sceneryConfiguration" << slaveConfig.GetSceneryConfigFile().c_str()
+                  << "--openScenarioConfiguration" << slaveConfig.GetOpenScenarioConfigFile().c_str()
                   << "--logFile" << slaveConfig.GetLogFileSlave().c_str()
                   << "--logLevel" << QString::number(frameworkConfig->GetLogLevel());
 

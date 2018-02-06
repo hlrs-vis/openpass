@@ -37,6 +37,8 @@ FrameworkConfig *FrameworkConfigImporter::Import(int argc, char *argv[])
     QString resultPath = QCoreApplication::applicationDirPath();
     QString agentConfigFile = QCoreApplication::applicationDirPath() + "/systemConfiguration.xml";
     QString sceneryConfigFile = QCoreApplication::applicationDirPath() + "/sceneryConfiguration.xml";
+    QString openScenarioConfigFile = QCoreApplication::applicationDirPath() +
+                                     "/scenarioConfiguration.xosc";
     QString runConfigFile = QCoreApplication::applicationDirPath() + "/runConfiguration.xml";
     QString logFile = QCoreApplication::applicationDirPath() + "/OpenPassSlave.log";
     int logLevel = 5;
@@ -72,6 +74,13 @@ FrameworkConfig *FrameworkConfigImporter::Import(int argc, char *argv[])
                 sceneryConfigFile = argv[i];
             }
         }
+        else if (arg == "--openScenarioConfiguration")
+        {
+            if (++i < argc)
+            {
+                openScenarioConfigFile = argv[i];
+            }
+        }
         else if (arg == "--runConfiguration")
         {
             if (++i < argc)
@@ -99,6 +108,7 @@ FrameworkConfig *FrameworkConfigImporter::Import(int argc, char *argv[])
                                                                         resultPath.toStdString(),
                                                                         agentConfigFile.toStdString(),
                                                                         sceneryConfigFile.toStdString(),
+                                                                        openScenarioConfigFile.toStdString(),
                                                                         runConfigFile.toStdString(),
                                                                         logFile.toStdString(),
                                                                         logLevel);

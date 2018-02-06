@@ -14,7 +14,7 @@
 #ifndef TRAJECTORYSIGNAL_H
 #define TRAJECTORYSIGNAL_H
 
-#include "trajectory.h"
+#include "PCM_Data/pcm_trajectory.h"
 #include "modelInterface.h"
 
 //-----------------------------------------------------------------------------
@@ -28,9 +28,15 @@ public:
     //!
     //! @param[in]     inValue      The object that is the content of the signal
     //-----------------------------------------------------------------------------
-    TrajectorySignal(Trajectory inValue):
+    TrajectorySignal(PCM_Trajectory inValue):
         SignalInterface(), value(inValue)
     {}
+
+    TrajectorySignal(const TrajectorySignal &) = default;
+    TrajectorySignal(TrajectorySignal &&) = default;
+    TrajectorySignal &operator=(const TrajectorySignal &) = default;
+    TrajectorySignal &operator=(TrajectorySignal &&) = default;
+    virtual ~TrajectorySignal() = default;
 
     //-----------------------------------------------------------------------------
     //! Operator to output the value of this signal as a string
@@ -43,7 +49,7 @@ public:
         return stream.str();
     }
 
-    Trajectory value;               //!< the content of the signal
+    PCM_Trajectory value;               //!< the content of the signal
 };
 
 #endif // TRAJECTORYSIGNAL_H

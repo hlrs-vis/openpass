@@ -13,7 +13,6 @@
 
 #include "algorithm_trajectoryFollower_implementation.h"
 
-#include "vec2d.h"
 #include "pid_controller.h"
 #include "trajectoryfollowing.h"
 
@@ -84,8 +83,8 @@ bool Algorithm_TrajectoryFollower_Implementation::Init()
                               0  // throttlePedal0
                             );
 
-    PositionData startPosition( Vec2D( positionX.GetValue(),
-                                       positionY.GetValue() ),
+    PositionData startPosition( Common::Vector2d( positionX.GetValue(),
+                                                  positionY.GetValue() ),
                                 yawAngle.GetValue(),
                                 velocityX.GetValue() );
 
@@ -107,10 +106,10 @@ bool Algorithm_TrajectoryFollower_Implementation::Init()
         return false;
     }
 
-    waypoints = ReadWayPointData( trajectory.GetValue().GetTimeVec(),    // WayPointsTime
+    waypoints = ReadWayPointData( trajectory.GetValue().GetTimeVec(), // WayPointsTime
                                   trajectory.GetValue().GetXPosVec(), // WayPointsX
                                   trajectory.GetValue().GetYPosVec(), // WayPointsY
-                                  trajectory.GetValue().GetVelVec()  // WayPointsVelocity
+                                  trajectory.GetValue().GetUVelVec()  // WayPointsVelocity
                                 );
 
     if ( !waypoints )

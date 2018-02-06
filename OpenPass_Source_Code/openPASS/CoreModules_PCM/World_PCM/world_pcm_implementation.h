@@ -13,7 +13,8 @@
 #include "worldInterface.h"
 #include "agentNetwork.h"
 #include "sceneryImporterPCM.h"
-#include "Trajectory.h"
+#include "scenarioImporterPCM.h"
+#include "pcm_trajectory.h"
 
 /**
 * \addtogroup CoreModules_PCM openPASS CoreModules pcm
@@ -35,9 +36,9 @@
 */
 
 /*!
- * \copydoc World_PCM
- * \ingroup World_PCM
- */
+* \copydoc World_PCM
+* \ingroup World_PCM
+*/
 class World_PCM_Implementation : public WorldInterface
 {
 public:
@@ -109,10 +110,12 @@ public:
 
     bool CreateWorldScenery(const  std::string &sceneryFilename);
 
-//----------------END WorldInterface functions-------------------------------------
+    bool CreateWorldScenario(const  std::string &scenarioFilename);
+
+    //----------------END WorldInterface functions-------------------------------------
 
     const PCM_Data *GetPCM_Data() const;
-    const Trajectory *GetTrajectory(int agentId) const;
+    const PCM_Trajectory *GetTrajectory(int agentId) const;
 
 protected:
     //-----------------------------------------------------------------------------
@@ -146,19 +149,20 @@ private:
 
     AgentNetwork agentNetwork;
     SceneryImporterPCM sceneryImporterPCM;
+    ScenarioImporterPCM scenarioImporterPCM;
 
     const CallbackInterface *callbacks = nullptr;
 
     /** \addtogroup World_PCM
-     *  @{
-     *    \name PCM_Data
-     *    @{
+    *  @{
+    *    \name PCM_Data
+    *    @{
     */
     PCM_Data pcmData; //!< store all pcm data
-    std::map<int, Trajectory> trajectories;   //!<map of all trajectories
+    std::map<int, PCM_Trajectory> trajectories;   //!<map of all trajectories
     /**
-     *    @}
-     *  @}
+    *    @}
+    *  @}
     */
 };
 

@@ -66,7 +66,7 @@ public:
     //! @return                 true if point already exists,
     //!                         false else
     //-----------------------------------------------------------------------------
-    bool isPointPresent(int id) const;
+    bool IsPointPresent(int id) const;
 
     //-----------------------------------------------------------------------------
     //! Get a point by the id

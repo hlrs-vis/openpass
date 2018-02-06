@@ -131,6 +131,12 @@ public:
         return false;
     } //dummy
 
+    bool CreateWorldScenario(const  std::string &scenarioFilename)
+    {
+        Q_UNUSED(scenarioFilename);
+        return false;
+    } //dummy
+
 protected:
     //-----------------------------------------------------------------------------
     //! Provides callback to LOG() macro

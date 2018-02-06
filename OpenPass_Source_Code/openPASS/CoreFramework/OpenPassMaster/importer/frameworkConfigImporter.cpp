@@ -183,6 +183,17 @@ FrameworkConfig *FrameworkConfigImporter::Import(const std::string &filename)
             sceneryConfigFile = ss.str();
         }
 
+        // parse openScenario configuration file
+        std::string openScenarioConfigFile;
+        if (!SimulationCommon::ParseString(slaveConfigElement, "ScenarioConfigFile",
+                                           openScenarioConfigFile)
+                || openScenarioConfigFile.empty())
+        {
+            ss.str(std::string());
+            ss << QCoreApplication::applicationDirPath().toStdString() << "/scenarioConfiguration.xosc";
+            openScenarioConfigFile = ss.str();
+        }
+
         // parse log file Slave
         std::string logFileSlave;
         if (!SimulationCommon::ParseString(slaveConfigElement, "LogFileSlave", logFileSlave)
@@ -198,6 +209,7 @@ FrameworkConfig *FrameworkConfigImporter::Import(const std::string &filename)
                                               agentConfigFile,
                                               runConfigFile,
                                               sceneryConfigFile,
+                                              openScenarioConfigFile,
                                               logFileSlave));
 
         slaveConfigElement = slaveConfigElement.nextSiblingElement("frameworkConfiguration");

@@ -26,6 +26,7 @@ public:
                 const std::string &agentConfigFile,
                 const std::string &runConfigFile,
                 const std::string &sceneryConfigFile,
+                const std::string &openScenarioConfigFile,
                 const std::string &logFileSlave);
 
     virtual ~SlaveConfig();
@@ -35,6 +36,7 @@ public:
     const std::string &GetAgentConfigFile() const;
     const std::string &GetRunConfigFile() const;
     const std::string &GetSceneryConfigFile() const;
+    const std::string &GetOpenScenarioConfigFile() const;
     const std::string &GetLogFileSlave() const;
 
 private:
@@ -43,6 +45,7 @@ private:
     std::string agentConfigFile;
     std::string runConfigFile;
     std::string sceneryConfigFile;
+    std::string openScenarioConfigFile;
     std::string logFileSlave;
 };
 

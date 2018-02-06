@@ -47,7 +47,7 @@ void World_PCM_Implementation::Clear()
     {
         trajectoryItem.second.Clear();
     }
-
+    trajectories.clear();
     timeOfDay = 0;
     weekday = Weekday::Undefined;
 }
@@ -111,12 +111,17 @@ bool World_PCM_Implementation::CreateWorldScenery(const std::string &sceneryFile
     return sceneryImporterPCM.Import(sceneryFilename, pcmData, trajectories);
 }
 
+bool World_PCM_Implementation::CreateWorldScenario(const std::string &scenarioFilename)
+{
+    return scenarioImporterPCM.Import(scenarioFilename, trajectories);
+}
+
 const PCM_Data *World_PCM_Implementation::GetPCM_Data() const
 {
     return &pcmData;
 }
 
-const Trajectory *World_PCM_Implementation::GetTrajectory(int agentId) const
+const PCM_Trajectory *World_PCM_Implementation::GetTrajectory(int agentId) const
 {
     return &trajectories.find(agentId)->second;
 }

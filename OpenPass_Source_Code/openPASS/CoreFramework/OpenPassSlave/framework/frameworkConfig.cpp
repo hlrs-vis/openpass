@@ -14,6 +14,7 @@ FrameworkConfig::FrameworkConfig(const std::string &libraryPath,
                                  const std::string &observationResultPath,
                                  const std::string &agentConfigFile,
                                  const std::string &sceneryConfigFile,
+                                 const std::string &openScenarioConfigFile,
                                  const std::string &runConfigFile,
                                  const std::string &logFile,
                                  int logLevel)
@@ -22,6 +23,7 @@ FrameworkConfig::FrameworkConfig(const std::string &libraryPath,
     SetObservationResultPath(observationResultPath);
     SetAgentConfigFile(agentConfigFile);
     SetSceneryConfigFile(sceneryConfigFile);
+    SetOpenScenarioConfigFile(openScenarioConfigFile);
     SetRunConfigFile(runConfigFile);
     SetLogFile(logFile);
     SetLogLevel(logLevel);
@@ -45,6 +47,11 @@ const std::string &FrameworkConfig::GetAgentConfigFile() const
 const std::string &FrameworkConfig::GetSceneryConfigFile() const
 {
     return sceneryConfigFile;
+}
+
+const std::string &FrameworkConfig::GetOpenScenarioConfigFile() const
+{
+    return openScenarioConfigFile;
 }
 
 const std::string &FrameworkConfig::GetRunConfigFile() const
@@ -119,6 +126,21 @@ void FrameworkConfig::SetSceneryConfigFile(const std::string &sceneryConfigFile)
     else
     {
         this->sceneryConfigFile = sceneryConfigFile;
+    }
+}
+
+void FrameworkConfig::SetOpenScenarioConfigFile(const std::string &openScenarioConfigFile)
+{
+    if (QDir(QString::fromStdString(openScenarioConfigFile)).isRelative())
+    {
+        QDir baseDir = QCoreApplication::applicationDirPath();
+        QString absolutePath = baseDir.absoluteFilePath(QString::fromStdString(openScenarioConfigFile));
+        absolutePath = baseDir.cleanPath(absolutePath);
+        this->openScenarioConfigFile = absolutePath.toStdString();
+    }
+    else
+    {
+        this->openScenarioConfigFile = openScenarioConfigFile;
     }
 }
 

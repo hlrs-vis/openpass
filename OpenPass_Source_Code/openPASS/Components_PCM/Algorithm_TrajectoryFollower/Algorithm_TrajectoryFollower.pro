@@ -45,6 +45,7 @@ defineReplace(getFiles) {
 SUBDIRS +=  . \
             ../../Common \
             ../../Common_PCM \
+            ../../Common_PCM/PCM_Data \
             ../../Interfaces
 
 INCLUDEPATH += $$SUBDIRS \

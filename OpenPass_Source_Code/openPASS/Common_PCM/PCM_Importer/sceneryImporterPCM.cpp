@@ -9,7 +9,7 @@
 #include "sceneryImporterPCM.h"
 
 bool SceneryImporterPCM::Import(const std::string &filename, PCM_Data &pcmData,
-                                std::map<int, Trajectory> &trajectories)
+                                std::map<int, PCM_Trajectory> &trajectories)
 {
     std::locale::global(std::locale("C"));
 
@@ -326,7 +326,7 @@ bool SceneryImporterPCM::ParsePoints(QDomNode pointContainerNode,
 }
 
 bool SceneryImporterPCM::ParseTrajectories(QDomNode trajectoriesNode,
-                                           std::map<int, Trajectory> &trajectories)
+                                           std::map<int, PCM_Trajectory> &trajectories)
 {
     if (trajectoriesNode.isNull())
     {
@@ -380,11 +380,12 @@ bool SceneryImporterPCM::ParseTrajectories(QDomNode trajectoriesNode,
                 tempNode = tempNode.nextSibling();
             }
 
-            trajectories.emplace(std::make_pair(id, Trajectory(timeVec,
-                                                               xPosVec,
-                                                               yPosVec,
-                                                               xVelVec,
-                                                               angleVec)));
+            trajectories.emplace(std::make_pair(id, PCM_Trajectory(timeVec,
+                                                                   xPosVec,
+                                                                   yPosVec,
+                                                                   xVelVec,
+                                                                   yVelVec,
+                                                                   angleVec)));
         }
         trajectoryNode = trajectoryNode.nextSibling();
     }

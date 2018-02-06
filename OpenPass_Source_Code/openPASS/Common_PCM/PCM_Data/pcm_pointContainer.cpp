@@ -10,7 +10,8 @@
 
 PCM_PointContainer::~PCM_PointContainer()
 {
-    for (std::pair<int, const PCM_Point *> pcmPointPair : pointMap) {
+    for (std::pair<int, const PCM_Point *> pcmPointPair : pointMap)
+    {
         delete pcmPointPair.second;
     }
 
@@ -28,12 +29,15 @@ const std::map<int, const PCM_Point *> *PCM_PointContainer::GetPointMap() const
     return &pointMap;
 }
 
-bool PCM_PointContainer::isPointPresent(int id) const
+bool PCM_PointContainer::IsPointPresent(int id) const
 {
     std::map<int, const PCM_Point *>::const_iterator pointIterator = pointMap.find(id);
-    if (pointIterator != pointMap.end()) {
+    if (pointIterator != pointMap.end())
+    {
         return true;
-    } else {
+    }
+    else
+    {
         return false;
     }
 }
@@ -42,9 +46,12 @@ const PCM_Point *PCM_PointContainer::GetPointById(int id) const
 {
     std::map<int, const PCM_Point *>::const_iterator pointIterator = pointMap.find(id);
 
-    if (pointIterator != pointMap.end()) {
+    if (pointIterator != pointMap.end())
+    {
         return pointIterator->second;
-    } else {
+    }
+    else
+    {
         return nullptr;
     }
 }
@@ -54,7 +61,8 @@ PCM_LineSegment PCM_PointContainer::GetNearestLineSegment(const PCM_Point *point
 {
     PCM_LineSegment minLineSegment(nullptr, nullptr);
 
-    if (point == nullptr) {
+    if (point == nullptr)
+    {
         return minLineSegment;
     }
 
@@ -62,15 +70,18 @@ PCM_LineSegment PCM_PointContainer::GetNearestLineSegment(const PCM_Point *point
 
     const PCM_Point *previousPoint = nullptr;
 
-    for (std::pair<int, const PCM_Point *> pcmPointPair : pointMap) {
+    for (std::pair<int, const PCM_Point *> pcmPointPair : pointMap)
+    {
         const PCM_Point *currentPoint = pcmPointPair.second;
         // skip first point
-        if (previousPoint != nullptr) {
+        if (previousPoint != nullptr)
+        {
             PCM_LineSegment lineSegment(previousPoint, currentPoint);
 
             double distance = lineSegment.CalcDistanceFromPoint(point, viewDirection, range);
 
-            if ((minDistance > distance) && (!std::isinf(distance))) {
+            if ((minDistance > distance) && (!std::isinf(distance)))
+            {
                 minDistance = distance;
                 minLineSegment = lineSegment;
             }

@@ -17,10 +17,10 @@
 #include <iostream>
 #include <math.h>
 
-#include "vec2d.h"
+#include "vector2d.h"
 #include "pid_controller.h"
 #include "lowpass.h"
-#include "trajectory.h"
+#include "PCM_Data/pcm_trajectory.h"
 
 const double GRAVITY = 9.81;                    //!< gravity constant G in m/s^2
 const double PI  = 3.141592653589793238463;     //!< the circle number \pi
@@ -157,7 +157,7 @@ private:
 //! Lightweight structure comprising all information on a way point within a trajectory
 struct WaypointData
 {
-    Vec2D position;         //!< position (x- and y-coordinates)
+    Common::Vector2d position;         //!< position (x- and y-coordinates)
     double velocity;        //!< velocity
     double time;            //!< timestamp
 
@@ -180,7 +180,7 @@ struct WaypointData
 //! Lightweight structure comprising all information on positioning a vehicle
 struct PositionData
 {
-    Vec2D position;         //!< 2d vector with x- and y-coordinates
+    Common::Vector2d position;         //!< 2d vector with x- and y-coordinates
     double angle;           //!< angle
     double velocity;        //!< velocity
 
@@ -194,7 +194,7 @@ struct PositionData
     //! @param[in]     position         2d vector with x- and y-coordinates
     //! @param[in]     angle
     //! @param[in]     velocity
-    PositionData(Vec2D position, double angle, double velocity):
+    PositionData(Common::Vector2d position, double angle, double velocity):
         position(position), angle(angle), velocity(velocity)
     {}
 
@@ -286,7 +286,7 @@ public:
     //! Function setting the current position
     //!
     //! @param[in]     Position     2d vector with x- and y-coordinates
-    void setCurrentPosition(Vec2D Position)
+    void setCurrentPosition(Common::Vector2d Position)
     {
         CurrentState_.positionData.position = Position;
     }
@@ -358,7 +358,7 @@ public:
     //! Function returning the position of the waypoint that is currently aimed at
     //!
     //! @return                         position of the waypoint that is currently aimed at
-    Vec2D getCurrentWayPoint()
+    Common::Vector2d getCurrentWayPoint()
     {
         return waypoints_[currentWayPointIndex_].position;
     }
@@ -374,7 +374,7 @@ public:
     //! Function returning the position of the just passed waypoint
     //!
     //! @return                         position of the just passed waypoint
-    Vec2D getPreviousWayPoint()
+    Common::Vector2d getPreviousWayPoint()
     {
         return waypoints_[previousWayPointIndex_].position;
     }
@@ -473,7 +473,7 @@ private:
     //! @param[in]     fromIndex            index of the 'starting' waypoint
     //! @param[in]     numPointsLookAhead   how many indices are looked ahead
     //! @return                             corresponding index
-    int findClosestWayPointAheadIndex(Vec2D &position, Vec2D &direction,
+    int findClosestWayPointAheadIndex(Common::Vector2d &position, Common::Vector2d &direction,
                                       int fromIndex, int numPointsLookAhead);
 
 };

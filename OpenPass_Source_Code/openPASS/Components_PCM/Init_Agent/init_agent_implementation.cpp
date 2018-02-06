@@ -38,8 +38,11 @@ Init_Agent_Implementation::Init_Agent_Implementation(
         agent)
 {
     // read parameters
-    try {
-    } catch (...) {
+    try
+    {
+    }
+    catch (...)
+    {
         const std::string msg = COMPONENTNAME + " could not init parameters";
         LOG(CbkLogLevel::Error, msg);
         throw std::runtime_error(msg);
@@ -66,10 +69,13 @@ void Init_Agent_Implementation::UpdateOutput(int localLinkId,
 
     bool success = outputPorts.at(localLinkId)->GetSignalValue(data);
 
-    if (success) {
+    if (success)
+    {
         log << COMPONENTNAME << " UpdateOutput successful";
         LOG(CbkLogLevel::Debug, log.str());
-    } else {
+    }
+    else
+    {
         log << COMPONENTNAME << " UpdateOutput failed";
         LOG(CbkLogLevel::Error, log.str());
     }
@@ -82,9 +88,10 @@ void Init_Agent_Implementation::Trigger(int time)
     weight.SetValue(GetAgent()->GetWeight());
     wheelbase.SetValue(GetAgent()->GetWheelbase());
     distanceToCOG.SetValue(GetAgent()->GetDistanceCOGtoFrontAxle());
-    trajectory.SetValue(Trajectory(GetAgent()->GetTrajectoryTime(),
-                                   GetAgent()->GetTrajectoryXPos(),
-                                   GetAgent()->GetTrajectoryYPos(),
-                                   GetAgent()->GetTrajectoryVelocity(),
-                                   GetAgent()->GetTrajectoryAngle()));
+    trajectory.SetValue(PCM_Trajectory(GetAgent()->GetTrajectoryTime(),
+                                       GetAgent()->GetTrajectoryXPos(),
+                                       GetAgent()->GetTrajectoryYPos(),
+                                       GetAgent()->GetTrajectoryVelocity(),
+                                       nullptr,
+                                       GetAgent()->GetTrajectoryAngle()));
 }

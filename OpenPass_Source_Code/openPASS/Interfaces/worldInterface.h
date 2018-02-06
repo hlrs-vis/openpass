@@ -198,6 +198,13 @@ public:
     //! @return
     //-----------------------------------------------------------------------------
     virtual bool CreateWorldScenery(const  std::string &sceneryFilename) = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Tries to create an internal scenario from a given file.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual bool CreateWorldScenario(const  std::string &scenarioFilename) = 0;
 };
 
 #endif // WORLDINTERFACE_H

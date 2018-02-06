@@ -470,7 +470,7 @@ const std::vector<double> *AgentAdapter::GetTrajectoryYPos() const
 
 const std::vector<double> *AgentAdapter::GetTrajectoryVelocity() const
 {
-    return worldPCM->GetTrajectory(GetAgentId())->GetVelVec();
+    return worldPCM->GetTrajectory(GetAgentId())->GetUVelVec();
 }
 
 const std::vector<double> *AgentAdapter::GetTrajectoryAngle() const

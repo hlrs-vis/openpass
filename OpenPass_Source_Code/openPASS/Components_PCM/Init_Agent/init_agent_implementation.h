@@ -11,7 +11,7 @@
 
 #include "modelInterface.h"
 #include "observationInterface.h"
-#include "trajectory.h"
+#include "pcm_trajectory.h"
 #include "trajectorySignal.h"
 #include "primitiveSignals.h"
 #include "componentPorts.h"
@@ -105,7 +105,7 @@ private:
      *      All output ports with PortId
      *      @{
      */
-    OutputPort<TrajectorySignal, Trajectory> trajectory {100, &outputPorts}; //!< Trajectory
+    OutputPort<TrajectorySignal, PCM_Trajectory> trajectory {100, &outputPorts}; //!< Trajectory
     OutputPort<DoubleSignal, double> weight {101, &outputPorts}; //!< weight of the agent in kg
     OutputPort<DoubleSignal, double> wheelbase {102, &outputPorts}; //!< wheelbase of the agent in m
     OutputPort<DoubleSignal, double> distanceToCOG {103, &outputPorts}; //!< distance to COG of the agent in m

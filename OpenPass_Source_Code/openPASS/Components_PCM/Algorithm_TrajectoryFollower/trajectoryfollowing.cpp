@@ -46,11 +46,11 @@ vector<double> TrajectoryFollowingControl::computeDistancesBetweenConsecutiveWay
         return vector<double>(0);
     }
     vector<double> distances(numWayPoints_ - 1);
-    Vec2D u;
+    Common::Vector2d u;
     for (int i = 0; i < numWayPoints_ - 1; ++i)
     {
         u = waypoints_[i + 1].position - waypoints_[i].position;
-        distances[i] = u.norm();
+        distances[i] = u.Length();
     }
     return distances;
 }
@@ -92,7 +92,8 @@ int TrajectoryFollowingControl::computeNumberOfLookaheadPoints(double totalDista
 //! @param[in]     fromIndex            index of the 'starting' waypoint
 //! @param[in]     numPointsLookAhead   how many indices are looked ahead
 //! @return                             corresponding index
-int TrajectoryFollowingControl::findClosestWayPointAheadIndex(Vec2D &position, Vec2D &direction,
+int TrajectoryFollowingControl::findClosestWayPointAheadIndex(Common::Vector2d &position,
+                                                              Common::Vector2d &direction,
                                                               int fromIndex, int numPointsLookAhead)
 {
     if (numWayPoints_ <= 0)
@@ -101,9 +102,9 @@ int TrajectoryFollowingControl::findClosestWayPointAheadIndex(Vec2D &position, V
     }
     double dist, mindist;
     int index = fromIndex;
-    Vec2D u = waypoints_[index].position - position;
+    Common::Vector2d u = waypoints_[index].position - position;
 
-    mindist = u.squaredNorm();
+    mindist = u.Length();
     int currentIndex = index;
     int d = numWayPoints_ - 1 - index;
     if (d < numPointsLookAhead)
@@ -115,7 +116,7 @@ int TrajectoryFollowingControl::findClosestWayPointAheadIndex(Vec2D &position, V
     {
         currentIndex = currentIndex + 1;
         u = waypoints_[currentIndex].position - position;
-        dist = u.squaredNorm();
+        dist = u.Length();
 
         if (dist < mindist)
         {
@@ -134,10 +135,10 @@ int TrajectoryFollowingControl::findClosestWayPointAheadIndex(Vec2D &position, V
     //if so, return it
     //if not, return the next point if it exists (index does not equal numWaypoints_-1)
 
-    double c = direction % position;
+    double c = direction.Dot(position);
     //check in which half space (in front or behind the cars position) the calculated waypoint is
     //test wether the calculated waypoint is in front of the car (prevent trying to turn in this case)
-    if (direction % waypoints_[index].position <= c)
+    if (direction.Dot(waypoints_[index].position) <= c)
     {
         if (index != numWayPoints_ - 1)
         {
@@ -241,9 +242,9 @@ TrajectoryFollowingControl::TrajectoryFollowingControl(std::vector<WaypointData>
 //! @return                         the required wheel angle
 double TrajectoryFollowingControl::lateralControl()
 {
-    Vec2D  PredictedPosition;
+    Common::Vector2d  PredictedPosition;
     double predictedAngle;
-    Vec2D  nextWayPoint;
+    Common::Vector2d  nextWayPoint;
     int    nextWayPointIndex;
 
     double velocity = CurrentState_.positionData.velocity;
@@ -287,8 +288,8 @@ double TrajectoryFollowingControl::lateralControl()
 
     PredictedPosition.x = CurrentState_.positionData.position.x + cos(psi + gamma) * s;
     PredictedPosition.y = CurrentState_.positionData.position.y + sin(psi + gamma) * s;
-    Vec2D PredictedDirection(cos(predictedAngle), sin(predictedAngle));
-    Vec2D CurrentDirection(cos(psi), sin(psi));
+    Common::Vector2d PredictedDirection(cos(predictedAngle), sin(predictedAngle));
+    Common::Vector2d CurrentDirection(cos(psi), sin(psi));
 
     //compute the index of the most recently passed
     previousWayPointIndex_ = findClosestWayPointAheadIndex(CurrentState_.positionData.position,
@@ -439,9 +440,10 @@ double TrajectoryFollowingControl::brakeControl()
 ControlData TrajectoryFollowingControl::computeRequiredControl()
 {
 
-    Vec2D u = waypoints_[numWayPoints_ - 1].position - waypoints_[numWayPoints_ - 2].position;
-    Vec2D v = CurrentState_.positionData.position - waypoints_[numWayPoints_ - 2].position;
-    double uv = v % u;
+    Common::Vector2d u = waypoints_[numWayPoints_ - 1].position - waypoints_[numWayPoints_ -
+                                                                             2].position;
+    Common::Vector2d v = CurrentState_.positionData.position - waypoints_[numWayPoints_ - 2].position;
+    double uv = v.Dot(u);
 
     if (uv > 0.0)
     {
@@ -500,7 +502,7 @@ bool TrajectoryFollowingControl::setWaypoints(std::vector<double> &X,
 
     for (unsigned int i = 0; i < n; ++i)
     {
-        waypoints_[i].position = Vec2D(X[i], Y[i]);
+        waypoints_[i].position = Common::Vector2d(X[i], Y[i]);
         waypoints_[i].velocity = Velocity[i];
         waypoints_[i].time     = Time[i];
     }

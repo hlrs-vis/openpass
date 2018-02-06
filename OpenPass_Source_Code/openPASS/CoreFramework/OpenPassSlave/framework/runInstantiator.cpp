@@ -18,6 +18,7 @@
 #include "agentFactory.h"
 #include "scenery.h"
 #include "sceneryImporter.h"
+#include "scenarioImporter.h"
 #include "spawnPointNetwork.h"
 #include "observationNetwork.h"
 #include "stochastics.h"
@@ -41,8 +42,7 @@
     } \
     while(0);
 
-namespace SimulationSlave
-{
+namespace SimulationSlave {
 
 void RunInstantiator::StopRun()
 {
@@ -59,7 +59,8 @@ bool RunInstantiator::ExecuteRun()
     stopped = false;
     stopMutex.unlock();
 
-    std::unique_ptr<SimulationCommon::RunConfig> runConfig(SimulationCommon::RunConfigImporter::Import(frameworkConfig->GetRunConfigFile()));
+    std::unique_ptr<SimulationCommon::RunConfig> runConfig(SimulationCommon::RunConfigImporter::Import(
+                                                               frameworkConfig->GetRunConfigFile()));
     CHECKFALSE(runConfig);
 
     CHECKFALSE(stochastics->Instantiate(runConfig->GetStochasticsInstance()));
@@ -70,20 +71,20 @@ bool RunInstantiator::ExecuteRun()
     observationNetwork->Instantiate(runConfig->GetObservationInstances(), stochastics, world);
     observationNetwork->InitAll(frameworkConfig->GetObservationResultPath());
 
-    if(!agentFactory->ReloadAgentTypes())
+    if (!agentFactory->ReloadAgentTypes())
     {
         LOG_INTERN(LogLevel::Error) << "could not load agent configuration file";
         exit(-1);
     }
 
-    std::function<bool(int, RunResult&)> updateTimeStep =
-            [this](int time, RunResult &runResult)
+    std::function<bool(int, RunResult &)> updateTimeStep =
+        [this](int time, RunResult & runResult)
     {
         return observationNetwork->UpdateTimeStep(time, runResult);
     };
 
     std::function<bool()> simulationEnd =
-            [this]()
+        [this]()
     {
         bool result;
         stopMutex.lock();
@@ -92,7 +93,8 @@ bool RunInstantiator::ExecuteRun()
         return result;
     };
 
-    for(int invocationCount = 0; invocationCount < runConfig->GetNumberInvocations(); ++invocationCount)
+    for (int invocationCount = 0; invocationCount < runConfig->GetNumberInvocations();
+            ++invocationCount)
     {
         LOG_INTERN(LogLevel::DebugCore) << std::endl << "### run number: "
                                         << invocationCount << " ##################################################";
@@ -107,14 +109,20 @@ bool RunInstantiator::ExecuteRun()
         CHECKFALSE(SceneryImporter::Import(frameworkConfig->GetSceneryConfigFile(),
                                            world));
 
+        if (!ScenarioImporter::Import(frameworkConfig->GetOpenScenarioConfigFile(), world))
+        {
+            LOG_INTERN(LogLevel::Warning) << "No openScenario file found." ;
+        }
+
         observationNetwork->InitRun();
 
         CHECKFALSE(spawnPointNetwork->Instantiate(runConfig->GetSpawnPointInstances(),
-                                                                runConfig->GetAgentSpawnItems(),
-                                                                agentFactory,
-                                                                stochastics));
+                                                  runConfig->GetAgentSpawnItems(),
+                                                  agentFactory,
+                                                  stochastics));
 
-        if(collisionDetection->Instantiate(runConfig->GetCollisionDetectionInstance())){
+        if (collisionDetection->Instantiate(runConfig->GetCollisionDetectionInstance()))
+        {
             collisionDetection->SetAgents(world->GetAgents());
         }
 
