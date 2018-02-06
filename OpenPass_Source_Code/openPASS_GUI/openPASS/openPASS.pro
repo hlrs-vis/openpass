@@ -10,6 +10,7 @@
 # http://www.eclipse.org/legal/epl-v10.html
 #-----------------------------------------------------------------------------/
 
+include(../../Global.pri)
 TARGET = openPASS
 TEMPLATE = app
 CONFIG += c++11 no_keywords
@@ -21,8 +22,8 @@ QMAKE_TARGET_DESCRIPTION = openPASS
 QMAKE_TARGET_COMPANY = Volkswagen Group of America
 QMAKE_TARGET_COPYRIGHT = Volkswagen Group of America
 
-release: DESTDIR = ../build/release
-debug: DESTDIR = ../build/debug
+Release:DESTDIR = $$DIR_RELEASE
+Debug:DESTDIR = $$DIR_DEBUG
 
 DEFINES += APPLICATION_NAME=\\\"$$TARGET\\\"
 DEFINES += APPLICATION_VERSION=\\\"$$VERSION\\\"

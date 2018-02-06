@@ -1,12 +1,12 @@
-/****************************************************************************** 
-* Copyright (c) 2017 Volkswagen Group of America. 
-* 
-* This program and the accompanying materials are made 
-* available under the terms of the Eclipse Public License 2.0 
-* which is available at https://www.eclipse.org/legal/epl-2.0/ 
-* 
-* SPDX-License-Identifier: EPL-2.0 
-******************************************************************************/ 
+/******************************************************************************
+* Copyright (c) 2017 Volkswagen Group of America.
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+******************************************************************************/
 
 #include "ProjectView.h"
 #include "ui_ProjectView.h"
@@ -23,16 +23,19 @@
 
 const WindowInterface::ID ProjectView::ViewID = QStringLiteral("openPASS.Project");
 
-ProjectView::ProjectView(WindowInterface * const window,
-                         ProjectPresenter * const projectPresenter,
+ProjectView::ProjectView(WindowInterface *const window,
+                         ProjectPresenter *const projectPresenter,
                          QWidget *parent)
     : QWidget(parent)
     , window(window)
     , projectPresenter(projectPresenter)
     , ui(new Ui::ProjectView)
-    , actionMenuNew(WindowInterface::createAction(tr("New Project"), this, &ProjectView::actionProjectNew))
-    , actionMenuLoad(WindowInterface::createAction(tr("Load Project"), this, &ProjectView::actionProjectLoad))
-    , actionMenuSave(WindowInterface::createAction(tr("Save Project"), this, &ProjectView::actionProjectSave))
+    , actionMenuNew(WindowInterface::createAction(tr("New Project"), this,
+                                                  &ProjectView::actionProjectNew))
+    , actionMenuLoad(WindowInterface::createAction(tr("Load Project"), this,
+                                                   &ProjectView::actionProjectLoad))
+    , actionMenuSave(WindowInterface::createAction(tr("Save Project"), this,
+                                                   &ProjectView::actionProjectSave))
 {
     // Create UI
     ui->setupUi(this);
@@ -52,7 +55,7 @@ ProjectView::ProjectView(WindowInterface * const window,
 
     // Register view
     window->add(ViewID, WindowInterface::createButton(tr("Project"), 0, 01000), this,
-                {actionMenuNew, actionMenuLoad, actionMenuSave});
+    {actionMenuNew, actionMenuLoad, actionMenuSave});
 }
 
 ProjectView::~ProjectView()
@@ -76,8 +79,8 @@ void ProjectView::actionProjectLoad()
 {
     QDir const root = QDir(QCoreApplication::applicationDirPath());
     QString const filepath = QFileDialog::getOpenFileName(
-                this, tr("openPASS / Load Project"), root.canonicalPath(),
-                QStringLiteral("Project (*.xml);;All files (*)"));
+                                 this, tr("openPASS / Load Project"), root.canonicalPath(),
+                                 QStringLiteral("Project (*.xml);;All files (*)"));
     if (!filepath.isNull())
     {
         projectPresenter->loadProject(filepath);
@@ -89,8 +92,8 @@ void ProjectView::actionProjectSave()
 {
     QDir const root = QDir(QCoreApplication::applicationDirPath());
     QString const filepath = QFileDialog::getSaveFileName(
-                this, tr("openPASS / Save Project"), root.canonicalPath(),
-                QStringLiteral("XML File (*.xml)"));
+                                 this, tr("openPASS / Save Project"), root.canonicalPath(),
+                                 QStringLiteral("XML File (*.xml)"));
     if (!filepath.isNull())
     {
         projectPresenter->saveProject(filepath);
@@ -102,8 +105,8 @@ void ProjectView::on_libraryBrowseButton_clicked()
 {
     QDir const root = QDir(QCoreApplication::applicationDirPath());
     QString const filepath = QFileDialog::getExistingDirectory(
-                this, tr("openPASS / Import Component Library"),
-                root.canonicalPath());
+                                 this, tr("openPASS / Import Component Library"),
+                                 root.canonicalPath());
     if (!filepath.isNull())
     {
         projectPresenter->setLibraryPath(filepath);
@@ -121,8 +124,8 @@ void ProjectView::on_logMasterBrowseButton_clicked()
 {
     QDir const root = QDir(QCoreApplication::applicationDirPath());
     QString const filepath = QFileDialog::getOpenFileName(
-                this, tr("openPASS / Directory to save Log files"), root.canonicalPath(),
-                QStringLiteral("Log Master File (*.xml);;All files (*)"));
+                                 this, tr("openPASS / Directory to save Log files"), root.canonicalPath(),
+                                 QStringLiteral("Log Master File (*.xml);;All files (*)"));
     if (!filepath.isNull())
     {
         projectPresenter->setLogMaster(filepath);
@@ -134,8 +137,8 @@ void ProjectView::on_logSlaveBrowseButton_clicked()
 {
     QDir const root = QDir(QCoreApplication::applicationDirPath());
     QString const filepath = QFileDialog::getOpenFileName(
-                this, tr("openPASS / Directory to save Log files"), root.canonicalPath(),
-                QStringLiteral("Log Slave File (*.xml);;All files (*)"));
+                                 this, tr("openPASS / Directory to save Log files"), root.canonicalPath(),
+                                 QStringLiteral("Log Slave File (*.xml);;All files (*)"));
     if (!filepath.isNull())
     {
         projectPresenter->setLogSlave(filepath);
@@ -147,8 +150,8 @@ void ProjectView::on_outputBrowseButton_clicked()
 {
     QDir const root = QDir(QCoreApplication::applicationDirPath());
     QString const filepath = QFileDialog::getExistingDirectory(
-                this, tr("openPASS / Directory to save results"),
-                root.canonicalPath());
+                                 this, tr("openPASS / Directory to save results"),
+                                 root.canonicalPath());
     if (!filepath.isNull())
     {
         projectPresenter->setResultPath(filepath);
@@ -160,8 +163,8 @@ void ProjectView::on_slaveBrowseButton_clicked()
 {
     QDir const root = QDir(QCoreApplication::applicationDirPath());
     QString const filepath = QFileDialog::getOpenFileName(
-                this, tr("openPASS / Select the openPASS Slave"), root.canonicalPath(),
-                QStringLiteral("Slave (*.exe)"));
+                                 this, tr("openPASS / Select the openPASS Slave"), root.canonicalPath(),
+                                 QStringLiteral("Slave (*.exe)"));
     if (!filepath.isNull())
     {
         projectPresenter->setSlave(filepath);
