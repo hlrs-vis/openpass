@@ -10,6 +10,7 @@
 #define VEHICLESIMPLETT_H
 
 #include <QtGlobal>
+#include <vector>
 #include "vector2d.h"
 #include "dynamics_twotrack_tire.h"
 #define NUMBER_TIRES 4

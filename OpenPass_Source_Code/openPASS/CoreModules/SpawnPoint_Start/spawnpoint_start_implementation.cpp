@@ -7,7 +7,7 @@
 ******************************************************************************/
 
 #include <QtGlobal>
-#include "spawnpoint_start_Implementation.h"
+#include "spawnpoint_start_implementation.h"
 
 SpawnPoint_Start_Implementation::SpawnPoint_Start_Implementation(StochasticsInterface *stochastics,
                                                                            WorldInterface *world,

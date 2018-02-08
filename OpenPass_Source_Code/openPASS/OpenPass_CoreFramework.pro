@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
 SUBDIRS = \
-        CoreFramework\OpenPassMaster \
-        CoreFramework\OpenPassSlave \
+        CoreFramework/OpenPassMaster \
+        CoreFramework/OpenPassSlave \

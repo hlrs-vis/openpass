@@ -1,5 +1,5 @@
 TEMPLATE = subdirs
 SUBDIRS = \
-    OpenPASS_CoreFramework.pro \
-    OpenPASS_CoreModules_PCM.pro \
-    OpenPASS_Components_PCM.pro
+    OpenPass_CoreFramework.pro \
+    OpenPass_CoreModules_PCM.pro \
+    OpenPass_Components_PCM.pro

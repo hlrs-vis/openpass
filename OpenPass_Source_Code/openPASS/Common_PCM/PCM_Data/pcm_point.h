@@ -17,6 +17,7 @@
 #define PCM_POINT_H
 
 #include <QString>
+#include <cmath>
 
 /*!
  * \brief The PCM_Point class
