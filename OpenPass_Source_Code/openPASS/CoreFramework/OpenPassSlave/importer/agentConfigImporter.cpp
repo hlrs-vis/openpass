@@ -58,7 +58,7 @@ bool AgentConfigImporter::Import(const std::string &filename,
     if (!QFileInfo(absoluteFilePath).exists())
     {
         LOG_INTERN(LogLevel::Error) << "Agent Config does not exist.";
-        return nullptr;
+        return false;
     }
 
     QFile xmlFile(absoluteFilePath); // automatic object will be closed on destruction
