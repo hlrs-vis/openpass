@@ -315,21 +315,6 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         fileStreamXosc->writeStartElement("Private");
         fileStreamXosc->writeAttribute("object",ObjectNameValue);
         fileStreamXosc->writeStartElement("Action");
-        fileStreamXosc->writeStartElement("Longitudinal");
-        fileStreamXosc->writeStartElement("Speed");
-        fileStreamXosc->writeStartElement("Dynamics");
-        //fileStreamXosc->writeAttribute("rate","0");
-        fileStreamXosc->writeAttribute("shape","step");
-        fileStreamXosc->writeEndElement(); //End DynamicsTag
-        fileStreamXosc->writeStartElement("Target");
-        fileStreamXosc->writeStartElement("Absolute");
-        fileStreamXosc->writeAttribute("value","0");
-        fileStreamXosc->writeEndElement(); //End AbsoluteTag
-        fileStreamXosc->writeEndElement(); //End TargetTag
-        fileStreamXosc->writeEndElement(); //End SpeedTag
-        fileStreamXosc->writeEndElement(); //End LongitudinalTag
-        fileStreamXosc->writeEndElement(); //End ActionTag
-        fileStreamXosc->writeStartElement("Action");
         fileStreamXosc->writeStartElement("Position");
 
         // intialize agents with absolute world coorinates
