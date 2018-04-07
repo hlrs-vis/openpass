@@ -14,6 +14,7 @@
 #include "observation_osc_implementation.h"
 #include <list>
 #include <stdlib.h>
+#include <math.h>
 
 #include <chrono>
 #include <ctime>
@@ -307,6 +308,7 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         VehicleState firstTimeStep = agentData.front();
         init_xPos = firstTimeStep.getxpos();
         init_yPos = firstTimeStep.getypos();
+        init_yawAngle = firstTimeStep.getyawangle();
 
         ObjectNameValue = "Agent" + QString::number(agentID);
 
@@ -316,7 +318,7 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         fileStreamXosc->writeStartElement("Longitudinal");
         fileStreamXosc->writeStartElement("Speed");
         fileStreamXosc->writeStartElement("Dynamics");
-        fileStreamXosc->writeAttribute("rate","0");
+        //fileStreamXosc->writeAttribute("rate","0");
         fileStreamXosc->writeAttribute("shape","step");
         fileStreamXosc->writeEndElement(); //End DynamicsTag
         fileStreamXosc->writeStartElement("Target");
@@ -335,6 +337,9 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         fileStreamXosc->writeAttribute("x",QString::number(init_xPos));
         fileStreamXosc->writeAttribute("y",QString::number(init_yPos));
         fileStreamXosc->writeAttribute("z",QString::number(init_zPos));
+        fileStreamXosc->writeAttribute("h",QString::number(init_yawAngle));
+        fileStreamXosc->writeAttribute("p","0.0");
+        fileStreamXosc->writeAttribute("r","0.0");
 
         // intialize agent road relative
 //        fileStreamXosc->writeStartElement("Lane");
@@ -360,19 +365,16 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         std::list<VehicleState> agentData = AgentLists[agentID];
         VehicleState firstTimeStep = agentData.front();
         VehicleState lastTimeStep = agentData.back();
-        SimulationTimeStart = firstTimeStep.gettime()+5;
-        SimulationTimeEnd = lastTimeStep.gettime()+10; //lastTimeStep->gettime();
+        SimulationTimeStart = round(firstTimeStep.gettime()*100)/100;
+        SimulationTimeEnd = round(lastTimeStep.gettime()*100)/100;
 
         // XOSC File
         EntityNameValue = "Agent" + QString::number(agentID);
-        ActNameValue = "MyAct" + QString::number(agentID);
-        SequenceNameValue = "MySequence" + QString::number(agentID);
-        ManeuverNameValue = "laneChange" + QString::number(agentID);
-        EventNameValue = "MyLaneChangeEvent" + QString::number(agentID);
-        ActionNameValue = "MyLaneChangeAction" + QString::number(agentID);
-
-
-
+        ActNameValue = "Act" + QString::number(agentID);
+        SequenceNameValue = "OpenPASSSequence" + QString::number(agentID);
+        ManeuverNameValue = "OpenPASSManeuver" + QString::number(agentID);
+        EventNameValue = "OpenPASSEvent" + QString::number(agentID);
+        ActionNameValue = "OpenPASSFollowTrajectory" + QString::number(agentID);
 
         fileStreamXosc->writeStartElement("Act");
         fileStreamXosc->writeAttribute("name", ActNameValue);
@@ -409,8 +411,7 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         fileStreamXosc->writeEndElement(); //End RoutingTag
         fileStreamXosc->writeEndElement(); //End Private
         fileStreamXosc->writeEndElement(); //End Action
-        fileStreamXosc->writeStartElement("Conditions");
-        fileStreamXosc->writeStartElement("Start");
+        fileStreamXosc->writeStartElement("StartConditions");
         fileStreamXosc->writeStartElement("ConditionGroup");
         fileStreamXosc->writeStartElement("Condition");
         fileStreamXosc->writeAttribute("delay", "0");
@@ -418,19 +419,19 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         fileStreamXosc->writeAttribute("name", "");
         fileStreamXosc->writeStartElement("ByValue");
         fileStreamXosc->writeStartElement("SimulationTime");
-        fileStreamXosc->writeAttribute("rule", "equal-to");
-        fileStreamXosc->writeAttribute("value", QString::number(SimulationTimeStart));
+        fileStreamXosc->writeAttribute("rule", "greater_than");
+        fileStreamXosc->writeAttribute("value", "0.0");
         fileStreamXosc->writeEndElement(); //End SimulationTimeTag
         fileStreamXosc->writeEndElement(); //End ByValueTag
         fileStreamXosc->writeEndElement(); //End ConditionTag
         fileStreamXosc->writeEndElement(); //End ConditionGroupTag
-        fileStreamXosc->writeEndElement(); //End StartTag
         fileStreamXosc->writeEndElement(); //End ConditionsTag
         fileStreamXosc->writeEndElement(); //End EventTag
         fileStreamXosc->writeEndElement(); //End ManeuverTag
 
         // here ends the Trajectory Maneuver in the XOSC File
         // add additional Maneuver to break at the end of the Trajectory
+        /*
         fileStreamXosc->writeStartElement("Maneuver");
         fileStreamXosc->writeAttribute("name", "break");
         fileStreamXosc->writeStartElement("Event");
@@ -478,6 +479,7 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         fileStreamXosc->writeEndElement(); //End EventTag
         fileStreamXosc->writeEndElement(); //End ManeuverTag
         // end of break maneuver
+        */
 
         // write Start and End Conditions of Act
         fileStreamXosc->writeEndElement(); //End SequenceTag
@@ -485,13 +487,13 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         fileStreamXosc->writeStartElement("Start");
         fileStreamXosc->writeStartElement("ConditionGroup");
         fileStreamXosc->writeStartElement("Condition");
-        fileStreamXosc->writeAttribute("delay", "0");
+        fileStreamXosc->writeAttribute("delay", "5");
         fileStreamXosc->writeAttribute("edge", "rising");
         fileStreamXosc->writeAttribute("name", "");
         fileStreamXosc->writeStartElement("ByValue");
         fileStreamXosc->writeStartElement("SimulationTime");
-        fileStreamXosc->writeAttribute("rule", "equal-to");
-        fileStreamXosc->writeAttribute("value", "5.0");
+        fileStreamXosc->writeAttribute("rule", "greater_than");
+        fileStreamXosc->writeAttribute("value", QString::number(SimulationTimeStart));
         fileStreamXosc->writeEndElement(); //End SimulationTimeTag
         fileStreamXosc->writeEndElement(); //End ByValueTag
         fileStreamXosc->writeEndElement(); //End ConditionTag
@@ -500,12 +502,12 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         fileStreamXosc->writeStartElement("End");
         fileStreamXosc->writeStartElement("ConditionGroup");
         fileStreamXosc->writeStartElement("Condition");
-        fileStreamXosc->writeAttribute("delay", "0");
+        fileStreamXosc->writeAttribute("delay", "5");
         fileStreamXosc->writeAttribute("edge", "rising");
         fileStreamXosc->writeAttribute("name", "");
         fileStreamXosc->writeStartElement("ByValue");
         fileStreamXosc->writeStartElement("SimulationTime");
-        fileStreamXosc->writeAttribute("rule", "equal-to");
+        fileStreamXosc->writeAttribute("rule", "greather_than");
         fileStreamXosc->writeAttribute("value", QString::number(SimulationTimeEnd));
         fileStreamXosc->writeEndElement(); //End SimulationTimeTag
         fileStreamXosc->writeEndElement(); //End ByValueTag
@@ -533,26 +535,33 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
 
             // Agent Stories
 
-
+            double oldyaw = 0;
             std::list<VehicleState>::iterator t; // iterator
             for(t = agentData.begin(); t != agentData.end(); ++t)
             {
-                if (t == agentData.begin()) {
+                if (t == agentData.begin()) // skip first vertice because agents are already initialized there
+                {
                     continue;
+
                 }
-                time = t->gettime();
+                //time = t->gettime();
                 x = t->getxpos();
                 y = t->getypos();
                 yaw = t->getyawangle();
+                double totalyaw = round((yaw-oldyaw)*100)/100;
+                oldyaw = yaw;
+
+                time = t->gettime();
 
                 // write Trajectory Coordinates to XML
                 fileStream->writeStartElement("Vertex");
+                fileStream->writeAttribute("reference",QString::number(time));
                 fileStream->writeStartElement("Position");
                 fileStream->writeStartElement("World");
                 fileStream->writeAttribute("x", QString::number(x));
                 fileStream->writeAttribute("y", QString::number(y));
                 fileStream->writeAttribute("z", "0");
-                fileStream->writeAttribute("h", QString::number(yaw));
+                fileStream->writeAttribute("h", QString::number(totalyaw));
                 fileStream->writeAttribute("p", "0");
                 fileStream->writeAttribute("r", "0");
                 fileStream->writeEndElement();
@@ -560,7 +569,6 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
                 fileStream->writeEndElement(); //end Position
 
                 fileStream->writeStartElement("Shape");
-                fileStream->writeAttribute("reference",QString::number(time));
 
                 fileStream->writeStartElement("Polyline");
                 fileStream->writeEndElement(); //end Polyline
@@ -583,16 +591,16 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
     // continue with XOSC File
     fileStreamXosc->writeEndElement(); //End StoryTag
 
-    fileStreamXosc->writeStartElement("End");
+    fileStreamXosc->writeStartElement("EndConditions");
     fileStreamXosc->writeStartElement("ConditionGroup");
     fileStreamXosc->writeStartElement("Condition");
-    fileStreamXosc->writeAttribute("delay", "0");
+    fileStreamXosc->writeAttribute("delay", "10");
     fileStreamXosc->writeAttribute("edge", "rising");
     fileStreamXosc->writeAttribute("name", "");
     fileStreamXosc->writeStartElement("ByValue");
     fileStreamXosc->writeStartElement("SimulationTime");
     fileStreamXosc->writeAttribute("rule", "equal-to");
-    fileStreamXosc->writeAttribute("value", "500.0");
+    fileStreamXosc->writeAttribute("value", QString::number(SimulationTimeEnd));
     fileStreamXosc->writeEndElement(); //End SimulationTimeTag
     fileStreamXosc->writeEndElement(); //End ByValueTag
     fileStreamXosc->writeEndElement(); //End ConditionTag

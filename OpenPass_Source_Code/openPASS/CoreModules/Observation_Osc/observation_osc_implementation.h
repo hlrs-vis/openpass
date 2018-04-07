@@ -259,6 +259,7 @@ private:
     double init_xPos;
     double init_yPos;
     double init_zPos = 0; // no output of z-Coordinate
+    double init_yawAngle;
 
 
     const QString StoryNameValue = "MyStory";
