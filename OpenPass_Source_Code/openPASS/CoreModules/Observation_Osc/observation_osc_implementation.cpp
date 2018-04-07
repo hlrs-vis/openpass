@@ -326,13 +326,6 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         fileStreamXosc->writeAttribute("p","0.0");
         fileStreamXosc->writeAttribute("r","0.0");
 
-        // intialize agent road relative
-//        fileStreamXosc->writeStartElement("Lane");
-//        fileStreamXosc->writeAttribute("laneId",laneIdValue);
-//        fileStreamXosc->writeAttribute("offset",offsetValue);
-//        fileStreamXosc->writeAttribute("roadId",roadIdValue);
-//        fileStreamXosc->writeAttribute("s",QString::number(sValue));
-
         fileStreamXosc->writeEndElement(); //End LaneTag
         fileStreamXosc->writeEndElement(); //End "Position"
         fileStreamXosc->writeEndElement(); //End ActionTag
@@ -413,58 +406,6 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         fileStreamXosc->writeEndElement(); //End ConditionsTag
         fileStreamXosc->writeEndElement(); //End EventTag
         fileStreamXosc->writeEndElement(); //End ManeuverTag
-
-        // here ends the Trajectory Maneuver in the XOSC File
-        // add additional Maneuver to break at the end of the Trajectory
-        /*
-        fileStreamXosc->writeStartElement("Maneuver");
-        fileStreamXosc->writeAttribute("name", "break");
-        fileStreamXosc->writeStartElement("Event");
-        fileStreamXosc->writeAttribute("name", EventNameValue);
-        fileStreamXosc->writeAttribute("priority", "overwrite");
-        fileStreamXosc->writeStartElement("Action");
-        fileStreamXosc->writeAttribute("name", ActionNameValue);
-        fileStreamXosc->writeStartElement("Private");
-        fileStreamXosc->writeStartElement("Longitudinal");
-        fileStreamXosc->writeStartElement("Speed");
-        fileStreamXosc->writeStartElement("Dynamics");
-        fileStreamXosc->writeAttribute("distance","0");
-        fileStreamXosc->writeAttribute("rate","0");
-        fileStreamXosc->writeAttribute("shape","step");
-        fileStreamXosc->writeAttribute("time","0");
-        fileStreamXosc->writeEndElement(); //End DynamicsTag
-        fileStreamXosc->writeStartElement("Target");
-        fileStreamXosc->writeStartElement("Absolute");
-        fileStreamXosc->writeAttribute("value","0");
-        fileStreamXosc->writeEndElement(); //End AbsoluteTag
-        fileStreamXosc->writeEndElement(); //End targetTag
-        fileStreamXosc->writeEndElement(); //End SpeedTag
-        fileStreamXosc->writeEndElement(); //End LongitudinalTag
-        fileStreamXosc->writeEndElement(); //End PrivateTag
-        fileStreamXosc->writeEndElement(); //End ActionTag
-        // write Conditions of Break Maneuver
-        fileStreamXosc->writeStartElement("Conditions");
-        fileStreamXosc->writeStartElement("Start");
-        fileStreamXosc->writeStartElement("ConditionGroup");
-        fileStreamXosc->writeStartElement("Condition");
-        fileStreamXosc->writeAttribute("delay", "0");
-        fileStreamXosc->writeAttribute("edge", "rising");
-        fileStreamXosc->writeAttribute("name", "");
-        fileStreamXosc->writeStartElement("ByState");
-        fileStreamXosc->writeStartElement("AfterTermination");
-        fileStreamXosc->writeAttribute("name", ManeuverNameValue);
-        fileStreamXosc->writeAttribute("rule", "end");
-        fileStreamXosc->writeAttribute("type", "maneuver");
-        fileStreamXosc->writeEndElement(); //End AfterTerminationTag
-        fileStreamXosc->writeEndElement(); //End ByState
-        fileStreamXosc->writeEndElement(); //End ConditionTag
-        fileStreamXosc->writeEndElement(); //End ConditionGroupTag
-        fileStreamXosc->writeEndElement(); //End StartTag
-        fileStreamXosc->writeEndElement(); //End ConditionsTag
-        fileStreamXosc->writeEndElement(); //End EventTag
-        fileStreamXosc->writeEndElement(); //End ManeuverTag
-        // end of break maneuver
-        */
 
         // write Start and End Conditions of Act
         fileStreamXosc->writeEndElement(); //End SequenceTag
@@ -560,18 +501,10 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
 
                 fileStream->writeEndElement(); //end shape
                 fileStream->writeEndElement(); //end vertex
-
-
-
             }
 
             fileStream->writeEndElement(); //end Trajectory
-
-
-
         }
-
-
     }
     // continue with XOSC File
     fileStreamXosc->writeEndElement(); //End StoryTag
