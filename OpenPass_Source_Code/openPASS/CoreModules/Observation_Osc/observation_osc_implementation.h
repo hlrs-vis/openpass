@@ -290,6 +290,9 @@ private:
     std::string Par_finalFilename;
     std::string tmpPath;
     std::string finalPath;
+    std::string Par_Author;
+    std::string Par_CarModel;
+    std::string Par_Description;
 
     std::string Par_tmpXoscName;
     std::string Par_finalXoscName;

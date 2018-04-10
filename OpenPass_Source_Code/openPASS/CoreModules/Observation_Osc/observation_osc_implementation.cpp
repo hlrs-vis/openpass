@@ -58,12 +58,27 @@ Observation_Osc_Implementation::Observation_Osc_Implementation(StochasticsInterf
         Par_finalFilename = parameters->GetParametersString().at(2);
         Par_tmpXoscName = parameters->GetParametersString().at(3);
         Par_finalXoscName = parameters->GetParametersString().at(4);
+
     }
     catch(...)
     {
         const std::string msg = COMPONENTNAME + " could not init parameters";
         LOG(CbkLogLevel::Error, msg);
         throw std::runtime_error(msg);
+    }
+    // optional parameters
+    try
+    {
+        Par_Author = parameters->GetParametersString().at(5);
+        Par_CarModel = parameters->GetParametersString().at(6);
+        Par_Description = parameters->GetParametersString().at(7);
+    }
+
+    catch(...)
+    {
+        Par_Author = "me";
+        Par_CarModel = "random";
+        Par_Description = "";
     }
 }
 
@@ -162,8 +177,8 @@ void Observation_Osc_Implementation::SlavePreRunHook()
     fileStream->writeAttribute("revMajor", "0");
     fileStream->writeAttribute("revMinor", "0");
     fileStream->writeAttribute("date", dateAttributeValue);
-    fileStream->writeAttribute("description", "Studienarbeit");
-    fileStream->writeAttribute("author", "Christoph Kirsch");
+    fileStream->writeAttribute("description", QString::fromStdString(Par_Description));
+    fileStream->writeAttribute("author", QString::fromStdString(Par_Author));
     fileStream->writeEndElement();
 
     fileStream->writeStartElement("Catalog");
@@ -186,9 +201,9 @@ void Observation_Osc_Implementation::SlavePreRunHook()
 
     fileStreamXosc->writeStartElement("OpenSCENARIO");
     fileStreamXosc->writeStartElement("FileHeader");
-    fileStreamXosc->writeAttribute("author", "Christoph Kirsch");
+    fileStreamXosc->writeAttribute("author", QString::fromStdString(Par_Author));
     fileStreamXosc->writeAttribute("date", dateAttributeValue);
-    fileStreamXosc->writeAttribute("description", "Studienarbeit");
+    fileStreamXosc->writeAttribute("description", QString::fromStdString(Par_Description));
     fileStreamXosc->writeAttribute("revMajor", "0");
     fileStreamXosc->writeAttribute("revMinor", "0");
     fileStreamXosc->writeEndElement(); // end File Header Tag
@@ -255,13 +270,6 @@ void Observation_Osc_Implementation::SlavePreRunHook()
     fileStreamXosc->writeAttribute("filepath",SceneGraphFilepathValue);
     fileStreamXosc->writeEndElement();
     fileStreamXosc->writeEndElement();
-
-
-
-
-
-
-
 }
 
 void Observation_Osc_Implementation::SlaveUpdateHook(int time, RunResultInterface &runResult)
@@ -278,7 +286,14 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
     //      Define Agents (Entities)
     fileStreamXosc->writeStartElement("Entities");
     for(int agentID = 0; agentID<AgentLists.size(); agentID++){
-
+        if(Par_CarModel == "random")
+        {
+            CarModel = getCarModel();
+        }
+        else
+        {
+            CarModel = QString::fromStdString(Par_CarModel);
+        }
 
         ObjectNameValue = "Agent" + QString::number(agentID);
 
@@ -286,7 +301,7 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         fileStreamXosc->writeAttribute("name",ObjectNameValue);
         fileStreamXosc->writeStartElement("CatalogReference");
         fileStreamXosc->writeAttribute("catalogName",VehicleCatalogTag);
-        fileStreamXosc->writeAttribute("entryName",getCarModel());
+        fileStreamXosc->writeAttribute("entryName",CarModel);
         fileStreamXosc->writeEndElement(); //EndCatalogRefernce
         fileStreamXosc->writeStartElement("Controller");
         fileStreamXosc->writeStartElement("CatalogReference");
