@@ -21,45 +21,22 @@
 
 /** \addtogroup Observation_Osc
 * @{
-* \brief logs the current X position of every agent at each time step.
-*
-* This component logs the Oscs of the agents that are necessary for the
-* visualisation or the evaluation into a file.
-*
-* The file format is xml to easily access time series or statistics data in an
-* arbitrary editor.
-*
-* This component in this version is just for debug purpose.
-*
-* \section Observation_Osc_Inputs Inputs
-* none
-*
-* \section Observation_Osc_Outputs Outputs
-* none
+* \brief writes simulated trajetories into an OpenSCENARIO-file
+* adds scenario-file to run the scenario
 *
 * \section Observation_Osc_ConfigParameters Parameters to be specified in runConfiguration.xml
 * type | id | meaning | corresponding external paramter
 * -----|----|---------|----------------------------------
 * string | 0 | folder where simulation output shall be stored      | Par_folder
-* string | 1 | filename for temporary simulation output            | Par_tmpFilename
-* string | 2 | filename for final simulation output (*.xml)        | Par_finalFilename
-* bool   | 0 | flag if visualization data shall be written to file | Par_WriteOutputForVisualisation
-*
+* string | 1 | temporary filename for trajectory                   | Par_tmpFilename
+* string | 2 | final filename for trajectory (*.xosc)              | Par_finalFilename
+* string | 3 | temporary filename for scenario                     | Par_tmpXoscName
+* string | 4 | final filename for scenario (*.xosc)                | Par_finalXoscName
+* follow parameters are optional:
+* string | 5 | name of author                                      | Par_Author
+* string | 6 | carmodel: can be "random" or specific model         | Par_CarModel
+* string | 7 | purpose of simulation (description)                 | Par_Description
 * @} */
-
-/*!
- * \brief logs the current X position of every agent at each time step.
- *
- * This component logs the Oscs of the agents that are necessary for the
- * visualisation or the evaluation into a file.
- *
- * The file format is xml to easily access time series or statistics data in an
- * arbitrary editor.
- *
- * This component in this version is just for debug purpose.
- *
- * \ingroup Observation_Osc
- */
 
 class VehicleState {
 private:

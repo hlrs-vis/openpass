@@ -443,13 +443,14 @@ void Observation_Osc_Implementation::SlavePostRunHook(const RunResultInterface &
         fileStreamXosc->writeStartElement("End");
         fileStreamXosc->writeStartElement("ConditionGroup");
         fileStreamXosc->writeStartElement("Condition");
-        fileStreamXosc->writeAttribute("delay", "5");
+        fileStreamXosc->writeAttribute("delay", "0");
         fileStreamXosc->writeAttribute("edge", "rising");
         fileStreamXosc->writeAttribute("name", "");
-        fileStreamXosc->writeStartElement("ByValue");
-        fileStreamXosc->writeStartElement("SimulationTime");
-        fileStreamXosc->writeAttribute("rule", "greather_than");
-        fileStreamXosc->writeAttribute("value", QString::number(SimulationTimeEnd));
+        fileStreamXosc->writeStartElement("ByState");
+        fileStreamXosc->writeStartElement("AfterTermination");
+        fileStreamXosc->writeAttribute("name", ManeuverNameValue);
+        fileStreamXosc->writeAttribute("rule", "end");
+        fileStreamXosc->writeAttribute("type", "maneuver");
         fileStreamXosc->writeEndElement(); //End SimulationTimeTag
         fileStreamXosc->writeEndElement(); //End ByValueTag
         fileStreamXosc->writeEndElement(); //End ConditionTag
