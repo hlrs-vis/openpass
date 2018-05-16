@@ -1,4 +1,4 @@
-#include "PCM_ParticipantData.h"
+#include "pcm_participantData.h"
 
 PCM_ParticipantData::PCM_ParticipantData(QString inTypepcm,
                                          QString inWidth,

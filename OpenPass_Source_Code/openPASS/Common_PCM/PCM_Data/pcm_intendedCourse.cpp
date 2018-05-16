@@ -1,4 +1,4 @@
-#include "PCM_IntendedCourse.h"
+#include "pcm_intendedCourse.h"
 
 bool PCM_IntendedCourses::AddPCM_Course(PCM_Course course)
 {

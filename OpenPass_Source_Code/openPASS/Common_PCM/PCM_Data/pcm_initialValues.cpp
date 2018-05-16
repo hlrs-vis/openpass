@@ -1,4 +1,4 @@
-#include "PCM_InitialValues.h"
+#include "pcm_initialValues.h"
 
 PCM_InitialValues::PCM_InitialValues(QString inXpos,
                                      QString inYpos,

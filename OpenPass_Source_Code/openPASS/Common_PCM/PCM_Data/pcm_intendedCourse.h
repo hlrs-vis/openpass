@@ -1,7 +1,9 @@
 #ifndef PCM_INTENDEDCOURSE_H
 #define PCM_INTENDEDCOURSE_H
 
-#include "PCM_Course.h"
+#include <vector>
+
+#include "pcm_course.h"
 
 class PCM_IntendedCourses
 {

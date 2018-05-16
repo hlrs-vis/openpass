@@ -1,7 +1,7 @@
 #ifndef XMLINTENDEDCOURSES_H
 #define XMLINTENDEDCOURSES_H
 
-#include "PCM_IntendedCourse.h"
+#include "pcm_intendedCourse.h"
 #include "XmlPoint.h"
 
 class XmlIntendedCourses: public XmlBaseClass
