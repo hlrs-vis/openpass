@@ -221,7 +221,7 @@ private:
 
 inline void LogOutputPolicy::SetFile(const std::string &fileName)
 {
-    int threadId = (int)QThread::currentThreadId();
+    long long threadId = (long long)QThread::currentThreadId();
     std::ofstream *logStream = new std::ofstream();
     logStream->open(fileName);
     logStreamMap.insert(threadId, logStream);
@@ -229,7 +229,7 @@ inline void LogOutputPolicy::SetFile(const std::string &fileName)
 
 inline bool LogOutputPolicy::IsOpen()
 {
-    int threadId = (int)QThread::currentThreadId();
+    long long threadId = (long long)QThread::currentThreadId();
     if (logStreamMap.contains(threadId))
     {
         return logStreamMap[threadId]->is_open();
@@ -246,7 +246,7 @@ inline void LogOutputPolicy::Output(const std::string &message)
 //    std::cout << message.c_str();
 
     // print to file
-    int threadId = (int)QThread::currentThreadId();
+    long long threadId = (long long)QThread::currentThreadId();
     if (logStreamMap.contains(threadId))
     {
         *logStreamMap[threadId] << message;
