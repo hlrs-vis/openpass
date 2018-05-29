@@ -17,6 +17,7 @@
 #define ROADGEOMETRYINTERFACE
 
 #include "roadInterface.h"
+#include "vector2d.h"
 
 //-----------------------------------------------------------------------------
 //! Abstract class representing the geometry of a road, i.e. the layout of the

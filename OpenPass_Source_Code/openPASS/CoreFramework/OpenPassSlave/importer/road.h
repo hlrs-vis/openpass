@@ -1,5 +1,6 @@
 /******************************************************************************
 * Copyright (c) 2017 ITK Engineering GmbH.
+* Copyright (c) 2018 in-tech GmbH on behalf of BMW AG
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -12,8 +13,7 @@
 //!        scenery.
 //-----------------------------------------------------------------------------
 
-#ifndef ROAD_H
-#define ROAD_H
+#pragma once
 
 #ifndef M_PI
 #define M_PI       3.14159265358979323846
@@ -26,10 +26,12 @@
 #include <algorithm>
 #include <list>
 #include <map>
+#include "log.h"
+#include "roadInterface.h"
+#include "road/roadSignal.h"
+#include "road/roadObject.h"
 #include "vector2d.h"
 #include "worldInterface.h"
-#include "roadInterface.h"
-#include "log.h"
 
 class Road;
 class RoadLane;
@@ -265,6 +267,29 @@ public:
         return laneSection;
     }
 
+    //-----------------------------------------------------------------------------
+    //! Adds a road mark to the road
+    //!
+    //! @param[in]  sOffset             s offset from start of road
+    //! @param[in]  type                location type of road mark (left, center, right)
+    //! @param[in]  roadMark            Type of the road mark
+    //! @param[in]  color               Color of the road mark
+    //! @param[in]  laneChange          Allowed lane change directions
+    //!
+    //! @return                         False if an error occurred, true otherwise
+    //-----------------------------------------------------------------------------
+    bool AddRoadMark(double sOffset, RoadLaneRoadDescriptionType type, RoadLaneRoadMarkType roadMark, RoadLaneRoadMarkColor color, RoadLaneRoadMarkLaneChange laneChange);
+
+    //-----------------------------------------------------------------------------
+    //! Returns the road marks of the road
+    //!
+    //! @return                         List of road marks
+    //-----------------------------------------------------------------------------
+    std::list<RoadLaneRoadMark*> &getRoadMarks()
+    {
+        return roadMarks;
+    }
+
 private:
     RoadLaneSectionInterface *laneSection;
     int id;
@@ -274,6 +299,11 @@ private:
     std::list<int> predecessor;
     std::list<int> successor;
     bool inDirection = true;
+
+    RoadLaneRoadMarkType roadMarkType = RoadLaneRoadMarkType::Undefined;
+    double roadMarkTypeSOffset;
+
+    std::list<RoadLaneRoadMark*> roadMarks;
 };
 
 //-----------------------------------------------------------------------------
@@ -404,7 +434,7 @@ private:
     std::map<int, RoadLaneInterface*> lanes; // use map for sorted ids
     bool inDirection = true;
     int laneIndexOffset = 0;
-    int Id;
+    int Id{0};
 };
 
 //-----------------------------------------------------------------------------
@@ -1274,6 +1304,21 @@ public:
     RoadLaneSection *AddRoadLaneSection(double start);
 
     //-----------------------------------------------------------------------------
+    //! Adds a new signal a road by creating a new RoadSignal object
+    //! and adding it to the stored list of road signals.
+    //!
+    //! @return                         created road signal
+    //-----------------------------------------------------------------------------
+    RoadSignal *AddRoadSignal(const RoadSignalSpecification &signal);
+
+    void AddRoadType(const RoadTypeSpecification &info);
+
+    // todo: add documentation
+    RoadObject* AddRoadObject(const RoadObjectSpecification &object);
+
+    RoadTypeInformation GetRoadType(double start);
+
+    //-----------------------------------------------------------------------------
     //! Returns the ID of the road.
     //!
     //! @return                         ID of the road
@@ -1334,6 +1379,27 @@ public:
     }
 
     //-----------------------------------------------------------------------------
+    //! Returns the stored list of signals
+    //!
+    //! @return                         list of signals
+    //-----------------------------------------------------------------------------
+    virtual std::vector<RoadSignalInterface*> & GetRoadSignals()
+    {
+        return roadSignals;
+    }
+
+    //-----------------------------------------------------------------------------
+    //! Returns the stored list of objects
+    //!
+    //! @return                         list of objects
+    //-----------------------------------------------------------------------------
+    virtual std::vector<RoadObjectInterface*> & GetRoadObjects()
+    {
+        return roadObjects;
+    }
+
+
+    //-----------------------------------------------------------------------------
     //! Sets the flag, if the road is in the reference direction or not.
     //!
     //! @param[in]  inDirection         Flag, if the road is in the reference
@@ -1362,7 +1428,8 @@ private:
     std::list<RoadGeometryInterface*> geometries;
     std::list<RoadLinkInterface*> links;
     std::list<RoadLaneSectionInterface*> laneSections;
+    std::vector<RoadSignalInterface*> roadSignals;
+    std::vector<RoadObjectInterface*> roadObjects;
+    std::vector<RoadTypeSpecification> roadTypes;
     bool inDirection = true;
 };
-
-#endif // ROAD_H

@@ -1,5 +1,6 @@
 /******************************************************************************
 * Copyright (c) 2017 ITK Engineering GmbH.
+* Copyright (c) 2018 in-tech GmbH on behalf of BMW AG
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -398,5 +399,38 @@ bool ParseAttributeBoolVector(QDomElement element, const std::string &attributeN
 
     return true;
 }
+
+bool ParseType(const std::string &element, RoadElementOrientation &orientation)
+{
+    return
+            assignIfMatching(element, orientation, "none", RoadElementOrientation::both) ||
+            assignIfMatching(element, orientation, "+",    RoadElementOrientation::positive) ||
+            assignIfMatching(element, orientation, "-",    RoadElementOrientation::negative);
+}
+
+bool ParseType(const std::string &element, RoadObjectType &objectType)
+{
+    return
+            assignIfMatching(element, objectType, "barrier", RoadObjectType::barrier) ||
+            assignIfMatching(element, objectType, "obstacle", RoadObjectType::obstacle) ||
+            assignIfMatching(element, objectType, "car", RoadObjectType::car) ||
+            assignIfMatching(element, objectType, "truck", RoadObjectType::truck) ||
+            assignIfMatching(element, objectType, "van", RoadObjectType::van) ||
+            assignIfMatching(element, objectType, "bus", RoadObjectType::bus) ||
+            assignIfMatching(element, objectType, "trailer", RoadObjectType::trailer) ||
+            assignIfMatching(element, objectType, "bike", RoadObjectType::bike) ||
+            assignIfMatching(element, objectType, "motorbike", RoadObjectType::motorbike) ||
+            assignIfMatching(element, objectType, "tram", RoadObjectType::tram) ||
+            assignIfMatching(element, objectType, "train", RoadObjectType::train) ||
+            assignIfMatching(element, objectType, "pedestrian", RoadObjectType::pedestrian)||
+            assignIfMatching(element, objectType, "pole", RoadObjectType::pole) ||
+            assignIfMatching(element, objectType, "tree", RoadObjectType::tree) ||
+            assignIfMatching(element, objectType, "vegetation", RoadObjectType::vegetation) ||
+            assignIfMatching(element, objectType, "building", RoadObjectType::building) ||
+            assignIfMatching(element, objectType, "parkingSpace", RoadObjectType::parkingSpace) ||
+            assignIfMatching(element, objectType, "wind", RoadObjectType::wind)  ||
+            assignIfMatching(element, objectType, "patch", RoadObjectType::patch);
+}
+
 
 } // namespace SimulationCommon

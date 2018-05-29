@@ -1,5 +1,6 @@
 /******************************************************************************
 * Copyright (c) 2017 ITK Engineering GmbH.
+* Copyright (c) 2018 in-tech GmbH on behalf of BMW AG
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -18,8 +19,10 @@
 #include <QDir>
 #include <QFile>
 #include "log.h"
+#include "roadInterface.h"
 #include "scenery.h"
 #include "sceneryImporter.h"
+#include "utilities.h"
 #include "xmlParser.h"
 
 // local helper macros
@@ -98,13 +101,13 @@ bool SceneryImporter::ParseLanes(QDomElement &rootElement,
         {
             roadLaneType = RoadLaneTypeType::Parking;
         }
-        else if (0 == roadLaneTypeStr.compare("mwyEntry"))
+        else if (0 == roadLaneTypeStr.compare("bidirectional"))
         {
-            roadLaneType = RoadLaneTypeType::MwyEntry;
+            roadLaneType = RoadLaneTypeType::Bidirectional;
         }
-        else if (0 == roadLaneTypeStr.compare("mwyExit"))
+        else if (0 == roadLaneTypeStr.compare("median"))
         {
-            roadLaneType = RoadLaneTypeType::MwyExit;
+            roadLaneType = RoadLaneTypeType::Median;
         }
         else if (0 == roadLaneTypeStr.compare("special1"))
         {
@@ -118,9 +121,33 @@ bool SceneryImporter::ParseLanes(QDomElement &rootElement,
         {
             roadLaneType = RoadLaneTypeType::Special3;
         }
+        else if (0 == roadLaneTypeStr.compare("roadworks"))
+        {
+            roadLaneType = RoadLaneTypeType::Roadworks;
+        }
         else if (0 == roadLaneTypeStr.compare("tram"))
         {
             roadLaneType = RoadLaneTypeType::Tram;
+        }
+        else if (0 == roadLaneTypeStr.compare("rail"))
+        {
+            roadLaneType = RoadLaneTypeType::Rail;
+        }
+        else if (0 == roadLaneTypeStr.compare("entry"))
+        {
+            roadLaneType = RoadLaneTypeType::Entry;
+        }
+        else if (0 == roadLaneTypeStr.compare("exit"))
+        {
+            roadLaneType = RoadLaneTypeType::Exit;
+        }
+        else if (0 == roadLaneTypeStr.compare("offRamp"))
+        {
+            roadLaneType = RoadLaneTypeType::OffRamp;
+        }
+        else if (0 == roadLaneTypeStr.compare("onRamp"))
+        {
+            roadLaneType = RoadLaneTypeType::OnRamp;
         }
         else
         {
@@ -131,7 +158,7 @@ bool SceneryImporter::ParseLanes(QDomElement &rootElement,
         RoadLaneInterface *roadLane = laneSection->AddRoadLane(roadLaneId,
                                                                roadLaneType);
         CHECKFALSE(roadLane);
-        LOG_INTERN(LogLevel::DebugCore) << "lane: type " << (int)roadLaneType << ", id=" << roadLaneId;
+        LOG_INTERN(LogLevel::DebugCore) << "lane: type " << static_cast<int>(roadLaneType) << ", id=" << roadLaneId;
 
         if (0 != roadLaneId) // skip center lanes
         {
@@ -178,8 +205,90 @@ bool SceneryImporter::ParseLanes(QDomElement &rootElement,
             }
         }
 
+        ParseLaneRoadMark(rootElement.nodeName().toStdString(), roadLaneElement, roadLane);
+
         roadLaneElement = roadLaneElement.nextSiblingElement("lane");
     } // lane loop
+
+    return true;
+}
+
+bool SceneryImporter::ParseLaneRoadMark(std::string leftCenterRight, QDomElement &roadLaneElement, RoadLaneInterface* roadLane)
+{
+
+    RoadLaneRoadDescriptionType descType = RoadLaneRoadDescriptionType::Center;
+
+
+    if(0 == leftCenterRight.compare("left"))
+    {
+        descType = RoadLaneRoadDescriptionType::Left;
+    }
+    else if(0 == leftCenterRight.compare("right"))
+    {
+        descType = RoadLaneRoadDescriptionType::Right;
+    }
+
+
+
+    QDomElement roadLaneRoadMarkElement;
+    CHECKFALSE(SimulationCommon::GetFirstChildElement(roadLaneElement, "roadMark", roadLaneRoadMarkElement));
+    double roadLaneSOffset;
+    CHECKFALSE(SimulationCommon::ParseAttributeDouble(roadLaneRoadMarkElement, "sOffset", roadLaneSOffset));
+    std::string roadLaneRoadMarkStr;
+    CHECKFALSE(SimulationCommon::ParseAttributeString(roadLaneRoadMarkElement, "type", roadLaneRoadMarkStr));
+
+    while(!roadLaneRoadMarkElement.isNull())
+    {
+    RoadLaneRoadMarkType roadLaneRoadMark = RoadLaneRoadMarkType::Undefined;
+
+    if(0 == roadLaneRoadMarkStr.compare("none"))
+    {
+        roadLaneRoadMark = RoadLaneRoadMarkType::None;
+    }
+    else if(0 == roadLaneRoadMarkStr.compare("solid"))
+    {
+        roadLaneRoadMark = RoadLaneRoadMarkType::Solid;
+    }
+    else if(0 == roadLaneRoadMarkStr.compare("broken"))
+    {
+        roadLaneRoadMark = RoadLaneRoadMarkType::Broken;
+    }
+    else if(0 == roadLaneRoadMarkStr.compare("solid solid"))
+    {
+        roadLaneRoadMark = RoadLaneRoadMarkType::Solid_Solid;
+    }
+    else if(0 == roadLaneRoadMarkStr.compare("solid broken"))
+    {
+        roadLaneRoadMark = RoadLaneRoadMarkType::Solid_Broken;
+    }
+    else if(0 == roadLaneRoadMarkStr.compare("broken solid"))
+    {
+        roadLaneRoadMark = RoadLaneRoadMarkType::Broken_Solid;
+    }
+    else if(0 == roadLaneRoadMarkStr.compare("broken broken"))
+    {
+        roadLaneRoadMark = RoadLaneRoadMarkType::Broken_Broken;
+    }
+    else if(0 == roadLaneRoadMarkStr.compare("botts dots"))
+    {
+        roadLaneRoadMark = RoadLaneRoadMarkType::Botts_Dots;
+    }
+    else if(0 == roadLaneRoadMarkStr.compare("grass"))
+    {
+        roadLaneRoadMark = RoadLaneRoadMarkType::Grass;
+    }
+    else if(0 == roadLaneRoadMarkStr.compare("curb"))
+    {
+        roadLaneRoadMark = RoadLaneRoadMarkType::Curb;
+    }
+
+    RoadLaneRoadMarkColor color = RoadLaneRoadMarkColor::Undefined;
+    RoadLaneRoadMarkLaneChange roadChange = RoadLaneRoadMarkLaneChange::Undefined;
+
+    roadLane->AddRoadMark(roadLaneSOffset, descType, roadLaneRoadMark, color, roadChange);
+
+    roadLaneRoadMarkElement = roadLaneRoadMarkElement.nextSiblingElement("roadMark");
+    }
 
     return true;
 }
@@ -198,20 +307,25 @@ bool SceneryImporter::ParseGeometries(QDomElement &roadElement,
     {
         double roadGeometryS;
         CHECKFALSE(SimulationCommon::ParseAttributeDouble(roadGeometryHeaderElement, "s", roadGeometryS));
+        roadGeometryS = Common::roundDoubleWithDecimals(roadGeometryS, 3);
 
         double roadGeometryX;
         CHECKFALSE(SimulationCommon::ParseAttributeDouble(roadGeometryHeaderElement, "x", roadGeometryX));
+        roadGeometryX = Common::roundDoubleWithDecimals(roadGeometryX, 3);
 
         double roadGeometryY;
         CHECKFALSE(SimulationCommon::ParseAttributeDouble(roadGeometryHeaderElement, "y", roadGeometryY));
+        roadGeometryY = Common::roundDoubleWithDecimals(roadGeometryY, 3);
 
         double roadGeometryHdg;
         CHECKFALSE(SimulationCommon::ParseAttributeDouble(roadGeometryHeaderElement, "hdg",
                                                           roadGeometryHdg));
+        roadGeometryHdg = Common::roundDoubleWithDecimals(roadGeometryHdg, 6);
 
         double roadGeometryLength;
         CHECKFALSE(SimulationCommon::ParseAttributeDouble(roadGeometryHeaderElement, "length",
                                                           roadGeometryLength));
+        roadGeometryLength = Common::roundDoubleWithDecimals(roadGeometryLength, 3);
 
         QDomElement roadGeometryElement;
         if (SimulationCommon::GetFirstChildElement(roadGeometryHeaderElement, "line", roadGeometryElement))
@@ -249,6 +363,16 @@ bool SceneryImporter::ParseGeometries(QDomElement &roadElement,
             CHECKFALSE(SimulationCommon::ParseAttributeDouble(roadGeometryElement,
                                                               "curvEnd",
                                                               roadGeometryCurvEnd));
+
+            if (roadGeometryCurvStart < 1e-7 && roadGeometryCurvStart > -1e-7)
+            {
+                roadGeometryCurvStart = 0;
+            }
+
+            if (roadGeometryCurvEnd < 1e-7 && roadGeometryCurvEnd > -1e-7)
+            {
+                roadGeometryCurvEnd = 0;
+            }
 
             CHECKFALSE(road->AddGeometrySpiral(roadGeometryS,
                                                roadGeometryX,
@@ -491,6 +615,389 @@ bool SceneryImporter::ParseRoadLinks(QDomElement &roadElement,
     return true;
 }
 
+bool SceneryImporter::checkRoadSignalBoundaries(RoadSignalSpecification signal)
+{
+    return
+    signal.s >= 0 &&
+   (signal.dynamic == "yes" || signal.dynamic == "no") &&
+   (signal.orientation == "+" || signal.orientation == "-" || signal.orientation == "none") &&
+   !signal.country.empty() &&
+    signal.height >= 0 &&
+    signal.width >= 0;
+}
+
+bool SceneryImporter::ParseSignals(QDomElement &roadElement,
+                                   RoadInterface *road)
+{
+    using namespace SimulationCommon;
+
+    QDomElement signalsElement;
+    if(GetFirstChildElement(roadElement, "signals", signalsElement))
+    {
+        QDomElement signalElement;
+        if(GetFirstChildElement(signalsElement, "signal", signalElement))
+        {
+            while(!signalElement.isNull())
+            {
+                RoadSignalSpecification signal;
+
+                CHECKFALSE(ParseAttributeDouble(signalElement, "s",           signal.s));
+                CHECKFALSE(ParseAttributeDouble(signalElement, "t",           signal.t));
+                CHECKFALSE(ParseAttributeDouble(signalElement, "zOffset",     signal.zOffset));
+                CHECKFALSE(ParseAttributeDouble(signalElement, "value",       signal.value));
+                CHECKFALSE(ParseAttributeDouble(signalElement, "hOffset",     signal.hOffset));
+                CHECKFALSE(ParseAttributeDouble(signalElement, "pitch",       signal.pitch));
+                CHECKFALSE(ParseAttributeString(signalElement, "id",          signal.id));
+                CHECKFALSE(ParseAttributeString(signalElement, "name",        signal.name));
+                CHECKFALSE(ParseAttributeString(signalElement, "dynamic",     signal.dynamic));
+                CHECKFALSE(ParseAttributeString(signalElement, "orientation", signal.orientation));
+                CHECKFALSE(ParseAttributeString(signalElement, "country",     signal.country));
+
+                std::string signalType;
+                CHECKFALSE(ParseAttributeString(signalElement, "type",        signalType));
+                CHECKFALSE(ParseSignalType(signalType, signal.type));
+
+                CHECKFALSE(ParseAttributeString(signalElement, "subtype",     signal.subtype));
+
+                // optional
+                std::string signalUnit;
+                ParseAttributeString(signalElement, "unit", signalUnit);
+                CHECKFALSE(ParseSignalUnit(signalUnit, signal.unit));
+
+                // not generated by ODDlot
+                // potentially optional - no clue from the standard
+                ParseAttributeDouble(signalElement, "height", signal.height);
+                ParseAttributeDouble(signalElement, "width",  signal.width);
+                ParseAttributeString(signalElement, "text",   signal.text);
+
+                // check validity subtag
+                CHECKFALSE(ParseElementValidity(signalElement, signal.validity));
+
+                // check other parameters
+                CHECKFALSE(checkRoadSignalBoundaries(signal));
+
+                road->AddRoadSignal(signal);
+
+                signalElement = signalElement.nextSiblingElement("signal");
+            }
+        }
+    }
+    return true;
+}
+
+bool SceneryImporter::ParseObjects(QDomElement &roadElement, RoadInterface *road)
+{
+    using namespace SimulationCommon;
+
+    QDomElement objectsElement;
+    if(GetFirstChildElement(roadElement, "objects", objectsElement))
+    {
+        QDomElement objectElement;
+        if(GetFirstChildElement(objectsElement, "object", objectElement))
+        {
+            while(!objectElement.isNull())
+            {
+                CHECKFALSE(ParseObject(objectElement, road));
+
+                objectElement = objectElement.nextSiblingElement("object");
+            }
+        }
+    }
+    return true;
+}
+
+bool SceneryImporter::ParseObject(QDomElement &objectElement, RoadInterface *road)
+{
+    using namespace SimulationCommon;
+
+    RoadObjectSpecification object;
+
+    CHECKFALSE(ParseAttributeType(objectElement, "type", object.type));
+    CHECKFALSE(ParseAttributeString(objectElement, "name", object.name));
+    CHECKFALSE(ParseAttributeString(objectElement, "id", object.id));
+    CHECKFALSE(ParseAttributeDouble(objectElement, "s", object.s));
+    CHECKFALSE(ParseAttributeDouble(objectElement, "t", object.t));
+    CHECKFALSE(ParseAttributeDouble(objectElement, "zOffset", object.zOffset));
+    CHECKFALSE(ParseAttributeDouble(objectElement, "validLength", object.validLength));
+    CHECKFALSE(ParseAttributeType(objectElement, "orientation", object.orientation));
+    CHECKFALSE(ParseAttributeDouble(objectElement, "width", object.width));
+    CHECKFALSE(ParseAttributeDouble(objectElement, "length", object.length));
+    CHECKFALSE(ParseAttributeDouble(objectElement, "height", object.height));
+    CHECKFALSE(ParseAttributeDouble(objectElement, "hdg", object.hdg));
+    CHECKFALSE(ParseAttributeDouble(objectElement, "pitch", object.pitch));
+    CHECKFALSE(ParseAttributeDouble(objectElement, "roll", object.roll));
+
+    if (ParseAttributeDouble(objectElement, "radius", object.radius) && object.radius != 0) {
+        LOG_INTERN(LogLevel::Warning) << "object radius will be ignored";
+    }
+    object.radius = 0;
+
+    CHECKFALSE(object.checkLimits());
+    CHECKFALSE(ParseElementValidity(objectElement, object.validity));
+
+    std::list<RoadObjectSpecification> parsedObjectRepetitions = ParseObjectRepeat(objectElement, object);
+    AddParsedObjectsToRoad(parsedObjectRepetitions, road);
+
+    return true;
+ }
+
+void SceneryImporter::AddParsedObjectsToRoad(std::list<RoadObjectSpecification> parsedObjects, RoadInterface *road)
+{
+    for(auto object : parsedObjects)
+    {
+      road->AddRoadObject(object);
+    }
+}
+
+std::list<RoadObjectSpecification> SceneryImporter::ParseObjectRepeat(QDomElement &objectElement, const RoadObjectSpecification &object)
+{
+    using namespace SimulationCommon;
+
+    std::list<RoadObjectSpecification> objectRepetitions;
+
+    QDomElement repeatElement;
+    if(GetFirstChildElement(objectElement, "repeat", repeatElement))
+    {
+        while(!repeatElement.isNull())
+        {
+            ParseRepeat(repeatElement, object, objectRepetitions);
+            repeatElement = repeatElement.nextSiblingElement("repeat");
+        }
+    }
+    else
+    {
+        objectRepetitions.push_back(object);
+    }
+    return objectRepetitions;
+}
+
+void SceneryImporter::ParseOptionalInterval(QDomElement &repeatElement, std::string startAttribute, std::string endAttribute, OptionalInterval &interval)
+{
+    bool checkStartIsSet = SimulationCommon::ParseAttributeDouble(repeatElement, startAttribute, interval.start);
+    bool checkEndIsSet = SimulationCommon::ParseAttributeDouble(repeatElement, endAttribute, interval.end);
+
+    if(checkStartIsSet && checkEndIsSet)
+    {
+        interval.isSet = true;
+        return;
+    }
+    if(!checkStartIsSet && !checkEndIsSet)
+    {
+        return;
+    }
+    else
+    {
+        LOG_INTERN(LogLevel::Error) << "an error occured during scenery import";
+        throw std::runtime_error("Missing intervall parameter in scenery import");
+    }
+}
+
+bool SceneryImporter::ParseRepeat(QDomElement &repeatElement, RoadObjectSpecification object, std::list<RoadObjectSpecification> &objectRepitions)
+{
+    using namespace SimulationCommon;
+    ObjectRepeat repeat;
+
+    CHECKFALSE(ParseAttributeDouble(repeatElement, "s",            repeat.s));
+    CHECKFALSE(ParseAttributeDouble(repeatElement, "length",       repeat.length));
+    CHECKFALSE(ParseAttributeDouble(repeatElement, "distance",     repeat.distance));
+
+    ParseOptionalInterval(repeatElement, "tStart", "tEnd", repeat.t);
+    ParseOptionalInterval(repeatElement, "widthStart", "widthEnd", repeat.width);
+    ParseOptionalInterval(repeatElement, "heightStart", "heightEnd", repeat.height);
+    ParseOptionalInterval(repeatElement, "zOffsetStart", "zOffsetEnd", repeat.zOffset);
+
+    CHECKFALSE(repeat.checkLimits());
+
+    return ApplyRepeat(repeat, object, objectRepitions);
+}
+
+bool SceneryImporter::ApplyRepeat(ObjectRepeat repeat, RoadObjectSpecification object, std::list<RoadObjectSpecification> &objectRepitions)
+{
+    if(repeat.distance == 0)
+    {
+        repeat.distance = object.length;
+    }
+
+    int objectCount = int(repeat.length / repeat.distance);
+
+    std::vector<double> interpolatedT, interpolatedHeight, interpolatedWidth, interpolatedZOffset;
+
+    if(repeat.t.isSet)      interpolatedT = Common::LinearInterpolation::InterpolateLinear(repeat.t.start,  repeat.t.end, objectCount);
+    if(repeat.height.isSet) interpolatedHeight = Common::LinearInterpolation::InterpolateLinear(repeat.height.start, repeat.height.end, objectCount);
+    if(repeat.width.isSet)  interpolatedWidth = Common::LinearInterpolation::InterpolateLinear(repeat.width.start, repeat.width.end, objectCount);
+    if(repeat.zOffset.isSet) interpolatedZOffset = Common::LinearInterpolation::InterpolateLinear(repeat.zOffset.start, repeat.zOffset.end, objectCount);
+
+    for(int i = 0; i < objectCount; i++)
+    {
+        RoadObjectSpecification repeatingObject = object;
+        repeatingObject.s = repeat.s + (i * repeat.distance);
+
+        if(repeat.t.isSet) repeatingObject.t = interpolatedT.at(i);
+        if(repeat.height.isSet)repeatingObject.height = interpolatedHeight.at(i);
+        if(repeat.width.isSet)repeatingObject.width = interpolatedWidth.at(i);
+        if(repeat.zOffset.isSet)repeatingObject.zOffset = interpolatedZOffset.at(i);
+
+        CHECKFALSE(repeatingObject.checkLimits());
+        objectRepitions.push_back(repeatingObject);
+    }
+
+    return true;
+}
+
+bool SceneryImporter::ParseElementValidity(const QDomElement &rootElement, RoadElementValidity &validity)
+{
+    using namespace SimulationCommon;
+
+    QDomElement validityElement;
+    if(GetFirstChildElement(rootElement, "validity", validityElement))
+    {
+        int fromLane;
+        int toLane;
+
+        CHECKFALSE(ParseAttributeInt(validityElement, "fromLane", fromLane));
+        CHECKFALSE(ParseAttributeInt(validityElement, "toLane",   toLane));
+
+        if(fromLane > toLane){
+            std::swap(fromLane, toLane);
+        }
+
+        for(int laneId = fromLane; laneId <= toLane; laneId++)
+        {
+            validity.lanes.push_back(laneId);
+        }
+    }
+    else
+    {
+        validity.all = true;
+    }
+
+    return true;
+}
+
+bool SceneryImporter::ParseRoadTypes(QDomElement &roadElement, RoadInterface *road)
+{
+    using namespace SimulationCommon;
+
+
+        QDomElement typeElement;
+        if(GetFirstChildElement(roadElement, "type", typeElement))
+        {
+            while(!typeElement.isNull())
+            {
+                RoadTypeSpecification roadType;
+                CHECKFALSE(ParseAttributeDouble(typeElement, "s",           roadType.s));
+                std::string roadTypeStr;
+                CHECKFALSE(ParseAttributeString(typeElement, "type",           roadTypeStr));
+                RoadTypeInformation roadTypeInfo = RoadTypeInformation::Undefined;
+                if(0 == roadTypeStr.compare("unknown"))
+                {
+                    roadTypeInfo = RoadTypeInformation::Unknown;
+                }
+                else if(0 == roadTypeStr.compare("rural"))
+                {
+                    roadTypeInfo = RoadTypeInformation::Rural;
+                }
+                else if(0 == roadTypeStr.compare("town"))
+                {
+                    roadTypeInfo = RoadTypeInformation::Town;
+                }
+                else if(0 == roadTypeStr.compare("motorway"))
+                {
+                    roadTypeInfo = RoadTypeInformation::Motorway;
+                }
+                else if(0 == roadTypeStr.compare("lowSpeed"))
+                {
+                    roadTypeInfo = RoadTypeInformation::LowSpeed;
+                }
+                else if(0 == roadTypeStr.compare("pedestrian"))
+                {
+                    roadTypeInfo = RoadTypeInformation::Pedestrian;
+                }
+                else if(0 == roadTypeStr.compare("bicycle"))
+                {
+                    roadTypeInfo = RoadTypeInformation::Bicycle;
+                }
+
+                roadType.roadType=roadTypeInfo;
+
+
+                road->AddRoadType(roadType);
+
+                typeElement = typeElement.nextSiblingElement("type");
+            }
+        }
+
+    return true;
+}
+
+bool SceneryImporter::ParseSignalType(std::string element, RoadSignalType& signalType)
+{
+    if(element == "-1" || element == "none") {
+        signalType = RoadSignalType::Undefined;
+        return true;
+    }
+
+    try {
+        signalType = static_cast<RoadSignalType>(std::stoi(element));
+    }
+    catch(...) {
+        return false;
+    }
+    return true;
+}
+
+bool SceneryImporter::ParseSignalUnit(std::string element, RoadSignalUnit& signalUnit)
+{
+    // empty is a valid state!
+    if(element.empty()) {
+        signalUnit = RoadSignalUnit::Undefined;
+        return true;
+    }
+
+    if(element == "m") {
+        signalUnit = RoadSignalUnit::Meter;
+        return true;
+    }
+    if(element == "km") {
+        signalUnit = RoadSignalUnit::Kilogram;
+        return true;
+    }
+    if(element == "ft") {
+        signalUnit = RoadSignalUnit::Feet;
+        return true;
+    }
+    if(element == "mile") {
+        signalUnit = RoadSignalUnit::LandMile;
+        return true;
+    }
+    if(element == "m/s") {
+        signalUnit = RoadSignalUnit::MetersPerSecond;
+        return true;
+    }
+    if(element == "km/h") {
+        signalUnit = RoadSignalUnit::KilometersPerHour;
+        return true;
+    }
+    if(element == "mph") {
+        signalUnit = RoadSignalUnit::MilesPerHour;
+        return true;
+    }
+    if(element == "kg") {
+        signalUnit = RoadSignalUnit::Kilogram;
+        return true;
+    }
+    if(element == "t") {
+        signalUnit = RoadSignalUnit::MetricTons;
+        return true;
+    }
+    if(element == "%") {
+        signalUnit = RoadSignalUnit::Percent;
+        return true;
+    }
+
+    return false;
+}
+
 bool SceneryImporter::ParseRoadLanes(QDomElement &roadElement,
                                      RoadInterface *road)
 {
@@ -613,6 +1120,21 @@ bool SceneryImporter::ParseRoads(QDomElement &documentRoot,
             }
 
             if (!ParseRoadLanes(roadElement, road)) // parsing laneOffset is included here
+            {
+                return false;
+            }
+
+            if (!ParseObjects(roadElement, road))
+            {
+                return false;
+            }
+
+            if (!ParseSignals(roadElement, road))
+            {
+                return false;
+            }
+
+            if (!ParseRoadTypes(roadElement, road))
             {
                 return false;
             }

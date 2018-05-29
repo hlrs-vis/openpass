@@ -62,6 +62,7 @@ SUBDIRS += \
     observationInterface \
     framework \
     importer \
+    importer/road \
     modelElements \
     modelInterface \
     scheduler \

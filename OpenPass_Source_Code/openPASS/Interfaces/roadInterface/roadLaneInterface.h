@@ -1,5 +1,6 @@
 /******************************************************************************
 * Copyright (c) 2017 ITK Engineering GmbH.
+* Copyright (c) 2018 in-tech GmbH on behalf of BMW AG
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -11,11 +12,12 @@
 //! @brief This file contains a interface representing a road lane.
 //-----------------------------------------------------------------------------
 
-#ifndef ROADLANEINTERFACE
-#define ROADLANEINTERFACE
+#pragma once
 
 #include "roadInterface.h"
-
+#include "roadLaneInterface.h"
+#include "roadLaneSectionInterface.h"
+#include "roadLaneRoadMark.h"
 //-----------------------------------------------------------------------------
 //! Class representing a road lane.
 //-----------------------------------------------------------------------------
@@ -47,6 +49,20 @@ public:
                   double b,
                   double c,
                   double d) = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Adds a new roadmark to a road lane.
+    //!
+    //! @param[in]  sOffset             Offset relative to the preceding lane section
+    //! @param[in]  roadMark            RoadMark
+    //!
+    //! @return                         False if an error occurred, true otherwise
+    //-----------------------------------------------------------------------------
+    virtual bool AddRoadMark(double sOffset,
+                             RoadLaneRoadDescriptionType descType,
+                             RoadLaneRoadMarkType roadMark,
+                             RoadLaneRoadMarkColor color,
+                             RoadLaneRoadMarkLaneChange laneChange) = 0;
 
     //-----------------------------------------------------------------------------
     //! Adds the ID of a successor lane to a road lane.
@@ -123,7 +139,14 @@ public:
     //! @return                         RoadLaneSection to which the road lane belongs
     //-----------------------------------------------------------------------------
     virtual RoadLaneSectionInterface *GetLaneSection() = 0;
+
+    //! Returns the roadmarktype of the road lane.
+    //!
+    //! @return                         RoadLaneRoadMarkType
+    //-----------------------------------------------------------------------------
+
+    virtual std::list<RoadLaneRoadMark*> &getRoadMarks() = 0;
+
 };
 
-#endif // ROADLANEINTERFACE
 

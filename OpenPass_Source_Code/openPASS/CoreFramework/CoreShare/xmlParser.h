@@ -18,6 +18,8 @@
 #include <QFile>
 #include <QDomDocument>
 
+#include "roadInterface/roadElementTypes.h"
+
 namespace SimulationCommon
 {
 
@@ -50,6 +52,36 @@ extern bool ParseAttributeDoubleVector(QDomElement element, const std::string &a
 extern bool ParseAttributeIntVector(QDomElement element, const std::string &attributeName, std::vector<int>* result);
 
 extern bool ParseAttributeBoolVector(QDomElement element, const std::string &attributeName, std::vector<bool>* result);
+
+bool ParseType(const std::string& element, RoadElementOrientation& orientation);
+bool ParseType(const std::string& element, RoadObjectType& objectType);
+
+template <typename T>
+bool ParseAttributeType(QDomElement element, const std::string &attributeName, T &result)
+{
+    if(!element.hasAttribute(QString::fromStdString(attributeName)))
+    {
+        return false;
+    }
+
+    QDomAttr attribute = element.attributeNode(QString::fromStdString(attributeName));
+    if(attribute.isNull())
+    {
+        return false;
+    }
+
+    return ParseType(attribute.value().toStdString(), result);
+}
+
+template <typename T>
+bool assignIfMatching(std::string element, T& enumeration, std::string match, T value)
+{
+    if(element == match){
+        enumeration = value;
+        return true;
+    }
+    return false;
+}
 
 } // namespace SimulationCommon
 
