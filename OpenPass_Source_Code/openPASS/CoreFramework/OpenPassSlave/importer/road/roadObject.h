@@ -7,8 +7,8 @@ class RoadObject : public RoadObjectInterface
 {
 public:
     RoadObject(RoadInterface *road, const RoadObjectSpecification object) :
-        road{road},
-        object{object}
+        road(road),
+        object(object)
     {}
 
     //-----------------------------------------------------------------------------
