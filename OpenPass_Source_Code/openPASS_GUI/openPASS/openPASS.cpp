@@ -23,6 +23,8 @@ int main(int argc, char *argv[])
     QApplication application(argc, argv);
     application.setApplicationName(QStringLiteral(APPLICATION_NAME));
     application.setApplicationVersion(QStringLiteral(APPLICATION_VERSION));
+    application.addLibraryPath(application.applicationDirPath() + SUBDIR_LIB_PLUGIN);
+    application.addLibraryPath(application.applicationDirPath() + SUBDIR_LIB_GUI);
 
     // Initialize models
     ServiceManagerModel services;

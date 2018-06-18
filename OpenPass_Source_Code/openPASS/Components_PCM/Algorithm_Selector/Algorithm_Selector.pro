@@ -24,8 +24,8 @@ QMAKE_CXXFLAGS += -std=c++11 -Dunix
 TARGET = Algorithm_Selector
 TEMPLATE = lib
 
-Release:DESTDIR = $$DIR_RELEASE
-Debug:DESTDIR = $$DIR_DEBUG
+Release:DESTDIR = $${DIR_RELEASE}$${SUBDIR_LIB_SIMS}
+Debug:DESTDIR = $${DIR_DEBUG}$${SUBDIR_LIB_SIMS}
 
 OBJECTS_DIR = .obj
 MOC_DIR = .moc

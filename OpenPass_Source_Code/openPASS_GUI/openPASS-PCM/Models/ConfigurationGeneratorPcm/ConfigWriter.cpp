@@ -259,7 +259,7 @@ const QString ConfigWriter::CreateFrameworkConfiguration(QString frameworkConfig
     for (QMap<QString, QString> configSet : configList)
     {
         xmlWriter.writeStartElement("frameworkConfiguration");
-        xmlWriter.writeTextElement("LibraryPath", baseDirectory.relativeFilePath(baseFolder));
+        xmlWriter.writeTextElement("LibraryPath", baseDirectory.relativeFilePath(baseFolder) + SUBDIR_LIB_SIM);
         QMapIterator<QString, QString> configSetIterator(configSet);
         while (configSetIterator.hasNext())
         {
