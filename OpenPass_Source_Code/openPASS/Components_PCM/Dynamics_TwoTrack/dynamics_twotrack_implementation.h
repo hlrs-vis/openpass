@@ -148,8 +148,6 @@ private:
     double timeStep;
     //! Yaw angle
     double yawAngle;
-    //! Slide angle (non-ISO: left curvature > 0 => vx > 0, vy < 0 => slide > 0)
-    double angleSlide;
     //! Car's position
     Common::Vector2d positionCar;
     //! Yaw rate
@@ -178,8 +176,14 @@ private:
     //! Update data on agent's actual position, velocity and accelaration
     void ReadPreviousState();
 
+    //! Calculate next position, translation velocity and translation acceleration of the agent
+    void NextStateTranslation();
+
+    //! Calculate next yaw angle, rotation velocity and rotation acceleration of the agent
+    void NextStateRotation();
+
     //! Write next position, velocity and acceleration of the agent
-    void SetNextState();
+    void NextStateSet();
 
 };
 

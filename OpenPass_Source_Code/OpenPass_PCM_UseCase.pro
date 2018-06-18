@@ -7,10 +7,10 @@ SUBDIRS = \
 # copy resources
 include(Global.pri)
 
-CONFIG(release) {
-DIR_BIN = $$DIR_RELEASE
-} else {
+CONFIG(debug, debug|release) {
 DIR_BIN = $$DIR_DEBUG
+} else {
+DIR_BIN = $$DIR_RELEASE
 }
 DIR_PRO = $${PWD}
 

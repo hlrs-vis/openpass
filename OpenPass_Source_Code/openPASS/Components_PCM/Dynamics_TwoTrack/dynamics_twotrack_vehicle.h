@@ -10,7 +10,6 @@
 #define VEHICLESIMPLETT_H
 
 #include <QtGlobal>
-#include <vector>
 #include "vector2d.h"
 #include "dynamics_twotrack_tire.h"
 #define NUMBER_TIRES 4
@@ -49,7 +48,7 @@ public:
     //! Refresh car's position
     void UpdatePosition(double);
     //! Refresh car's velocity
-    void SetVelocity(const double v_abs, const double slideAngle, const double w);
+    void SetVelocity(Common::Vector2d, const double);
     /**
      *    @}
     */
@@ -89,9 +88,9 @@ private:
     double inertiaTireX[NUMBER_TIRES];
 
     //! Maximal engine power [W]
-    double powerEngineMax;
-    //! Minimal brake force [N]
-    double torqueBrakeMin;
+    double powerEngineLimit;
+    //! Brake force limit [N]
+    double torqueBrakeLimit;
 
     //! Mass of the car [kg]
     double massTotal;
@@ -121,8 +120,10 @@ private:
     const double accelVerticalEarth = -9.81;
     //! Toe-in/-out
     const double anglePreSet = 0.0;//0.003;
-    //! Toe-in/-out
-    const double brakeBalance = 0.67;//0.003;
+    //! Brake balance
+    const double brakeBalance = 0.67;
+    //! Max. engine moment
+    const double torqueEngineLimit = 300.0;
     /**
      *  @}
     */
@@ -130,13 +131,13 @@ private:
     // Dynamics to remember
     double rotationVelocityTireX[NUMBER_TIRES];
     double rotationVelocityGradTireX[NUMBER_TIRES];
-    double angleSlide;
     double yawVelocity;
     double forceTireVerticalStatic[NUMBER_TIRES];
     Common::Vector2d velocityCar;
     Common::Vector2d forceTire[NUMBER_TIRES];
     Common::Vector2d slipTire[NUMBER_TIRES];
-    double torqueTireX[NUMBER_TIRES];
+    double torqueTireXthrottle[NUMBER_TIRES];
+    double torqueTireXbrake[NUMBER_TIRES];
     double momentTireZ[NUMBER_TIRES];
 
     /** \name Container

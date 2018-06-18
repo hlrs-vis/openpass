@@ -26,7 +26,7 @@ bool ConfigGenerator::GenerateConfigs(DatabaseReader &dbReader,
 {
     if (pcmCase == "")
     {
-        return "";
+        return false;
     }
 
     std::vector<PCM_ParticipantData> participants;

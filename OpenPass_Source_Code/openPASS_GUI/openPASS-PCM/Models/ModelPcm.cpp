@@ -66,7 +66,11 @@ bool ModelPcm::LoadPcmFile(const QString &pcmFilePath)
         success = dbReader.ReadCaseList(pcmCaseList);
     }
 
-    listModelPcm->setStringList(pcmCaseList);
+    if (success)
+    {
+        listModelPcm->setStringList(pcmCaseList);
+        success = listModelPcm != nullptr;
+    }
 
     dbReader.CloseDataBase();
 
@@ -144,12 +148,12 @@ void ModelPcm::StartSimulation()
                     {
                         continue;
                     }
-                    QString pcmCase = pcmCaseIndex.data().toString();
+                    QString pcmCase = QString("%1").arg(pcmCaseIndex.data().toInt());
                     QString configPath = resultFolder + "/"
-                                         + pcmCase
-                                         + "-" + QString::number(otherSystemCount)
-                                         + "-" + QString::number(car1SystemCount)
-                                         + "-" + QString::number(car2SystemCount);
+                            + pcmCase
+                            + "-" + QString::number(otherSystemCount)
+                            + "-" + QString::number(car1SystemCount)
+                            + "-" + QString::number(car2SystemCount);
                     QString resultPathPcmCase = configPath + "/Results";
 
                     QDir configDir(configPath);

@@ -56,13 +56,13 @@ double Tire::GetForce(const double slip)
 
 }
 
-double Tire::GetLongSlip(const double torque, const double v)
+double Tire::GetLongSlip(const double torque)
 {
     double force = torque / radius;
     double forceAbs = std::fabs(force);
 
-    if (( qFuzzyIsNull(force) ) || ( force < 0.0
-                                     && !(v > 0.0) )) { // no force OR rear gear (not allowed
+    if (( qFuzzyIsNull(force) ))
+    {
         return 0.0;
     } else if ( forceAbs <= forcePeak ) { // moderate force in adhesion (slip limited)
         double p_2 = 0.5 * ( stiffnessRoll * ( 1.0 - forcePeak / forceAbs ) - 2.0 );
@@ -81,7 +81,7 @@ double Tire::CalcSlipY(double slipX, double vx, double vy)
     } else if (qFuzzyIsNull(vx)) {
         return Saturate(-vy, -1.0, 1.0); // non-ISO
     } else {
-        return Saturate((slipX - 1) * vy / vx, -1.0, 1.0); // non-ISO
+        return Saturate((std::fabs(slipX) - 1) * vy / std::fabs(vx), -1.0, 1.0); // non-ISO
     }
 }
 
@@ -89,12 +89,14 @@ double Tire::GetRollFriction(const double velTireX, const double F_add)
 {
     double forceFriction = (forceZ_static + F_add) * frictionRoll;
 
-    if (qFuzzyIsNull(velTireX)) { // no friction when no rotation
-        return 0.0;
-    } else if (velTireX > 0.0) { // rolling forward -> negative force
-        return forceFriction;
-    } else { // rolling backward -> positive force
-        return -forceFriction;
+    if (velTireX < 0.0)
+    {
+        forceFriction *= -1.0;
+    }
+    if (std::fabs(velTireX) < velocityLimit)
+    {
+        forceFriction *= (velTireX/velocityLimit);
     }
 
+    return forceFriction;
 }

@@ -135,13 +135,13 @@
             <id>1</id>
             <type>double</type>
             <unit></unit>
-            <value>5000</value>
+            <value>10000</value>
           </parameter>
           <parameter>
             <id>2</id>
             <type>double</type>
             <unit></unit>
-            <value>3000</value>
+            <value>8000</value>
           </parameter>
           <parameter>
             <id>3</id>

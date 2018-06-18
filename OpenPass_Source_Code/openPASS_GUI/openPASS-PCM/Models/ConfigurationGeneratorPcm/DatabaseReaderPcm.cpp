@@ -86,7 +86,7 @@ bool DatabaseReader::ReadCaseList(QStringList &caseList)
     query.exec("SELECT DISTINCT FALL FROM participant_data ORDER BY FALL ASC");
     while (query.next())
     {
-        caseList.append(query.value(0).toString());
+        caseList.append(QString("%1").arg(query.value(0).toInt()));
     }
 
     query.clear();
@@ -195,7 +195,7 @@ bool DatabaseReader::ReadParticipantData(const QString &pcmCase,
 
     query.clear();
 
-    return true;
+    return !(participants.empty());
 }
 
 bool DatabaseReader::ReadDynamicsData(const QString &pcmCase,
@@ -221,7 +221,7 @@ bool DatabaseReader::ReadDynamicsData(const QString &pcmCase,
 
     query.clear();
 
-    return true;
+    return !(initials.empty());
 }
 
 bool DatabaseReader::ReadTrajectoryData(const QString &pcmCase,
@@ -257,7 +257,7 @@ bool DatabaseReader::ReadTrajectoryData(const QString &pcmCase,
 
         while (query.next())
         {
-            timeVec->push_back(static_cast<int> (query.value(0).toDouble() * 1000));
+            timeVec->push_back((qRound(query.value(0).toDouble() * 1000)));
             xPosVec->push_back(query.value(1).toDouble());
             yPosVec->push_back(query.value(2).toDouble());
             uVelVec->push_back(query.value(3).toDouble());
@@ -275,7 +275,7 @@ bool DatabaseReader::ReadTrajectoryData(const QString &pcmCase,
 
     query.clear();
 
-    return true;
+    return !(trajectories.empty());
 }
 
 bool DatabaseReader::ReadMarksData(const QString &pcmCase, std::vector<PCM_Marks *> &marksVec)
