@@ -12,7 +12,10 @@
 //!
 //! This class is responsible to manage a pcm lineSegment.
 //-----------------------------------------------------------------------------
-
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif // _USE_MATH_DEFINES
+#include <math.h>
 #include "pcm_lineSegment.h"
 #include "vector2d.h"
 

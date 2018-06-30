@@ -3,9 +3,10 @@ SET (HEADERS dynamics_collision_global.h dynamics_collision.h dynamics_collision
 
 
 add_definitions(-DDYNAMICS_COLLISION_LIBRARY)
-include_directories(../../Common_PCM ../../Interfaces)
+include_directories(../../Common_PCM ../../CoreModules_PCM/CollisionDetection_Impact ../../Common ../../Interfaces)
 
 add_library(Dynamics_Collision SHARED ${SOURCES} ${HEADERS})
+target_link_libraries(Dynamics_Collision Common)
 
 qt5_use_modules(Dynamics_Collision Xml)
 

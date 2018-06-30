@@ -3,7 +3,7 @@ SET (HEADERS action_scopeLogger_global.h action_scopeLogger.h action_scopeLogger
 
 
 add_definitions(-DACTION_SCOPELOGGER_LIBRARY)
-include_directories(../../Common_PCM ../../Interfaces)
+include_directories(../../Common_PCM ../../Common ../../Interfaces)
 
 add_library(Action_ScopeLogger SHARED ${SOURCES} ${HEADERS})
 

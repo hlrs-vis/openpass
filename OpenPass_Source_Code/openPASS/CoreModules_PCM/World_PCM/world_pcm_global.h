@@ -16,6 +16,9 @@
 
 #include <QtCore/qglobal.h>
 
+#ifdef World_PCM_EXPORTS
+#define WORLD_PCM_LIBRARY
+#endif
 #if defined(WORLD_PCM_LIBRARY)
 #  define WORLD_PCMSHARED_EXPORT Q_DECL_EXPORT
 #else

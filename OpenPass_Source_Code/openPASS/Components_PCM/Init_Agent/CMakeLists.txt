@@ -3,7 +3,7 @@ SET (HEADERS init_agent_global.h init_agent.h init_agent_implementation.h)
 
 
 add_definitions(-DINIT_AGENT_LIBRARY)
-include_directories(../../Common_PCM ../../Interfaces)
+include_directories(../../Common_PCM ../../Common ../../Interfaces)
 
 add_library(Init_Agent SHARED ${SOURCES} ${HEADERS})
 

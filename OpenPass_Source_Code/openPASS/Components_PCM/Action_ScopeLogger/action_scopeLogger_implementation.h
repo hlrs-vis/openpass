@@ -11,6 +11,9 @@
 
 #include <QFile>
 #include <QDir>
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif // _USE_MATH_DEFINES
 #include <math.h>
 #include <cassert>
 #include <fstream>

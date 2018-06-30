@@ -3,7 +3,7 @@ SET (HEADERS dynamics_copyTrajectory.h dynamics_copyTrajectory_implementation.h 
 
 
 add_definitions(-DDYNAMICS_COPYTRAJECTORY_LIBRARY)
-include_directories(../../Common ../../Interfaces)
+include_directories(../../Common_PCM ../../Common ../../Interfaces)
 
 add_library(Dynamics_CopyTrajectory SHARED ${SOURCES} ${HEADERS})
 

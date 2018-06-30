@@ -3,7 +3,7 @@ SET (HEADERS egoSensor_global.h egoSensor.h egoSensor_implementation.h)
 
 
 add_definitions(-DEGO_SENSOR_LIBRARY)
-include_directories(../../Common_PCM ../../Interfaces)
+include_directories(../../Common_PCM ../../Common ../../Interfaces)
 
 add_library(EgoSensor SHARED ${SOURCES} ${HEADERS})
 

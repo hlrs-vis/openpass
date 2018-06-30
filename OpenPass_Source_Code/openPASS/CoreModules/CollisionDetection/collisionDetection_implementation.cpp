@@ -8,6 +8,9 @@
 
 #include <cassert>
 #include <limits>
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif // _USE_MATH_DEFINES
 #include <cmath>
 #include <array>
 

@@ -16,6 +16,9 @@
 
 #include <QtCore/qglobal.h>
 
+#ifdef Observation_Collision_EXPORTS
+#define OBSERVATION_COLLISION_LIBRARY
+#endif
 #if defined(OBSERVATION_COLLISION_LIBRARY)
 #  define OBSERVATION_COLLISIONSHARED_EXPORT Q_DECL_EXPORT   //! Export of the dll-functions
 #else

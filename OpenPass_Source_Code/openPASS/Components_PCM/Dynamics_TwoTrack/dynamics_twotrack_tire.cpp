@@ -8,6 +8,9 @@
 
 #include "dynamics_twotrack_tire.h"
 #include "dynamics_twotrack_local.h"
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif // _USE_MATH_DEFINES
 #include <cmath>
 #include <QtGlobal>
 

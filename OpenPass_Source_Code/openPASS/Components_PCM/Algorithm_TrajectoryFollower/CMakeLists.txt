@@ -3,7 +3,7 @@ SET (HEADERS algorithm_trajectoryFollower_global.h algorithm_trajectoryFollower.
 
 
 add_definitions(-DALGORITHM_TRAJECTORYFOLLOWER_LIBRARY)
-include_directories(../../Common_PCM ../../Interfaces)
+include_directories(../../Common_PCM ../../Common ../../Interfaces)
 
 add_library(Algorithm_TrajectoryFollower SHARED ${SOURCES} ${HEADERS})
 

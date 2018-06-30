@@ -3,7 +3,7 @@ SET (HEADERS sensor_collision_global.h sensor_collision.h sensor_collision_imple
 
 
 add_definitions(-DSENSOR_COLLISION_LIBRARY)
-include_directories(../../Common_PCM ../../Interfaces)
+include_directories(../../Common_PCM  ../../CoreModules_PCM/CollisionDetection_Impact ../../Common ../../Interfaces)
 
 add_library(Sensor_Collision SHARED ${SOURCES} ${HEADERS})
 

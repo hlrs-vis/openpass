@@ -6,6 +6,7 @@ add_definitions(-DDYNAMICS_LONGITUDINAL_BASIC_LIBRARY)
 include_directories(../../Common ../../Interfaces)
 
 add_library(Dynamics_Longitudinal_Basic SHARED ${SOURCES} ${HEADERS})
+target_link_libraries(Dynamics_Longitudinal_Basic Common)
 
 qt5_use_modules(Dynamics_Longitudinal_Basic Xml)
 

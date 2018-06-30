@@ -12,6 +12,7 @@
 #include <QtGlobal>
 #include "vector2d.h"
 #include "dynamics_twotrack_tire.h"
+#include <vector>
 #define NUMBER_TIRES 4
 
 class Tire;
