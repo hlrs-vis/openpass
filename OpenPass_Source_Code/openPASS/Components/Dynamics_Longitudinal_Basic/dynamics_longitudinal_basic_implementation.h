@@ -15,7 +15,10 @@
 
 //-----------------------------------------------------------------------------
 
-/** \addtogroup Dynamics_Longitudinal_Basic
+/**
+* \addtogroup Components_Basic openPASS components basic
+* @{
+* \addtogroup Dynamics_Longitudinal_Basic
 * @{
 * \brief Calculate the next velocity and position of the agent in the next timestep
 * based on the acceleration in longitudinal direction.
@@ -51,6 +54,7 @@
 * -----|-------|-------------
 * _VLowerLimit | 0 | The minimal velocity of the agent in m/s.
 *
+* @}
 * @} */
 
 /*!
@@ -76,7 +80,7 @@ public:
         StochasticsInterface *stochastics,
         WorldInterface *world,
         const ParameterInterface *parameters,
-        const std::map<int, ObservationInterface*> *observations,
+        const std::map<int, ObservationInterface *> *observations,
         const CallbackInterface *callbacks,
         AgentInterface *agent) :
         DynamicsInterface(
@@ -93,10 +97,13 @@ public:
             callbacks,
             agent)
     {}
-    Dynamics_Longitudinal_Basic_Implementation(const Dynamics_Longitudinal_Basic_Implementation&) = delete;
-    Dynamics_Longitudinal_Basic_Implementation(Dynamics_Longitudinal_Basic_Implementation&&) = delete;
-    Dynamics_Longitudinal_Basic_Implementation& operator=(const Dynamics_Longitudinal_Basic_Implementation&) = delete;
-    Dynamics_Longitudinal_Basic_Implementation& operator=(Dynamics_Longitudinal_Basic_Implementation&&) = delete;
+    Dynamics_Longitudinal_Basic_Implementation(const Dynamics_Longitudinal_Basic_Implementation &) =
+        delete;
+    Dynamics_Longitudinal_Basic_Implementation(Dynamics_Longitudinal_Basic_Implementation &&) = delete;
+    Dynamics_Longitudinal_Basic_Implementation &operator=(const
+                                                          Dynamics_Longitudinal_Basic_Implementation &) = delete;
+    Dynamics_Longitudinal_Basic_Implementation &operator=(Dynamics_Longitudinal_Basic_Implementation &&)
+        = delete;
     virtual ~Dynamics_Longitudinal_Basic_Implementation() = default;
 
     /*!
@@ -111,7 +118,8 @@ public:
      * \param[in]     data           Referenced signal (copied by sending component)
      * \param[in]     time           Current scheduling time
      */
-    virtual void UpdateInput(int localLinkId, const std::shared_ptr<SignalInterface const> &data, int time);
+    virtual void UpdateInput(int localLinkId, const std::shared_ptr<SignalInterface const> &data,
+                             int time);
 
     /*!
      * \brief Update outputs.
@@ -154,7 +162,7 @@ private:
     //! The minimal velocity of the agent in m/s.
     const double _VLowerLimit = 0;
     /**@}*/
-        /**@}*/
+    /**@}*/
 };
 
 #endif // DYNAMICS_LONGITUDINAL_BASIC_IMPLEMENTATION_H

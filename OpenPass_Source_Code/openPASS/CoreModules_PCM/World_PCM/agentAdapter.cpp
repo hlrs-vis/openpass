@@ -50,7 +50,8 @@ bool AgentAdapter::InitAgentParameter(int id,
     UpdateAccelerationY(spawnItemParameter.GetAccelerationY());
     UpdateYawAngle(spawnItemParameter.GetYawAngle());
 
-    if (!Locate()) {
+    if (!Locate())
+    {
         LOG(CbkLogLevel::Info, "agent starts outside road");
     }
 
@@ -63,20 +64,26 @@ void AgentAdapter::UpdateCollision(int collisionPartnerId, int collisionDataId, 
 
     std::map<int, std::map<int, std::vector<void *>>>::iterator collisionCrashDataIterator
         = collisionCrashData.find(collisionPartnerId);
-    if (collisionCrashDataIterator != collisionCrashData.end()) {
+    if (collisionCrashDataIterator != collisionCrashData.end())
+    {
         std::map<int, std::vector<void *>> *crashData
                                         = &collisionCrashDataIterator->second;
         std::map<int, std::vector<void *>>::iterator crashDataIterator
                                         = crashData->find(collisionDataId);
-        if (crashDataIterator != crashData->end()) {
+        if (crashDataIterator != crashData->end())
+        {
             std::vector<void *> *crashDataVector = &crashDataIterator->second;
             crashDataVector->push_back(collisionData);
-        } else {
+        }
+        else
+        {
             std::vector<void *> crashDataVector;
             crashDataVector.push_back(collisionData);
             crashData->emplace(std::make_pair(collisionDataId, crashDataVector));
         }
-    } else {
+    }
+    else
+    {
         std::vector<void *> crashDataVector;
         crashDataVector.push_back(collisionData);
         std::map<int, std::vector<void *>> crashData;
@@ -91,12 +98,14 @@ std::vector<void *> AgentAdapter::GetCollisionData(int collisionPartnerId,
     std::vector<void *> collisionData;
     std::map<int, std::map<int, std::vector<void *>>>::const_iterator collisionCrashDataIterator
         = collisionCrashData.find(collisionPartnerId);
-    if (collisionCrashDataIterator != collisionCrashData.end()) {
+    if (collisionCrashDataIterator != collisionCrashData.end())
+    {
         std::map<int, std::vector<void *>> crashData
                                         = collisionCrashDataIterator->second;
         std::map<int, std::vector<void *>>::const_iterator crashDataIterator
                                         = crashData.find(collisionDataId);
-        if (crashDataIterator != crashData.end()) {
+        if (crashDataIterator != crashData.end())
+        {
             collisionData = crashDataIterator->second;
         }
     }
@@ -114,10 +123,12 @@ double AgentAdapter::GetDistanceToFrontAgent(int laneId)
     double posX = GetPositionX();
     double distance = INFINITY;
 
-    for (const auto &it : world->GetAgents()) {
+    for (const auto &it : world->GetAgents())
+    {
         const AgentInterface *otherAgent = it.second;
         double posXother = otherAgent->GetPositionX();
-        if ((otherAgent->GetAgentId() != id) && (posX < posXother)) {
+        if ((otherAgent->GetAgentId() != id) && (posX < posXother))
+        {
             distance = std::min(distance, posXother - posX);
         }
     }
@@ -131,13 +142,17 @@ double AgentAdapter::GetVelocityAbsolute() const
     return velocityVec.Length();
 }
 
-std::string AgentAdapter::GetTypeOfNearestMark() const
+MarkType AgentAdapter::GetTypeOfNearestMark() const
 {
     const PCM_Data *data = worldPCM->GetPCM_Data();
     const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
-    MarkType minMarkType = data->GetTypeOfNearestLineSegment(&agentPoint);
+    MarkType minMarkType = data->GetMarkTypeOfNearestLineSegment(&agentPoint);
+    return minMarkType;
+}
 
-    return PCM_Helper::ConvertMarkTypeToDBString(minMarkType);
+std::string AgentAdapter::GetTypeOfNearestMarkString() const
+{
+    return PCM_Helper::ConvertMarkTypeToDBString(GetTypeOfNearestMark());
 }
 
 double AgentAdapter::GetDistanceToNearestMark(MarkType markType) const
@@ -154,7 +169,7 @@ double AgentAdapter::GetViewDirectionToNearestMark(MarkType markType) const
 AgentViewDirection AgentAdapter::GetAgentViewDirectionToNearestMark(MarkType markType) const
 {
     double viewDirection = GetViewDirectionToNearestMark(markType);
-    return CommonHelper::ConvertRadiantToAgentViewDirection(viewDirection);
+    return CommonHelper::ConvertRadianToAgentViewDirection(viewDirection);
 }
 
 double AgentAdapter::GetOrientationOfNearestMark(MarkType markType) const
@@ -165,7 +180,7 @@ double AgentAdapter::GetOrientationOfNearestMark(MarkType markType) const
 double AgentAdapter::GetDistanceToNearestMarkInViewDirection(MarkType markType,
                                                              AgentViewDirection agentViewDirection) const
 {
-    double viewDirection = CommonHelper::ConvertagentViewDirectionToRadiant(agentViewDirection);
+    double viewDirection = CommonHelper::ConvertagentViewDirectionToRadian(agentViewDirection);
     return GetDistanceToNearestMarkInViewDirection(markType, viewDirection);
 }
 
@@ -178,7 +193,7 @@ double AgentAdapter::GetDistanceToNearestMarkInViewDirection(MarkType markType,
 double AgentAdapter::GetOrientationOfNearestMarkInViewDirection(MarkType markType,
                                                                 AgentViewDirection agentViewDirection) const
 {
-    double mainViewDirection = CommonHelper::ConvertagentViewDirectionToRadiant(agentViewDirection);
+    double mainViewDirection = CommonHelper::ConvertagentViewDirectionToRadian(agentViewDirection);
     return GetOrientationOfNearestMarkInViewDirection(markType, mainViewDirection);
 }
 
@@ -191,30 +206,19 @@ double AgentAdapter::GetOrientationOfNearestMarkInViewDirection(MarkType markTyp
 double AgentAdapter::GetDistanceToNearestMarkInViewRange(MarkType markType,
                                                          AgentViewDirection agentViewDirection, double range) const
 {
-    double mainViewDirection = CommonHelper::ConvertagentViewDirectionToRadiant(agentViewDirection);
+    double mainViewDirection = CommonHelper::ConvertagentViewDirectionToRadian(agentViewDirection);
     return GetDistanceToNearestMarkInViewRange(markType, mainViewDirection, range);
 }
 
 double AgentAdapter::GetDistanceToNearestMarkInViewRange(MarkType markType,
                                                          double mainViewDirection, double range) const
 {
-    double resultingAngle = INFINITY;
-    if (!std::isinf(mainViewDirection)) {
-        double agentAngle = GetYawAngle();
-        resultingAngle = agentAngle + mainViewDirection;
-        if (fabs(resultingAngle) > M_PI) {
-            if (resultingAngle > 0) {
-                resultingAngle -= 2 * M_PI;
-            } else {
-                resultingAngle += 2 * M_PI;
-            }
-        }
-    }
+    double resultingAngle = GetAbsoluteViewAngle(mainViewDirection);
 
     const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
     const PCM_Data *data = worldPCM->GetPCM_Data();
-    PCM_LineSegment minLineSegment = data->GetNearestLineSegment(markType, &agentPoint,
-                                                                 resultingAngle, range);
+    PCM_LineSegment minLineSegment = data->GetNearestLineSegmentOfMarks(markType, &agentPoint,
+                                                                        resultingAngle, range);
 
     double minDistance = minLineSegment.CalcDistanceFromPoint(&agentPoint, resultingAngle, range);
 
@@ -224,43 +228,40 @@ double AgentAdapter::GetDistanceToNearestMarkInViewRange(MarkType markType,
 double AgentAdapter::GetOrientationOfNearestMarkInViewRange(MarkType markType,
                                                             AgentViewDirection agentViewDirection, double range) const
 {
-    double mainViewDirection = CommonHelper::ConvertagentViewDirectionToRadiant(agentViewDirection);
+    double mainViewDirection = CommonHelper::ConvertagentViewDirectionToRadian(agentViewDirection);
     return GetOrientationOfNearestMarkInViewRange(markType, mainViewDirection, range);
 }
 
 double AgentAdapter::GetOrientationOfNearestMarkInViewRange(MarkType markType,
                                                             double mainViewDirection, double range) const
 {
-    double agentAngle = GetYawAngle();
-    double resultingAngle = INFINITY;
-    if (!std::isinf(mainViewDirection)) {
-        resultingAngle = agentAngle + mainViewDirection;
-        if (fabs(resultingAngle) > M_PI) {
-            if (resultingAngle > 0) {
-                resultingAngle -= 2 * M_PI;
-            } else {
-                resultingAngle += 2 * M_PI;
-            }
-        }
-    }
+    double resultingAngle = GetAbsoluteViewAngle(mainViewDirection);
 
     const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
     const PCM_Data *data = worldPCM->GetPCM_Data();
-    PCM_LineSegment minLineSegment = data->GetNearestLineSegment(markType, &agentPoint, resultingAngle,
-                                                                 range);
+    PCM_LineSegment minLineSegment = data->GetNearestLineSegmentOfMarks(markType, &agentPoint,
+                                                                        resultingAngle,
+                                                                        range);
 
     double lineAngle = minLineSegment.CalculateAngle();
+    double agentAngle = GetYawAngle();
     double angle = fabs(agentAngle - lineAngle);
     double alternateAngle;
-    if (lineAngle > 0) {
+    if (lineAngle > 0)
+    {
         alternateAngle = fabs(agentAngle - (lineAngle - M_PI));
-    } else {
+    }
+    else
+    {
         alternateAngle = fabs(agentAngle - (lineAngle + M_PI));
     }
 
-    if (angle < alternateAngle) {
+    if (angle < alternateAngle)
+    {
         return angle;
-    } else {
+    }
+    else
+    {
         return alternateAngle;
     }
 }
@@ -268,41 +269,158 @@ double AgentAdapter::GetOrientationOfNearestMarkInViewRange(MarkType markType,
 double AgentAdapter::GetViewDirectionToNearestMarkInViewRange(MarkType markType,
                                                               AgentViewDirection agentViewDirection, double range) const
 {
-    double mainViewDirection = CommonHelper::ConvertagentViewDirectionToRadiant(agentViewDirection);
+    double mainViewDirection = CommonHelper::ConvertagentViewDirectionToRadian(agentViewDirection);
     return GetViewDirectionToNearestMarkInViewRange(markType, mainViewDirection, range);
 }
 
 double AgentAdapter::GetViewDirectionToNearestMarkInViewRange(MarkType markType,
                                                               double mainViewDirection, double range) const
 {
-    double agentAngle = GetYawAngle();
-    double resultingAngle = INFINITY;
-    if (!std::isinf(mainViewDirection)) {
-        resultingAngle = agentAngle + mainViewDirection;
-        if (fabs(resultingAngle) > M_PI) {
-            if (resultingAngle > 0) {
-                resultingAngle -= 2 * M_PI;
-            } else {
-                resultingAngle += 2 * M_PI;
-            }
-        }
-    }
+    double resultingAngle = GetAbsoluteViewAngle(mainViewDirection);
 
     const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
     const PCM_Data *data = worldPCM->GetPCM_Data();
-    PCM_Point nearestPoint = data->GetNearestPoint(markType, &agentPoint, resultingAngle, range);
+    PCM_Point nearestPoint = data->GetNearestPointOfMarks(markType, &agentPoint, resultingAngle, range);
 
     double pointAngle = PCM_Helper::CalcAngleBetweenPoints(&agentPoint, &nearestPoint);
 
+    double agentAngle = GetYawAngle();
     double viewDirection = pointAngle - agentAngle;
 
-    if (fabs(viewDirection) > M_PI) {
-        if (viewDirection > 0) {
-            viewDirection -= 2 * M_PI;
-        } else {
-            viewDirection += 2 * M_PI;
-        }
-    }
+    viewDirection = ConvertAngleToPi(viewDirection);
+
+    return viewDirection;
+}
+
+std::string AgentAdapter::GetTypeOfNearestObject(AgentViewDirection agentViewDirection,
+                                                 double range) const
+{
+    double mainViewDirection = CommonHelper::ConvertagentViewDirectionToRadian(agentViewDirection);
+    return GetTypeOfNearestObject(mainViewDirection, range);
+}
+
+std::string AgentAdapter::GetTypeOfNearestObject(double mainViewDirection, double range) const
+{
+    const PCM_Data *data = worldPCM->GetPCM_Data();
+    const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
+    ObjectType minObjectType = data->GetObjectTypeOfNearestLineSegment(&agentPoint, mainViewDirection,
+                                                                       range);
+
+    return PCM_Helper::ConvertObjectTypeToDBString(minObjectType);
+}
+
+double AgentAdapter::GetDistanceToNearestObjectInViewRange(ObjectType objectType,
+                                                           AgentViewDirection agentViewDirection, double range) const
+{
+    double mainViewDirection = CommonHelper::ConvertagentViewDirectionToRadian(agentViewDirection);
+    return GetDistanceToNearestObjectInViewRange(objectType, mainViewDirection, range);
+}
+
+double AgentAdapter::GetDistanceToNearestObjectInViewRange(ObjectType objectType,
+                                                           double mainViewDirection, double range) const
+{
+    double resultingAngle = GetAbsoluteViewAngle(mainViewDirection);
+
+    const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
+    const PCM_Data *data = worldPCM->GetPCM_Data();
+    PCM_LineSegment minLineSegment = data->GetNearestLineSegmentOfObject(objectType, &agentPoint,
+                                                                         resultingAngle, range);
+
+    double minDistance = minLineSegment.CalcDistanceFromPoint(&agentPoint, resultingAngle, range);
+
+    return minDistance;
+}
+
+double AgentAdapter::GetViewDirectionToNearestObjectInViewRange(ObjectType objectType,
+                                                                AgentViewDirection agentViewDirection, double range) const
+{
+    double mainViewDirection = CommonHelper::ConvertagentViewDirectionToRadian(agentViewDirection);
+    return GetViewDirectionToNearestObjectInViewRange(objectType, mainViewDirection, range);
+}
+
+double AgentAdapter::GetViewDirectionToNearestObjectInViewRange(ObjectType objectType,
+                                                                double mainViewDirection, double range) const
+{
+    double resultingAngle = GetAbsoluteViewAngle(mainViewDirection);
+
+    const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
+    const PCM_Data *data = worldPCM->GetPCM_Data();
+    PCM_Point nearestPoint = data->GetNearestPointOfObject(objectType, &agentPoint, resultingAngle,
+                                                           range);
+
+    double pointAngle = PCM_Helper::CalcAngleBetweenPoints(&agentPoint, &nearestPoint);
+
+    double agentAngle = GetYawAngle();
+    double viewDirection = pointAngle - agentAngle;
+
+    viewDirection = ConvertAngleToPi(viewDirection);
+
+    return viewDirection;
+}
+
+int AgentAdapter::GetIdOfNearestAgent(AgentViewDirection agentViewDirection, double range) const
+{
+    double mainViewDirection = CommonHelper::ConvertagentViewDirectionToRadian(agentViewDirection);
+    return GetIdOfNearestAgent(mainViewDirection, range);
+}
+
+int AgentAdapter::GetIdOfNearestAgent(double mainViewDirection, double range) const
+{
+    int egoId = GetAgentId();
+    const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
+    const PCM_Data *data = worldPCM->GetPCM_Data();
+    int id = data->GetIdOfNearestAgent(egoId, &agentPoint, mainViewDirection, range);
+
+    return id;
+}
+
+double AgentAdapter::GetDistanceToNearestAgentInViewRange(AgentViewDirection agentViewDirection,
+                                                          double range) const
+{
+    double mainViewDirection = CommonHelper::ConvertagentViewDirectionToRadian(agentViewDirection);
+    return GetDistanceToNearestAgentInViewRange(mainViewDirection, range);
+}
+
+double AgentAdapter::GetDistanceToNearestAgentInViewRange(double mainViewDirection,
+                                                          double range) const
+{
+    double resultingAngle = GetAbsoluteViewAngle(mainViewDirection);
+
+    int egoId = GetAgentId();
+    const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
+    const PCM_Data *data = worldPCM->GetPCM_Data();
+    PCM_LineSegment minLineSegment = data->GetNearestLineSegmentOfAgents(egoId, &agentPoint,
+                                                                         resultingAngle, range);
+
+    double minDistance = minLineSegment.CalcDistanceFromPoint(&agentPoint, resultingAngle, range);
+
+    return minDistance;
+}
+
+double AgentAdapter::GetViewDirectionToNearestAgentInViewRange(AgentViewDirection
+                                                               agentViewDirection, double range) const
+{
+    double mainViewDirection = CommonHelper::ConvertagentViewDirectionToRadian(agentViewDirection);
+    return GetViewDirectionToNearestAgentInViewRange(mainViewDirection, range);
+}
+
+double AgentAdapter::GetViewDirectionToNearestAgentInViewRange(double mainViewDirection,
+                                                               double range) const
+{
+    double resultingAngle = GetAbsoluteViewAngle(mainViewDirection);
+
+    int egoId = GetAgentId();
+    const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
+    const PCM_Data *data = worldPCM->GetPCM_Data();
+    PCM_Point nearestPoint = data->GetNearestPointOfAgents(egoId, &agentPoint, resultingAngle,
+                                                           range);
+
+    double pointAngle = PCM_Helper::CalcAngleBetweenPoints(&agentPoint, &nearestPoint);
+
+    double agentAngle = GetYawAngle();
+    double viewDirection = pointAngle - agentAngle;
+
+    viewDirection = ConvertAngleToPi(viewDirection);
 
     return viewDirection;
 }
@@ -314,7 +432,11 @@ double AgentAdapter::GetYawVelocity()
 
 void AgentAdapter::SetYawVelocity(double yawVelocity)
 {
-    this->yawVelocity = yawVelocity;
+    world->QueueAgentUpdate([this](double arg)
+    {
+        UpdateYawVelocity(arg);
+    },
+    yawVelocity);
 }
 
 double AgentAdapter::GetYawAcceleration()
@@ -324,7 +446,11 @@ double AgentAdapter::GetYawAcceleration()
 
 void AgentAdapter::SetYawAcceleration(double yawAcceleration)
 {
-    this->yawAcceleration = yawAcceleration;
+    world->QueueAgentUpdate([this](double arg)
+    {
+        UpdateYawAcceleration(arg);
+    },
+    yawAcceleration);
 }
 
 const std::vector<int> *AgentAdapter::GetTrajectoryTime() const
@@ -344,10 +470,104 @@ const std::vector<double> *AgentAdapter::GetTrajectoryYPos() const
 
 const std::vector<double> *AgentAdapter::GetTrajectoryVelocity() const
 {
-    return worldPCM->GetTrajectory(GetAgentId())->GetVelVec();
+    return worldPCM->GetTrajectory(GetAgentId())->GetUVelVec();
 }
 
 const std::vector<double> *AgentAdapter::GetTrajectoryAngle() const
 {
     return worldPCM->GetTrajectory(GetAgentId())->GetPsiVec();
+}
+
+void AgentAdapter::SetAccelerationIntention(double accelerationIntention)
+{
+    world->QueueAgentUpdate([this](double arg)
+    {
+        UpdateAccelerationIntention(arg);
+    },
+    accelerationIntention);
+}
+
+double AgentAdapter::GetAccelerationIntention() const
+{
+    return accelerationIntention;
+}
+
+void AgentAdapter::SetDecelerationIntention(double decelerationIntention)
+{
+    world->QueueAgentUpdate([this](double arg)
+    {
+        UpdateDecelerationIntention(arg);
+    },
+    decelerationIntention);
+}
+
+double AgentAdapter::GetDecelerationIntention() const
+{
+    return decelerationIntention;
+}
+
+void AgentAdapter::SetAngleIntention(double angleIntention)
+{
+    world->QueueAgentUpdate([this](double arg)
+    {
+        UpdateAngleIntention(arg);
+    },
+    angleIntention);
+}
+
+double AgentAdapter::GetAngleIntention() const
+{
+    return angleIntention;
+}
+
+void AgentAdapter::SetCollisionState(bool collisionState)
+{
+    world->QueueAgentUpdate([this](double arg)
+    {
+        UpdateCollisionState(arg);
+    },
+    collisionState);
+}
+
+bool AgentAdapter::GetCollisionState() const
+{
+    return collisionState;
+}
+
+double AgentAdapter::GetAccelerationAbsolute() const
+{
+    Common::Vector2d accelerationVec(accelerationX, accelerationY);
+    return accelerationVec.Length();
+}
+
+double AgentAdapter::GetAbsoluteViewAngle(double mainViewDirection) const
+{
+    double resultingAngle = INFINITY;
+    if (!std::isinf(mainViewDirection))
+    {
+        double agentAngle = GetYawAngle();
+        resultingAngle = agentAngle + mainViewDirection;
+
+        resultingAngle = ConvertAngleToPi(resultingAngle);
+    }
+
+    return resultingAngle;
+}
+
+double AgentAdapter::ConvertAngleToPi(double angle) const
+{
+    double out_angle = angle;
+    if (fabs(out_angle) > M_PI)
+    {
+        if (out_angle > 0)
+        {
+            out_angle -= 2 * M_PI;
+        }
+        else
+        {
+            out_angle += 2 * M_PI;
+        }
+    }
+
+    return out_angle;
 }

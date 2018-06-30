@@ -18,7 +18,7 @@
 #include "componentPorts.h"
 
 /**
- * \addtogroup Components openPASS components
+ * \addtogroup Components_PCM openPASS components pcm
  * @{
  * \addtogroup EgoSensor
  *
@@ -130,25 +130,27 @@ private:
     OutputPort<DoubleSignal, double> positionY {1, &outputPorts}; //!< position in Y
     OutputPort<DoubleSignal, double> velocityX {2, &outputPorts}; //!< velocity in X
     OutputPort<DoubleSignal, double> velocityY {3, &outputPorts}; //!< velocity in Y
-    OutputPort<DoubleSignal, double> accelerationX {4, &outputPorts}; //!< acceleration in X
-    OutputPort<DoubleSignal, double> accelerationY {5, &outputPorts}; //!< acceleration in Y
-    OutputPort<DoubleSignal, double> maximalXCoordinate {6, &outputPorts}; //!< maximal X coordinate
-    OutputPort<DoubleSignal, double> minimalXCoordinate {7, &outputPorts}; //!< minimal X coordinate
-    OutputPort<DoubleSignal, double> maximalYCoordinate {8, &outputPorts}; //!< maximal Y coordinate
-    OutputPort<DoubleSignal, double> minimalYCoordinate {9, &outputPorts}; //!< minimal Y coordinate
-    OutputPort<DoubleSignal, double> yawAngle {10, &outputPorts}; //!< yaw angle
-    OutputPort<DoubleSignal, double> width {11, &outputPorts}; //!< width of agent
-    OutputPort<DoubleSignal, double> length {12, &outputPorts}; //!< length of agent
-    OutputPort<DoubleSignal, double> weight {13, &outputPorts}; //!< weight of agent
-    OutputPort<DoubleSignal, double> wheelbase {14, &outputPorts}; //!< wheelbase of agent
-    OutputPort<DoubleSignal, double> trackWidth {15, &outputPorts}; //!< track width of agent
-    OutputPort<DoubleSignal, double> distanceCOGtoLeadingEdge {16, &outputPorts}; //!< distance of COG of agent to the leading edge
-    OutputPort<DoubleSignal, double> distanceCOGtoFrontAxle {17, &outputPorts}; //!< distance of COG of agent to the front axle
-    OutputPort<DoubleSignal, double> heightCOG {18, &outputPorts}; //!< height of COG of agent
-    OutputPort<DoubleSignal, double> momentInertiaYaw {19, &outputPorts}; //!< moment of inertia yaw
-    OutputPort<DoubleSignal, double> momentInertiaPitch {20, &outputPorts}; //!< moment of inertia pitch
-    OutputPort<DoubleSignal, double> momentInertiaRoll {21, &outputPorts}; //!< moment of inertia roll
-    OutputPort<DoubleSignal, double> frictionCoeff {22, &outputPorts}; //!< friction coefficient
+    OutputPort<DoubleSignal, double> velocityAbsolute {4, &outputPorts}; //!< velocity absolute
+    OutputPort<DoubleSignal, double> accelerationX {5, &outputPorts}; //!< acceleration in X
+    OutputPort<DoubleSignal, double> accelerationY {6, &outputPorts}; //!< acceleration in Y
+    OutputPort<DoubleSignal, double> accelerationAbsolute {7, &outputPorts}; //!< acceleration absolute
+    OutputPort<DoubleSignal, double> maximalXCoordinate {8, &outputPorts}; //!< maximal X coordinate
+    OutputPort<DoubleSignal, double> minimalXCoordinate {9, &outputPorts}; //!< minimal X coordinate
+    OutputPort<DoubleSignal, double> maximalYCoordinate {10, &outputPorts}; //!< maximal Y coordinate
+    OutputPort<DoubleSignal, double> minimalYCoordinate {11, &outputPorts}; //!< minimal Y coordinate
+    OutputPort<DoubleSignal, double> yawAngle {12, &outputPorts}; //!< yaw angle
+    OutputPort<DoubleSignal, double> width {13, &outputPorts}; //!< width of agent
+    OutputPort<DoubleSignal, double> length {14, &outputPorts}; //!< length of agent
+    OutputPort<DoubleSignal, double> weight {15, &outputPorts}; //!< weight of agent
+    OutputPort<DoubleSignal, double> wheelbase {16, &outputPorts}; //!< wheelbase of agent
+    OutputPort<DoubleSignal, double> trackWidth {17, &outputPorts}; //!< track width of agent
+    OutputPort<DoubleSignal, double> distanceCOGtoLeadingEdge {18, &outputPorts}; //!< distance of COG of agent to the leading edge
+    OutputPort<DoubleSignal, double> distanceCOGtoFrontAxle {19, &outputPorts}; //!< distance of COG of agent to the front axle
+    OutputPort<DoubleSignal, double> heightCOG {20, &outputPorts}; //!< height of COG of agent
+    OutputPort<DoubleSignal, double> momentInertiaYaw {21, &outputPorts}; //!< moment of inertia yaw
+    OutputPort<DoubleSignal, double> momentInertiaPitch {22, &outputPorts}; //!< moment of inertia pitch
+    OutputPort<DoubleSignal, double> momentInertiaRoll {23, &outputPorts}; //!< moment of inertia roll
+    OutputPort<DoubleSignal, double> frictionCoeff {24, &outputPorts}; //!< friction coefficient
     /**
      *      @}
      *  @}

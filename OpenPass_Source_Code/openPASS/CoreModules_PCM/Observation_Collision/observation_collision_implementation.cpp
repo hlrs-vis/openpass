@@ -10,10 +10,11 @@
 #include <sstream>
 #include "observation_collision_implementation.h"
 
-Observation_Collision_Implementation::Observation_Collision_Implementation(StochasticsInterface *stochastics,
-                                                               WorldInterface *world,
-                                                               const ParameterInterface *parameters,
-                                                               const CallbackInterface *callbacks) :
+Observation_Collision_Implementation::Observation_Collision_Implementation(
+    StochasticsInterface *stochastics,
+    WorldInterface *world,
+    const ParameterInterface *parameters,
+    const CallbackInterface *callbacks) :
     ObservationInterface(stochastics, world, parameters, callbacks)
 {
     std::stringstream log;
@@ -22,7 +23,8 @@ Observation_Collision_Implementation::Observation_Collision_Implementation(Stoch
     log.str(std::string());
 
     std::map<int, double> parameterMapDoubleExternal = GetParameters()->GetParametersDouble();
-    foreach (auto &iterator, parameterMapDouble) {
+    foreach (auto &iterator, parameterMapDouble)
+    {
         int id = iterator.first;
         parameterMapDouble.at(id)->SetValue(parameterMapDoubleExternal.at(id));
     }
@@ -45,19 +47,25 @@ void Observation_Collision_Implementation::SlaveUpdateHook(int time, RunResultIn
 {
     Q_UNUSED(time);
 
-    if(runResult.GetCollisions()->size() > 0 ){
+    if (runResult.GetCollisions()->size() > 0 )
+    {
         collisionOccured = true;
     }
 
-    if(collisionOccured){
+    if (collisionOccured)
+    {
         bool stop = true;
-        for(auto &agentIterator : GetWorld()->GetAgents()){
-            if(agentIterator.second->GetVehicleType()==AgentVehicleType::Car && agentIterator.second->GetVelocityX() > endVelocity.GetValue()){
+        for (auto &agentIterator : GetWorld()->GetAgents())
+        {
+            if (agentIterator.second->GetVehicleType() == AgentVehicleType::Car &&
+                    agentIterator.second->GetVelocityAbsolute() > endVelocity.GetValue())
+            {
                 stop = false;
                 break;
             }
         }
-        if(stop){
+        if (stop)
+        {
             runResult.SetEndCondition();
         }
     }

@@ -1,5 +1,6 @@
 /******************************************************************************
 * Copyright (c) 2017 ITK Engineering GmbH.
+* Copyright (c) 2018 in-tech GmbH on behalf of BMW AG
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -7,6 +8,7 @@
 ******************************************************************************/
 
 #include "road.h"
+#include "roadElementTypes.h"
 
 extern "C"
 {
@@ -28,6 +30,11 @@ RoadLane::~RoadLane()
     for(RoadLaneWidth *item : widths)
     {
         delete item;
+    }
+
+    for(auto roadMark : roadMarks)
+    {
+        delete roadMark;
     }
 }
 
@@ -74,6 +81,27 @@ bool RoadLane::AddPredecessor(int id)
     }
 
     predecessor.push_back(id);
+
+    return true;
+}
+
+bool RoadLane::AddRoadMark(double sOffset,
+                           RoadLaneRoadDescriptionType type,
+                           RoadLaneRoadMarkType roadMark,
+                           RoadLaneRoadMarkColor color,
+                           RoadLaneRoadMarkLaneChange laneChange)
+{
+    RoadLaneRoadMark *laneRoadMark = new (std::nothrow) RoadLaneRoadMark(sOffset,
+                                                                         type,
+                                                                         roadMark,
+                                                                         color,
+                                                                         laneChange);
+    if(!laneRoadMark)
+    {
+        return false;
+    }
+
+    roadMarks.push_back(laneRoadMark);
 
     return true;
 }
@@ -1470,6 +1498,16 @@ Road::~Road()
     {
         delete item;
     }
+
+    for(RoadSignalInterface *item : roadSignals)
+    {
+        delete item;
+    }
+
+    for(RoadObjectInterface *item : roadObjects)
+    {
+        delete item;
+    }
 }
 
 bool Road::AddGeometryLine(double s,
@@ -1642,5 +1680,39 @@ RoadLaneSection *Road::AddRoadLaneSection(double start)
     laneSections.push_back(laneSection);
 
     return laneSection;
+}
+
+// TODO: make void
+RoadSignal* Road::AddRoadSignal(const RoadSignalSpecification &signal)
+{
+    RoadSignal *roadSignal = new (std::nothrow) RoadSignal(this, signal);
+    roadSignals.push_back(roadSignal);
+
+    return roadSignal;
+}
+
+// TODO: make void
+RoadObject* Road::AddRoadObject(const RoadObjectSpecification &object)
+{
+    RoadObject *roadObject = new (std::nothrow) RoadObject(this, object);
+    roadObjects.push_back(roadObject);
+
+    return roadObject;
+}
+
+
+void Road::AddRoadType(const RoadTypeSpecification &info)
+{
+    roadTypes.push_back(info);
+}
+
+RoadTypeInformation Road::GetRoadType(double start)
+{
+    for(RoadTypeSpecification roadTypeSpec : roadTypes)
+    {
+        if(roadTypeSpec.s == start) return roadTypeSpec.roadType;
+    }
+
+    return RoadTypeInformation::Undefined;
 }
 

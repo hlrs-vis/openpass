@@ -13,7 +13,6 @@
 
 #include "algorithm_trajectoryFollower_implementation.h"
 
-#include "vec2d.h"
 #include "pid_controller.h"
 #include "trajectoryfollowing.h"
 
@@ -49,7 +48,8 @@ Algorithm_TrajectoryFollower_Implementation::Algorithm_TrajectoryFollower_Implem
     log.str(std::string());
 
     std::map<int, double> parameterMapDoubleExternal = GetParameters()->GetParametersDouble();
-    foreach (auto &iterator, parameterMapDouble) {
+    foreach (auto &iterator, parameterMapDouble)
+    {
         int id = iterator.first;
         parameterMapDouble.at(id)->SetValue(parameterMapDoubleExternal.at(id));
     }
@@ -61,63 +61,67 @@ Algorithm_TrajectoryFollower_Implementation::Algorithm_TrajectoryFollower_Implem
 bool Algorithm_TrajectoryFollower_Implementation::Init()
 {
     carStats = new CarStatistics( weight.GetValue(),
-                                   wheelbase.GetValue(),
-                                   tireCoefficient1.GetValue(),
-                                   tireCoefficient1.GetValue(),
-                                   distanceToCOG.GetValue(),
-                                   frontWheelAngleLimit.GetValue()
-                                 );
+                                  wheelbase.GetValue(),
+                                  tireCoefficient1.GetValue(),
+                                  tireCoefficient1.GetValue(),
+                                  distanceToCOG.GetValue(),
+                                  frontWheelAngleLimit.GetValue()
+                                );
 
     brakeController = new PIDController( brake_P.GetValue(),
-                                          brake_I.GetValue(),
-                                          brake_D.GetValue(),
-                                          integratorMin, integratorMax, ignoreIntegratorThreshold);
+                                         brake_I.GetValue(),
+                                         brake_D.GetValue(),
+                                         integratorMin, integratorMax, ignoreIntegratorThreshold);
 
     gasController = new PIDController( gas_P.GetValue(),
-                                        gas_I.GetValue(),
-                                        gas_D.GetValue(),
-                                        integratorMin, integratorMax, ignoreIntegratorThreshold );
+                                       gas_I.GetValue(),
+                                       gas_D.GetValue(),
+                                       integratorMin, integratorMax, ignoreIntegratorThreshold );
 
     ControlData startControl( 0, // frontWheelAngle0
                               0, // brakePedal0
                               0  // throttlePedal0
                             );
 
-    PositionData startPosition( Vec2D( positionX.GetValue(),
-                                       positionY.GetValue() ),
+    PositionData startPosition( Common::Vector2d( positionX.GetValue(),
+                                                  positionY.GetValue() ),
                                 yawAngle.GetValue(),
                                 velocityX.GetValue() );
 
     State startState( startPosition, startControl );
 
-    if ( carStats != nullptr && brakeController != nullptr && gasController != nullptr ) {
+    if ( carStats != nullptr && brakeController != nullptr && gasController != nullptr )
+    {
         auto test = lookAheadTime.GetValue();
         trajectoryController = new TrajectoryFollowingControl( *carStats,
-                                                                startState,
-                                                                *gasController,
-                                                                *brakeController,
-                                                                //lookAheadTime.GetValue()
-                                                               test
-                                                              );
-    } else {
+                                                               startState,
+                                                               *gasController,
+                                                               *brakeController,
+                                                               lookAheadTime.GetValue()
+                                                             );
+    }
+    else
+    {
         // should not be reached
         trajectoryController = nullptr;
         return false;
     }
 
-    waypoints = ReadWayPointData( trajectory.GetValue().GetTimeVec(),    // WayPointsTime
-                                   trajectory.GetValue().GetXPosVec(), // WayPointsX
-                                   trajectory.GetValue().GetYPosVec(), // WayPointsY
-                                   trajectory.GetValue().GetVelVec()  // WayPointsVelocity
-                                 );
+    waypoints = ReadWayPointData( trajectory.GetValue().GetTimeVec(), // WayPointsTime
+                                  trajectory.GetValue().GetXPosVec(), // WayPointsX
+                                  trajectory.GetValue().GetYPosVec(), // WayPointsY
+                                  trajectory.GetValue().GetUVelVec()  // WayPointsVelocity
+                                );
 
-    if ( !waypoints ) {
+    if ( !waypoints )
+    {
         std::stringstream log;
         log << "setting of waypoints failed - array lengths are not equal";
         LOG(CbkLogLevel::Warning, log.str());
         log.str(std::string());
 
-        if ( trajectoryController ) {
+        if ( trajectoryController )
+        {
             delete trajectoryController;
             trajectoryController = nullptr; //prevents further execution of trigger
         }
@@ -165,10 +169,13 @@ void Algorithm_TrajectoryFollower_Implementation::UpdateInput(int localLinkId,
 
     bool success = inputPorts.at(localLinkId)->SetSignalValue(data);
 
-    if (success) {
+    if (success)
+    {
         log << COMPONENTNAME << " UpdateInput successful";
         LOG(CbkLogLevel::Debug, log.str());
-    } else {
+    }
+    else
+    {
         log << COMPONENTNAME << " UpdateInput failed";
         LOG(CbkLogLevel::Error, log.str());
     }
@@ -187,10 +194,13 @@ void Algorithm_TrajectoryFollower_Implementation::UpdateOutput(int localLinkId,
 
     bool success = outputPorts.at(localLinkId)->GetSignalValue(data);
 
-    if (success) {
+    if (success)
+    {
         log << COMPONENTNAME << " UpdateOutput successful";
         LOG(CbkLogLevel::Debug, log.str());
-    } else {
+    }
+    else
+    {
         log << COMPONENTNAME << " UpdateOutput failed";
         LOG(CbkLogLevel::Error, log.str());
     }
@@ -201,31 +211,40 @@ void Algorithm_TrajectoryFollower_Implementation::Trigger(int time)
     Q_UNUSED(time);
     std::stringstream log;
 
-    if (!initialized) {
+    if (!initialized)
+    {
         //set default signal values and allocate computational data structures on heap
         bool success;
 
-        try {
+        try
+        {
             success = Init();
-        } catch (...) {
+        }
+        catch (...)
+        {
             success = false;
         }
 
-        if (!success) {
+        if (!success)
+        {
             log << "setting of parameters failed";
             log << "Construction of TrajectoryFollower failed - computation object is null";
             LOG(CbkLogLevel::Warning, log.str());
-        } else {
+        }
+        else
+        {
             initialized = true;
         }
     }
 
-    if (!initialized) {
+    if (!initialized)
+    {
         return;
     }
 
 
-    if (trajectoryController == nullptr) {
+    if (trajectoryController == nullptr)
+    {
         log << COMPONENTNAME << " Trigger not callable";
         LOG(CbkLogLevel::Error, log.str());
         return;
@@ -235,59 +254,47 @@ void Algorithm_TrajectoryFollower_Implementation::Trigger(int time)
     LOG(CbkLogLevel::Debug, log.str());
     log.str(std::string());
 
-    if (!collisionStop && collisionOccured.GetValue()) {
-        collisionStop = true;
-    }
+    //transfer all relevant input signals into the computation structure
+    PositionData position( positionX.GetValue(),
+                           positionY.GetValue(),
+                           yawAngle.GetValue(),
+                           velocityX.GetValue() );
 
-    if (collisionStop) {
-        log << COMPONENTNAME << "  Collision occured --> stoping agent";
-        LOG(CbkLogLevel::Debug, log.str());
+    // setup controller
+    trajectoryController->setCurrentPositionData(position);
 
-        requiredThrottlePedal.SetValue(0);
-        requiredBrakePedal.SetValue(1);
-    } else {
-        //transfer all relevant input signals into the computation structure
-        PositionData position( positionX.GetValue(),
-                               positionY.GetValue(),
-                               yawAngle.GetValue(),
-                               velocityX.GetValue() );
+    log << "TrajectoryFollower (AgentID " << GetAgentId() << ") Input" << std::endl
+        << " PositionX= " << position.position.x
+        << " PositionY= " << position.position.y
+        << " YawAngle= " << position.angle
+        << " Velocity= " << position.velocity << std::endl
+        << " TargetWaypoint: Index=" << trajectoryController->getCurrentWayPointIndex()
+        << " time= " << trajectoryController->getCurrentWayPointData().time
+        << " X= " << trajectoryController->getCurrentWayPoint().x
+        << " Y= " << trajectoryController->getCurrentWayPoint().y
+        << " Velocity= " << trajectoryController->getCurrentWayPointData().velocity << std::endl
+        << " LastWaypoint: Index=" << trajectoryController->getPreviousWayPointIndex()
+        << " time= " << trajectoryController->getPreviousWayPointData().time
+        << " X= " << trajectoryController->getPreviousWayPoint().x
+        << " Y= " << trajectoryController->getPreviousWayPoint().y
+        << " Velocity= " << trajectoryController->getPreviousWayPointData().velocity;
+    LOG(CbkLogLevel::Debug, log.str());
+    log.str(std::string());
 
-        // setup controller
-        trajectoryController->setCurrentPositionData(position);
+    // perform the control
+    ControlData control = trajectoryController->computeRequiredControl();
 
-        log << "TrajectoryFollower (AgentID " << GetAgentId() << ") Input" << std::endl
-            << " PositionX= " << position.position.x
-            << " PositionY= " << position.position.y
-            << " YawAngle= " << position.angle
-            << " Velocity= " << position.velocity << std::endl
-            << " TargetWaypoint: Index=" << trajectoryController->getCurrentWayPointIndex()
-            << " time= " << trajectoryController->getCurrentWayPointData().time
-            << " X= " << trajectoryController->getCurrentWayPoint().x
-            << " Y= " << trajectoryController->getCurrentWayPoint().y
-            << " Velocity= " << trajectoryController->getCurrentWayPointData().velocity << std::endl
-            << " LastWaypoint: Index=" << trajectoryController->getPreviousWayPointIndex()
-            << " time= " << trajectoryController->getPreviousWayPointData().time
-            << " X= " << trajectoryController->getPreviousWayPoint().x
-            << " Y= " << trajectoryController->getPreviousWayPoint().y
-            << " Velocity= " << trajectoryController->getPreviousWayPointData().velocity;
-        LOG(CbkLogLevel::Debug, log.str());
-        log.str(std::string());
+    log << "TrajectoryFollower (AgentID " << GetAgentId() << ") Output" << std::endl
+        << " FrontWheelAngle= " << control.frontWheelAngle
+        << " ThrottlePedal= " << control.gas
+        << " BrakePedal= " << control.brake;
+    LOG(CbkLogLevel::Debug, log.str());
+    log.str(std::string());
 
-        // perform the control
-        ControlData control = trajectoryController->computeRequiredControl();
-
-        log << "TrajectoryFollower (AgentID " << GetAgentId() << ") Output" << std::endl
-            << " FrontWheelAngle= " << control.frontWheelAngle
-            << " ThrottlePedal= " << control.gas
-            << " BrakePedal= " << control.brake;
-        LOG(CbkLogLevel::Debug, log.str());
-        log.str(std::string());
-
-        // create new output signals
-        requiredFrontWheelAngle.SetValue(control.frontWheelAngle);
-        requiredThrottlePedal.SetValue(control.gas);
-        requiredBrakePedal.SetValue(control.brake);
-    }
+    // create new output signals
+    requiredFrontWheelAngle.SetValue(control.frontWheelAngle);
+    requiredThrottlePedal.SetValue(control.gas);
+    requiredBrakePedal.SetValue(control.brake);
 
     log << "TrajectoryFollower::Trigger successful";
     LOG(CbkLogLevel::Debug, log.str());
@@ -301,11 +308,13 @@ std::vector<WaypointData> *Algorithm_TrajectoryFollower_Implementation::ReadWayP
     const std::vector<double> *Y,
     const std::vector<double> *Velocity)
 {
-    if (Time == nullptr || X == nullptr || Y == nullptr || Velocity == nullptr) {
+    if (Time == nullptr || X == nullptr || Y == nullptr || Velocity == nullptr)
+    {
         return nullptr;
     }
     unsigned int n = X->size();
-    if ( n == 0 || n != Y->size() || n != Velocity->size() || n != Time->size() ) {
+    if ( n == 0 || n != Y->size() || n != Velocity->size() || n != Time->size() )
+    {
         return nullptr;
     }
 
@@ -316,7 +325,8 @@ std::vector<WaypointData> *Algorithm_TrajectoryFollower_Implementation::ReadWayP
     const std::vector<double> &VelocityRef = *Velocity;
     std::vector<WaypointData> &waypointsRef = *waypoints;
 
-    for (unsigned int i = 0; i < n; ++i) {
+    for (unsigned int i = 0; i < n; ++i)
+    {
         waypointsRef[i].time = TimeRef[i];
         waypointsRef[i].position.x = XRef[i];
         waypointsRef[i].position.y = YRef[i];

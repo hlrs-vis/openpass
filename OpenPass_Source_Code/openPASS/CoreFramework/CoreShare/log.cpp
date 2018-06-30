@@ -8,4 +8,4 @@
 
 #include "log.h"
 
-std::ofstream LogOutputPolicy::logStream;
+QMap<int, std::ofstream *> LogOutputPolicy::logStreamMap;

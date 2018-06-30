@@ -20,8 +20,8 @@ LIBS += -lws2_32
 QMAKE_CXXFLAGS += -std=c++11 -Dunix
 }
 
-Release:DESTDIR = $$DIR_RELEASE
-Debug:DESTDIR = $$DIR_DEBUG
+Release:DESTDIR = $${DIR_RELEASE}$${SUBDIR_LIB_SIMS}
+Debug:DESTDIR = $${DIR_DEBUG}$${SUBDIR_LIB_SIMS}
 
 TARGET = World_Basic
 TEMPLATE = lib

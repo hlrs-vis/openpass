@@ -83,10 +83,13 @@ void EgoSensor_Implementation::UpdateOutput(int localLinkId,
 
     bool success = outputPorts.at(localLinkId)->GetSignalValue(data);
 
-    if (success) {
+    if (success)
+    {
         log << COMPONENTNAME << " UpdateOutput successful";
         LOG(CbkLogLevel::Debug, log.str());
-    } else {
+    }
+    else
+    {
         log << COMPONENTNAME << " UpdateOutput failed";
         LOG(CbkLogLevel::Error, log.str());
     }
@@ -114,9 +117,11 @@ void EgoSensor_Implementation::Trigger(int time)
 {
     Q_UNUSED(time);
 
-    if (!isInitDone) {
+    if (!isInitDone)
+    {
         bool initSuccessful = initAfterInitsAreSet();
-        if (!initSuccessful) {
+        if (!initSuccessful)
+        {
             return;
         }
         isInitDone = true;
@@ -127,8 +132,10 @@ void EgoSensor_Implementation::Trigger(int time)
     positionY.SetValue(in_positionY);
     velocityX.SetValue(GetAgent()->GetVelocityX());
     velocityY.SetValue(GetAgent()->GetVelocityY());
+    velocityAbsolute.SetValue(GetAgent()->GetVelocityAbsolute());
     accelerationX.SetValue(GetAgent()->GetAccelerationX());
     accelerationY.SetValue(GetAgent()->GetAccelerationY());
+    accelerationAbsolute.SetValue(GetAgent()->GetAccelerationAbsolute());
     double in_yawAngle = GetAgent()->GetYawAngle();
     yawAngle.SetValue(in_yawAngle);
 

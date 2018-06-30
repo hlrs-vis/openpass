@@ -1,0 +1,109 @@
+<component>
+  <type>Algorithm</type>
+  <title>Algorithm_Selector</title>
+  <schedule>
+    <offset>0</offset>
+    <cycle>10</cycle>
+    <response>0</response>
+  </schedule>
+  <parameters>
+  </parameters>
+  <inputs>
+  	<input>
+      <id>0</id>
+      <type>double</type>
+      <title>Driver Throttle Pedal</title>
+      <unit></unit>
+      <cardinality>1</cardinality>	  
+    </input>
+	<input>
+      <id>1</id>
+      <type>double</type>
+      <title>Driver Brake Pedal </title>
+      <unit></unit>
+      <cardinality>1</cardinality>
+    </input>
+	<input>
+      <id>2</id>
+      <type>double</type>
+      <title>Driver Steering Angle </title>
+      <unit>rad</unit>
+      <cardinality>1</cardinality>
+    </input>
+	<input>
+      <id>3</id>
+      <type>bool</type>
+      <title>BrakeAssist active</title>
+      <unit></unit>
+      <cardinality>1</cardinality>	  
+    </input>
+	<input>
+      <id>4</id>
+      <type>double</type>
+      <title>BrakeAssist Brake Pedal</title>
+      <unit></unit>
+      <cardinality>1</cardinality>	  
+    </input>
+	<input>
+      <id>5</id>
+      <type>bool</type>
+      <title>Lane Assist active</title>
+      <unit></unit>
+      <cardinality>1</cardinality>	  
+    </input>
+	<input>
+      <id>6</id>
+      <type>VectorDouble</type>
+      <title>Lane Assist BrakeSuperpose</title>
+      <unit></unit>
+      <cardinality>1</cardinality>	  
+    </input>
+	<input>
+      <id>7</id>
+      <type>bool</type>
+      <title>Evasive Steering Assist active</title>
+      <unit></unit>
+      <cardinality>1</cardinality>	  
+    </input>
+	<input>
+      <id>8</id>
+      <type>double</type>
+      <title>Evasive Steering Angle</title>
+      <unit>rad</unit>
+      <cardinality>1</cardinality>	  
+    </input>
+	<input>
+      <id>9</id>
+      <type>bool</type>
+      <title>collisionOccured</title>
+      <unit></unit>
+      <cardinality>1</cardinality>	  
+    </input>
+  </inputs>
+  <outputs>
+	<output>
+      <id>0</id>
+      <type>double</type>
+      <title>Resulting Throttle Pedal</title>
+      <unit></unit>
+    </output>
+	<output>
+	  <id>1</id>
+      <type>double</type>
+      <title>Resulting Brake Pedal</title>
+      <unit></unit>
+    </output>
+	<output>
+      <id>2</id>
+      <type>double</type>
+      <title>Resulting Steering Angle</title>
+      <unit></unit>
+    </output>
+	<output>
+      <id>3</id>
+      <type>VectorDouble</type>
+      <title>Resulting BrakeSuperpose</title>
+      <unit></unit>
+    </output>
+  </outputs>
+</component>

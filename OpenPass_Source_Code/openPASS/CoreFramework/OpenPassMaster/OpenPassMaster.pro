@@ -11,7 +11,7 @@
 #-----------------------------------------------------------------------------/
 
 include(../../../Global.pri)
-QT       += core xml
+QT       += core xml concurrent
 QT       -= gui
 
 win32 {
@@ -25,8 +25,27 @@ QMAKE_CXXFLAGS += -std=c++11 -Dunix
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = OpenPassMaster
-CONFIG   -= app_bundle
-TEMPLATE = app
+
+###############################################################################
+# Use this line in Global.pri to build openPASS-Master as library
+# CONFIG += USEOPENPASSMASTERASLIBRARY
+###############################################################################
+
+USEOPENPASSMASTERASLIBRARY {
+    TEMPLATE = lib
+    DEFINES += OPENPASSMASTERLIBRARY
+} else {
+    TEMPLATE = app
+}
+
+###############################################################################
+# Use this line in Global.pri to use openPASS-Slave as library
+# CONFIG += USEOPENPASSSLAVEASLIBRARY
+###############################################################################
+
+USEOPENPASSSLAVEASLIBRARY {
+    DEFINES += USESLAVELIBRARY
+}
 
 Release:DESTDIR = $$DIR_RELEASE
 Debug:DESTDIR = $$DIR_DEBUG

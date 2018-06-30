@@ -21,8 +21,8 @@ LIBS += -lws2_32
 QMAKE_CXXFLAGS += -std=c++11 -Dunix
 }
 
-Release:DESTDIR = $$DIR_RELEASE
-Debug:DESTDIR = $$DIR_DEBUG
+Release:DESTDIR = $${DIR_RELEASE}$${SUBDIR_LIB_SIMS}
+Debug:DESTDIR = $${DIR_DEBUG}$${SUBDIR_LIB_SIMS}
 
 TARGET = World_PCM
 TEMPLATE = lib
@@ -42,9 +42,10 @@ defineReplace(getFiles) {
 }
 
 SUBDIRS +=  . \
-            ./PCM_Data \
             ../../Common \
             ../../Common_PCM \
+            ../../Common_PCM/PCM_Data \
+            ../../Common_PCM/PCM_Importer \
             ../../Interfaces \
             ../../Interfaces/roadInterface
 

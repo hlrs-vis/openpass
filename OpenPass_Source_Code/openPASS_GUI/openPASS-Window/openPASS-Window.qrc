@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Views/Views-openPASS/logo_openpass.png</file>
+    </qresource>
+</RCC>

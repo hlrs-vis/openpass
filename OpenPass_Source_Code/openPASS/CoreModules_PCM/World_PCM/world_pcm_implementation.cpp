@@ -10,7 +10,6 @@
 
 World_PCM_Implementation::World_PCM_Implementation(const CallbackInterface *callbacks):
     agentNetwork(this, callbacks),
-    sceneryImporterPCM(callbacks),
     callbacks(callbacks)
 {}
 
@@ -44,10 +43,11 @@ void World_PCM_Implementation::Clear()
 {
     agentNetwork.Clear();
     pcmData.Clear();
-    for (auto &trajectoryItem : trajectories) {
+    for (auto &trajectoryItem : trajectories)
+    {
         trajectoryItem.second.Clear();
     }
-
+    trajectories.clear();
     timeOfDay = 0;
     weekday = Weekday::Undefined;
 }
@@ -70,6 +70,7 @@ void World_PCM_Implementation::QueueAgentRemove(const AgentInterface *agent)
 void World_PCM_Implementation::SyncGlobalData()
 {
     agentNetwork.SyncGlobalData();
+    UpdatePcmAgentData();
 }
 
 bool World_PCM_Implementation::CreateScenery(SceneryInterface &scenery)
@@ -110,12 +111,35 @@ bool World_PCM_Implementation::CreateWorldScenery(const std::string &sceneryFile
     return sceneryImporterPCM.Import(sceneryFilename, pcmData, trajectories);
 }
 
+bool World_PCM_Implementation::CreateWorldScenario(const std::string &scenarioFilename)
+{
+    return scenarioImporterPCM.Import(scenarioFilename, trajectories);
+}
+
 const PCM_Data *World_PCM_Implementation::GetPCM_Data() const
 {
     return &pcmData;
 }
 
-const Trajectory *World_PCM_Implementation::GetTrajectory(int agentId) const
+const PCM_Trajectory *World_PCM_Implementation::GetTrajectory(int agentId) const
 {
     return &trajectories.find(agentId)->second;
+}
+
+void World_PCM_Implementation::UpdatePcmAgentData()
+{
+    pcmData.ClearAgentData();
+    std::map<int, const AgentInterface *> agents = GetAgents();
+    for (std::map<int, const AgentInterface *>::iterator it = agents.begin();
+            it != agents.end(); ++it)
+    {
+
+        const AgentInterface *agent = it->second;
+        pcmData.AddPCM_Agent(agent->GetAgentId(),
+                             agent->GetPositionX(),
+                             agent->GetPositionY(),
+                             agent->GetYawAngle(),
+                             agent->GetWidth(),
+                             agent->GetHeight());
+    }
 }

@@ -24,9 +24,9 @@ QMAKE_CXXFLAGS += -std=c++11 -Dunix
 TARGET = Algorithm_TrajectoryFollower
 TEMPLATE = lib
 
-Release:DESTDIR = $$DIR_RELEASE
+Release:DESTDIR = $${DIR_RELEASE}$${SUBDIR_LIB_SIMS}
 
-Debug:DESTDIR = $$DIR_DEBUG
+Debug:DESTDIR = $${DIR_DEBUG}$${SUBDIR_LIB_SIMS}
 
 DEFINES += ALGORITHM_TRAJECTORYFOLLOWER_LIBRARY
 
@@ -45,6 +45,7 @@ defineReplace(getFiles) {
 SUBDIRS +=  . \
             ../../Common \
             ../../Common_PCM \
+            ../../Common_PCM/PCM_Data \
             ../../Interfaces
 
 INCLUDEPATH += $$SUBDIRS \

@@ -22,7 +22,7 @@
 #include "componentPorts.h"
 
 /**
- * \addtogroup Components openPASS components
+ * \addtogroup Components_PCM openPASS components pcm
  * @{
  * \addtogroup Sensor_Collision
  *
@@ -156,7 +156,8 @@ private:
     int previousNumberOfCollisionData = 0;
 
     //! Specifies the current state of collision the agent is in
-    enum class CollisionState {
+    enum class CollisionState
+    {
         NOCOLLISION,
         COLLISIONPENETRATING,
         COLLISION

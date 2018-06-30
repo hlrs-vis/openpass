@@ -23,8 +23,8 @@ QMAKE_CXXFLAGS += -std=c++11 -Dunix
 TARGET = Init_Agent
 TEMPLATE = lib
 
-Release:DESTDIR = $$DIR_RELEASE
-Debug:DESTDIR = $$DIR_DEBUG
+Release:DESTDIR = $${DIR_RELEASE}$${SUBDIR_LIB_SIMS}
+Debug:DESTDIR = $${DIR_DEBUG}$${SUBDIR_LIB_SIMS}
 
 OBJECTS_DIR = .obj
 MOC_DIR = .moc
@@ -48,6 +48,7 @@ defineReplace(getFiles) {
 SUBDIRS +=  . \
             ../../Common \
             ../../Common_PCM \
+            ../../Common_PCM/PCM_Data \
             ../../Interfaces \
 
 INCLUDEPATH += $$SUBDIRS \

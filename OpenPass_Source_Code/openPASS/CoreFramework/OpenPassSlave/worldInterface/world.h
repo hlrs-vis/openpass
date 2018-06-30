@@ -18,8 +18,7 @@
 #include "worldInterface.h"
 #include "worldBinding.h"
 
-namespace SimulationSlave
-{
+namespace SimulationSlave {
 
 class World : public WorldInterface
 {
@@ -28,102 +27,129 @@ public:
         worldBinding(worldBinding)
     {}
 
-    World(const World&) = delete;
-    World(World&&) = delete;
-    World& operator=(const World&) = delete;
-    World& operator=(World&&) = delete;
+    World(const World &) = delete;
+    World(World &&) = delete;
+    World &operator=(const World &) = delete;
+    World &operator=(World &&) = delete;
 
     virtual ~World() = default;
 
-    bool AddAgent(int id, AgentInterface *agent){
+    bool AddAgent(int id, AgentInterface *agent)
+    {
         return implementation->AddAgent(id, agent);
     }
 
-    const AgentInterface *GetAgent(int id) const{
+    const AgentInterface *GetAgent(int id) const
+    {
         return implementation->GetAgent(id);
     }
-    const std::map<int, const AgentInterface*> &GetAgents() const{
+    const std::map<int, const AgentInterface *> &GetAgents() const
+    {
         return implementation->GetAgents();
     }
 
     // framework internal methods to access members without restrictions
-    void SetParameter(WorldParameter *worldParameter){
+    void SetParameter(WorldParameter *worldParameter)
+    {
         return implementation->SetParameter(worldParameter);
     }
 
-    void Clear(){
+    void Clear()
+    {
         return implementation->Clear();
     }
 
-    bool CreateGlobalDrivingView(){
+    bool CreateGlobalDrivingView()
+    {
         return implementation->CreateGlobalDrivingView();
     }
 
     // model callbacks
-    void SetTimeOfDay(int timeOfDay){
+    void SetTimeOfDay(int timeOfDay)
+    {
         return implementation->SetTimeOfDay(timeOfDay);
     }
 
-    int GetTimeOfDay() const{
+    int GetTimeOfDay() const
+    {
         return implementation->GetTimeOfDay();
     }
 
-    void SetWeekday(Weekday weekday){
+    void SetWeekday(Weekday weekday)
+    {
         return implementation->SetWeekday(weekday);
     }
 
-    Weekday GetWeekday() const{
+    Weekday GetWeekday() const
+    {
         return implementation->GetWeekday();
     }
 
-    void* GetGlobalDrivingView(){
+    void *GetGlobalDrivingView()
+    {
         return implementation->GetGlobalDrivingView();
     }
 
-    void* GetGlobalObjects(){
+    void *GetGlobalObjects()
+    {
         return implementation->GetGlobalObjects();
     }
 
     void QueueAgentUpdate(std::function<void(double)> func,
-                              double val){
+                          double val)
+    {
         return implementation->QueueAgentUpdate(func, val);
     }
 
-    void QueueAgentRemove(const AgentInterface *agent){
+    void QueueAgentRemove(const AgentInterface *agent)
+    {
         return implementation->QueueAgentRemove(agent);
     }
 
-    void SyncGlobalData(){
+    void SyncGlobalData()
+    {
         return implementation->SyncGlobalData();
     }
 
-    bool CreateScenery(SceneryInterface &scenery){
+    bool CreateScenery(SceneryInterface &scenery)
+    {
         return implementation->CreateScenery(scenery);
     }
 
-    AgentInterface* CreateAgentAdapterForAgent(){
+    AgentInterface *CreateAgentAdapterForAgent()
+    {
         return implementation->CreateAgentAdapterForAgent();
     }
 
-    const AgentInterface *GetSpecialAgent(){
+    const AgentInterface *GetSpecialAgent()
+    {
         return implementation->GetSpecialAgent();
     }
 
-    const AgentInterface *GetLastCarInlane(int laneNumber){
+    const AgentInterface *GetLastCarInlane(int laneNumber)
+    {
         return implementation->GetLastCarInlane(laneNumber);
     }
 
-    const AgentInterface *GetBicycle() const {
+    const AgentInterface *GetBicycle() const
+    {
         return implementation->GetBicycle();
     }
 
-    Position GetPositionByDistanceAndLane(double distance, int laneNumber) const{
+    Position GetPositionByDistanceAndLane(double distance, int laneNumber) const
+    {
         return implementation->GetPositionByDistanceAndLane(distance, laneNumber);
     }
 
-    bool CreateWorldScenery(const  std::string &sceneryFilename){
+    bool CreateWorldScenery(const  std::string &sceneryFilename)
+    {
         return implementation->CreateWorldScenery(sceneryFilename);
     }
+    bool CreateWorldScenario(const  std::string &scenarioFilename)
+    {
+        return implementation->CreateWorldScenario(scenarioFilename);
+    }
+
     //-----------------------------------------------------------------------------
     //! Instantiate the world by creating a WorldInterface out of a world library
     //! with given world parameters
@@ -133,11 +159,15 @@ public:
     //-----------------------------------------------------------------------------
     bool Instantiate(WorldParameter *worldParameter)
     {
-        if((!worldBinding) || (!worldParameter)){
+        if ((!worldBinding) || (!worldParameter))
+        {
             return false;
-        }else if(!implementation){
+        }
+        else if (!implementation)
+        {
             implementation = worldBinding->Instantiate(worldParameter);
-            if(!implementation){
+            if (!implementation)
+            {
                 return false;
             }
         }
@@ -149,7 +179,8 @@ public:
     //!
     //! @return                true if world was already instantiated
     //-----------------------------------------------------------------------------
-    bool isInstantiated(){
+    bool isInstantiated()
+    {
         return implementation!=NULL;
     }
 

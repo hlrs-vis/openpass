@@ -101,11 +101,25 @@ public:
     bool SetSignalValue(const std::shared_ptr<SignalInterface const> &data)
     {
         const std::shared_ptr<SignalType const> signal = std::dynamic_pointer_cast<SignalType const>(data);
-        if (!signal) {
+        if (!signal)
+        {
             return false;
         }
         value = signal->value;
 
+        return true;
+    }
+
+    bool SetDefaultValue(const ValueType &inValue)
+    {
+        try
+        {
+            value = inValue;
+        }
+        catch (...)
+        {
+            return false;
+        }
         return true;
     }
 
@@ -145,10 +159,13 @@ public:
 
     bool GetSignalValue(std::shared_ptr<SignalInterface const> &data)
     {
-        try {
+        try
+        {
             data = std::make_shared<SignalType const>(value);
             return true;
-        } catch (const std::bad_alloc &) {
+        }
+        catch (const std::bad_alloc &)
+        {
             return false;
         }
     }

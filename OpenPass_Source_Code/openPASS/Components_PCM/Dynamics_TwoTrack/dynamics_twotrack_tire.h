@@ -24,7 +24,7 @@ public:
     const double inertia = 1.2;
 
     double GetForce(const double);
-    double GetLongSlip(const double tq, const double v);
+    double GetLongSlip(const double tq);
     double CalcSlipY(double slipX, double vx, double vy);
     double GetRollFriction(const double velTireX, const double F_add);
 

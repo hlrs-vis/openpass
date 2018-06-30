@@ -1,0 +1,65 @@
+--- OpenPass_Source_Code/openPASS/CoreFramework/CoreShare/xmlParser.h
++++ OpenPass_Source_Code/openPASS/CoreFramework/CoreShare/xmlParser.h
+@@ -1,5 +1,6 @@
+ /******************************************************************************
+ * Copyright (c) 2017 ITK Engineering GmbH.
++* Copyright (c) 2018 in-tech GmbH on behalf of BMW AG
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+@@ -11,13 +12,14 @@
+ //! @brief This file contains helper functions to parse the configuration.
+ //-----------------------------------------------------------------------------
+ 
+-#ifndef XMLPARSER_H
+-#define XMLPARSER_H
++#pragma once
+ 
+ #include <string>
+ #include <QFile>
+ #include <QDomDocument>
+ 
++#include "roadInterface/roadElementTypes.h"
++
+ namespace SimulationCommon
+ {
+ 
+@@ -51,6 +53,37 @@ extern bool ParseAttributeIntVector(QDomElement element, const std::string &attr
+ 
+ extern bool ParseAttributeBoolVector(QDomElement element, const std::string &attributeName, std::vector<bool>* result);
+ 
++bool ParseType(const std::string& element, RoadElementOrientation& orientation);
++bool ParseType(const std::string& element, RoadObjectType& objectType);
++
++template <typename T>
++bool ParseAttributeType(QDomElement element, const std::string &attributeName, T &result)
++{
++    if(!element.hasAttribute(QString::fromStdString(attributeName)))
++    {
++        return false;
++    }
++
++    QDomAttr attribute = element.attributeNode(QString::fromStdString(attributeName));
++    if(attribute.isNull())
++    {
++        return false;
++    }
++
++    return ParseType(attribute.value().toStdString(), result);
++}
++
++template <typename T>
++bool assignIfMatching(std::string element, T& enumeration, std::string match, T value)
++{
++    if(element == match){
++        enumeration = value;
++        return true;
++    }
++    return false;
++}
++
++
+ } // namespace SimulationCommon
+ 
+-#endif // XMLPARSER_H
++

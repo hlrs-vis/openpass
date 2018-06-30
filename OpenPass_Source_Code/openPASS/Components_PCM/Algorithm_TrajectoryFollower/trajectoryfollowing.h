@@ -20,10 +20,10 @@
 #endif // _USE_MATH_DEFINES
 #include <math.h>
 
-#include "vec2d.h"
+#include "vector2d.h"
 #include "pid_controller.h"
 #include "lowpass.h"
-#include "externalTrajectory.h"
+#include "PCM_Data/pcm_trajectory.h"
 
 const double GRAVITY = 9.81;                    //!< gravity constant G in m/s^2
 const double PI  = 3.141592653589793238463;     //!< the circle number \pi
@@ -48,8 +48,8 @@ public:
 
     //! Standard constructor
     CarStatistics():
-        weight(1), wheelbase(1), tireCoefficient1(1),tireCoefficient2(1),
-        distanceFrontAxleToCOG(1), distanceRearAxleToCOG(1), frontWheelAngleLimit(PI/2.)
+        weight(1), wheelbase(1), tireCoefficient1(1), tireCoefficient2(1),
+        distanceFrontAxleToCOG(1), distanceRearAxleToCOG(1), frontWheelAngleLimit(PI / 2.)
     {
         calculateDerivedParameters();
     }
@@ -67,7 +67,8 @@ public:
                   double frontWheelAngleLimit):
         weight(weight), wheelbase(wheelbase), tireCoefficient1(tireCoefficient1),
         tireCoefficient2(tireCoefficient2), distanceFrontAxleToCOG(distanceFrontAxleToCOG),
-        distanceRearAxleToCOG(wheelbase-distanceFrontAxleToCOG), frontWheelAngleLimit(frontWheelAngleLimit)
+        distanceRearAxleToCOG(wheelbase - distanceFrontAxleToCOG),
+        frontWheelAngleLimit(frontWheelAngleLimit)
     {
         calculateDerivedParameters();
     }
@@ -143,23 +144,23 @@ private:
 
     void calculateDerivedParameters()
     {
-        NormalForceFront = distanceRearAxleToCOG*weight*GRAVITY/wheelbase;
-        NormalForceRear = distanceFrontAxleToCOG*weight*GRAVITY/wheelbase;
+        NormalForceFront = distanceRearAxleToCOG * weight * GRAVITY / wheelbase;
+        NormalForceRear = distanceFrontAxleToCOG * weight * GRAVITY / wheelbase;
 
         CorneringStiffnessCoefficientFront =
-                tireCoefficient1*NormalForceFront*NormalForceFront/2 +
-                tireCoefficient2*NormalForceFront;
+            tireCoefficient1 * NormalForceFront * NormalForceFront / 2 +
+            tireCoefficient2 * NormalForceFront;
 
         CorneringStiffnessCoefficientRear =
-                tireCoefficient1*NormalForceRear*NormalForceRear/2 +
-                tireCoefficient2*NormalForceRear;
+            tireCoefficient1 * NormalForceRear * NormalForceRear / 2 +
+            tireCoefficient2 * NormalForceRear;
     }
 };
 
 //! Lightweight structure comprising all information on a way point within a trajectory
 struct WaypointData
 {
- Vec2D position;         //!< position (x- and y-coordinates)
+    Common::Vector2d position;         //!< position (x- and y-coordinates)
     double velocity;        //!< velocity
     double time;            //!< timestamp
 
@@ -175,19 +176,20 @@ struct WaypointData
     //! @param[in]     velocity
     //! @param[in]     time
     WaypointData(double x, double y, double velocity, double time):
-        position(x,y), velocity(velocity), time(time)
+        position(x, y), velocity(velocity), time(time)
     {}
 };
 
 //! Lightweight structure comprising all information on positioning a vehicle
-struct PositionData {
-    Vec2D position;         //!< 2d vector with x- and y-coordinates
+struct PositionData
+{
+    Common::Vector2d position;         //!< 2d vector with x- and y-coordinates
     double angle;           //!< angle
     double velocity;        //!< velocity
 
     //! Standard constructor
     PositionData():
-        position(),angle(0),velocity(0)
+        position(), angle(0), velocity(0)
     {}
 
     //! Constructor
@@ -195,7 +197,7 @@ struct PositionData {
     //! @param[in]     position         2d vector with x- and y-coordinates
     //! @param[in]     angle
     //! @param[in]     velocity
-    PositionData(Vec2D position, double angle, double velocity):
+    PositionData(Common::Vector2d position, double angle, double velocity):
         position(position), angle(angle), velocity(velocity)
     {}
 
@@ -222,7 +224,7 @@ struct ControlData
 
     //! Standard constructor
     ControlData():
-        frontWheelAngle(0),brake(0),gas(0)
+        frontWheelAngle(0), brake(0), gas(0)
     {}
 
     //! Constructor
@@ -287,7 +289,7 @@ public:
     //! Function setting the current position
     //!
     //! @param[in]     Position     2d vector with x- and y-coordinates
-    void setCurrentPosition(Vec2D Position)
+    void setCurrentPosition(Common::Vector2d Position)
     {
         CurrentState_.positionData.position = Position;
     }
@@ -359,7 +361,7 @@ public:
     //! Function returning the position of the waypoint that is currently aimed at
     //!
     //! @return                         position of the waypoint that is currently aimed at
-    Vec2D getCurrentWayPoint()
+    Common::Vector2d getCurrentWayPoint()
     {
         return waypoints_[currentWayPointIndex_].position;
     }
@@ -375,7 +377,7 @@ public:
     //! Function returning the position of the just passed waypoint
     //!
     //! @return                         position of the just passed waypoint
-    Vec2D getPreviousWayPoint()
+    Common::Vector2d getPreviousWayPoint()
     {
         return waypoints_[previousWayPointIndex_].position;
     }
@@ -443,12 +445,14 @@ private:
     CarStatistics &CarStats_;                       //!< struct with all information on the vehicle
     State CurrentState_;                            //!< struct comprising the position and the control data
     PIDController &GasPID_, &BrakePID_;             //!< control algorithms for the brake and gas pedal
-    LowPassFilter generalLowPassFilter;             //!< filter for filtering the results of the brake and gas
+    LowPassFilter
+    generalLowPassFilter;             //!< filter for filtering the results of the brake and gas
 
     double lookAheadTime_;                          //!< how far does the algorithm plan in advance
     int currentWayPointIndex_;                      //!< current target waypoint
     int previousWayPointIndex_;                     //!< waypoint previously passed
-    std::vector<double> distancesBetweenConsecutiveWayPoints;     //!< distances of consecutive way points
+    std::vector<double>
+    distancesBetweenConsecutiveWayPoints;     //!< distances of consecutive way points
 
     //! Function calculating the all distances between consecutive way points
     //!
@@ -472,7 +476,7 @@ private:
     //! @param[in]     fromIndex            index of the 'starting' waypoint
     //! @param[in]     numPointsLookAhead   how many indices are looked ahead
     //! @return                             corresponding index
-    int findClosestWayPointAheadIndex(Vec2D &position, Vec2D &direction,
+    int findClosestWayPointAheadIndex(Common::Vector2d &position, Common::Vector2d &direction,
                                       int fromIndex, int numPointsLookAhead);
 
 };

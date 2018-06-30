@@ -14,13 +14,15 @@
 
 #include "modelInterface.h"
 #include "primitiveSignals.h"
-#include "externalTrajectory.h"
+#include "pcm_trajectory.h"
+#include "trajectorySignal.h"
 #include "componentPorts.h"
+#include "vector2d.h"
 
 #include "trajectoryfollowing.h"
 
 /**
- * \addtogroup Components openPASS components
+ * \addtogroup Components_PCM openPASS components pcm
  * @{
  * \addtogroup Algorithm_TrajectoryFollower
  *
@@ -137,8 +139,7 @@ private:
     InputPort<DoubleSignal, double> positionY {1, &inputPorts}; //!< current y-coordinate of agent
     InputPort<DoubleSignal, double> yawAngle {2, &inputPorts}; //!< current yaw angle of agent
     InputPort<DoubleSignal, double> velocityX {3, &inputPorts}; //!< current velocity of agent in straight direction of his local coordinate system
-    InputPort<BoolSignal, bool> collisionOccured {4, &inputPorts}; //!< true if collision occured
-    InputPort<TrajectorySignal, Trajectory> trajectory {100, &inputPorts}; //!< given trajectory to follow
+    InputPort<TrajectorySignal, PCM_Trajectory> trajectory {100, &inputPorts}; //!< given trajectory to follow
     InputPort<DoubleSignal, double> weight {101, &inputPorts}; //!< weight of the agent in kg
     InputPort<DoubleSignal, double> wheelbase {102, &inputPorts}; //!< wheelbase of the agent in m
     InputPort<DoubleSignal, double> distanceToCOG {103, &inputPorts}; //!< distance to COG of the agent in m
@@ -209,11 +210,8 @@ private:
         nullptr;      //!< class containing the PID-controller for the brake
     TrajectoryFollowingControl *trajectoryController =
         nullptr;      //!< class containing the actual algorithms for the trajectory following
-    bool collisionStop =
-        false;        //!< is set true when collision occures the first time
-
     bool initialized = false;
-                      //!< true if all data structures are initialized
+    //!< true if all data structures are initialized
 };
 
 #endif // ALGORITHM_TRAJECTORYFOLLOWER_IMPLEMENTATION_H

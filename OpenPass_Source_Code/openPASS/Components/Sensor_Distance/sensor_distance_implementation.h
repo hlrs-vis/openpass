@@ -14,6 +14,8 @@
 #include "observationInterface.h"
 
 /*!
+ * \addtogroup Components_Basic openPASS components basic
+ * @{
  * \addtogroup Sensor_Distance
  * @{
  * \brief basic module to sense the current state of an agent
@@ -49,6 +51,7 @@
  * \section Sensor_Distance_InternalParameters Internal paramters
  * none
  *
+ * @}
  * @} */
 
 /*!
@@ -59,22 +62,23 @@
 *
 * \ingroup Sensor_Distance
 */
-class Sensor_Distance_Implementation : public SensorInterface {
+class Sensor_Distance_Implementation : public SensorInterface
+{
 public:
     const std::string COMPONENTNAME = "Sensor_Distance";
 
     Sensor_Distance_Implementation(int componentId,
-                              bool isInit,
-                              int priority,
-                              int offsetTime,
-                              int responseTime,
-                              int cycleTime,
-                              StochasticsInterface *stochastics,
-                              WorldInterface *world,
-                              const ParameterInterface *parameters,
-                              const std::map<int, ObservationInterface*> *observations,
-                              const CallbackInterface *callbacks,
-                              AgentInterface *agent);
+                                   bool isInit,
+                                   int priority,
+                                   int offsetTime,
+                                   int responseTime,
+                                   int cycleTime,
+                                   StochasticsInterface *stochastics,
+                                   WorldInterface *world,
+                                   const ParameterInterface *parameters,
+                                   const std::map<int, ObservationInterface *> *observations,
+                                   const CallbackInterface *callbacks,
+                                   AgentInterface *agent);
     virtual ~Sensor_Distance_Implementation() = default;
 
     /*!
@@ -89,7 +93,8 @@ public:
      * \param[in]     data           Referenced signal (copied by sending component)
      * \param[in]     time           Current scheduling time
      */
-    virtual void UpdateInput(int localLinkId, const std::shared_ptr<SignalInterface const> &data, int time);
+    virtual void UpdateInput(int localLinkId, const std::shared_ptr<SignalInterface const> &data,
+                             int time);
 
     /*!
      * \brief Update outputs.

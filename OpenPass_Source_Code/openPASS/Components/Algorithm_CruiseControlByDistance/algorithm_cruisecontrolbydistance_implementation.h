@@ -11,7 +11,10 @@
 
 #include "modelInterface.h"
 
-/** \addtogroup Algorithm_CruiseControlByDistance
+/**
+* \addtogroup Components_Basic openPASS components basic
+* @{
+* \addtogroup Algorithm_CruiseControlByDistance
 * @{
 * \brief models the lateral controller of the driver
 *
@@ -74,6 +77,7 @@
 * |double            | 0 |a | Par_desiredVelocity
 * |double            | 1 |a | Par_reactionTime
 *
+*   @}
 *   @} */
 
 /*!
@@ -99,7 +103,7 @@ public:
         int cycleTime,
         StochasticsInterface *stochastics,
         const ParameterInterface *parameters,
-        const std::map<int, ObservationInterface*> *observations,
+        const std::map<int, ObservationInterface *> *observations,
         const CallbackInterface *callbacks,
         int agentId) :
         AlgorithmInterface(
@@ -124,10 +128,14 @@ public:
         // Coefficent of car and enviromental constants to calculate the acceleration depending on current the velocity of the car.
         _airDragCoefficent = _cw * _airDensity * _carHeight * _carWidth / _carWeight / 2;
     }
-    Algorithm_CruiseControlByDistance_Implementation(const Algorithm_CruiseControlByDistance_Implementation&) = delete;
-    Algorithm_CruiseControlByDistance_Implementation(Algorithm_CruiseControlByDistance_Implementation&&) = delete;
-    Algorithm_CruiseControlByDistance_Implementation& operator=(const Algorithm_CruiseControlByDistance_Implementation&) = delete;
-    Algorithm_CruiseControlByDistance_Implementation& operator=(Algorithm_CruiseControlByDistance_Implementation&&) = delete;
+    Algorithm_CruiseControlByDistance_Implementation(const
+                                                     Algorithm_CruiseControlByDistance_Implementation &) = delete;
+    Algorithm_CruiseControlByDistance_Implementation(Algorithm_CruiseControlByDistance_Implementation
+                                                     &&) = delete;
+    Algorithm_CruiseControlByDistance_Implementation &operator=(const
+                                                                Algorithm_CruiseControlByDistance_Implementation &) = delete;
+    Algorithm_CruiseControlByDistance_Implementation &operator=
+    (Algorithm_CruiseControlByDistance_Implementation &&) = delete;
     virtual ~Algorithm_CruiseControlByDistance_Implementation() = default;
 
     /*!
@@ -188,7 +196,7 @@ private:
     double in_distance2NextAgent = 0;
     //! Current velocity of agent.
     double in_velocity = 0;
-     //! The desired acceleration based on the desired velocity and distance to next agent in front.
+    //! The desired acceleration based on the desired velocity and distance to next agent in front.
     double out_desiredAcceleration = 0;
     //! The brake acceleration that is assumed to happen if no pedal is pressed due to air drag in m/s^2.
     double out_aCoasting = 0;
@@ -228,7 +236,7 @@ private:
     //! maximal plausible deceleration [m/s^2]
     double accelerationMin = -15;
     /**@}*/
-        /**@}*/
+    /**@}*/
 
     //! stores the distance of the previous time step
     double previousDistance = 0;

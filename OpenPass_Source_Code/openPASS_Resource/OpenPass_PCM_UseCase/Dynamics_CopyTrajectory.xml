@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+  <type>Action</type>
+  <title>Dynamics_CopyTrajectory</title>
+  <schedule>
+    <offset>0</offset>
+    <cycle>10</cycle>
+    <response>0</response>
+  </schedule>
+  <parameters/>
+  <inputs/>
+  <outputs/>
+</component>

@@ -13,10 +13,11 @@
 #include "worldInterface.h"
 #include "agentNetwork.h"
 #include "sceneryImporterPCM.h"
-#include "externalTrajectory.h"
+#include "scenarioImporterPCM.h"
+#include "pcm_trajectory.h"
 
 /**
-* \addtogroup CoreModules openPASS CoreModules
+* \addtogroup CoreModules_PCM openPASS CoreModules pcm
 * @{
 * \addtogroup World_PCM
 *
@@ -35,9 +36,9 @@
 */
 
 /*!
- * \copydoc World_PCM
- * \ingroup World_PCM
- */
+* \copydoc World_PCM
+* \ingroup World_PCM
+*/
 class World_PCM_Implementation : public WorldInterface
 {
 public:
@@ -109,10 +110,12 @@ public:
 
     bool CreateWorldScenery(const  std::string &sceneryFilename);
 
-//----------------END WorldInterface functions-------------------------------------
+    bool CreateWorldScenario(const  std::string &scenarioFilename);
+
+    //----------------END WorldInterface functions-------------------------------------
 
     const PCM_Data *GetPCM_Data() const;
-    const Trajectory *GetTrajectory(int agentId) const;
+    const PCM_Trajectory *GetTrajectory(int agentId) const;
 
 protected:
     //-----------------------------------------------------------------------------
@@ -128,7 +131,8 @@ protected:
              int line,
              const std::string &message)
     {
-        if (callbacks) {
+        if (callbacks)
+        {
             callbacks->Log(logLevel,
                            file,
                            line,
@@ -137,25 +141,28 @@ protected:
     }
 
 private:
+    void UpdatePcmAgentData();
+
     // world parameters
     int timeOfDay = 0;
     Weekday weekday = Weekday::Undefined;
 
     AgentNetwork agentNetwork;
     SceneryImporterPCM sceneryImporterPCM;
+    ScenarioImporterPCM scenarioImporterPCM;
 
     const CallbackInterface *callbacks = nullptr;
 
     /** \addtogroup World_PCM
-     *  @{
-     *    \name PCM_Data
-     *    @{
+    *  @{
+    *    \name PCM_Data
+    *    @{
     */
     PCM_Data pcmData; //!< store all pcm data
-    std::map<int, Trajectory> trajectories;   //!<map of all trajectories
+    std::map<int, PCM_Trajectory> trajectories;   //!<map of all trajectories
     /**
-     *    @}
-     *  @}
+    *    @}
+    *  @}
     */
 };
 

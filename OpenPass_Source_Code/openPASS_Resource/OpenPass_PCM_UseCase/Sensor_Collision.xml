@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+  <type>Sensor</type>
+  <title>Sensor_Collision</title>
+  <schedule>
+    <offset>0</offset>
+    <cycle>10</cycle>
+    <response>0</response>
+  </schedule>
+  <parameters>
+    <parameter>
+      <id>0</id>
+      <type>int</type>
+      <title>penetrationTime_ms</title>
+      <unit>ms</unit>
+      <value>30</value>
+    </parameter>
+  </parameters>
+  <inputs/>
+  <outputs>
+	<output>
+      <id>0</id>
+      <type>bool</type>
+      <title>CollisionOccured</title>
+      <unit></unit>
+    </output>
+  </outputs>
+</component>

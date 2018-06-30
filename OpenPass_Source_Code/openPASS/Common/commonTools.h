@@ -21,11 +21,12 @@
 class CommonHelper
 {
 public:
-    static double ConvertagentViewDirectionToRadiant(AgentViewDirection agentViewDirection)
+    static double ConvertagentViewDirectionToRadian(AgentViewDirection agentViewDirection)
     {
         double viewDirection = INFINITY;
 
-        switch (agentViewDirection) {
+        switch (agentViewDirection)
+        {
         case AgentViewDirection::front:
             viewDirection = 0;
             break;
@@ -44,20 +45,41 @@ public:
         return viewDirection;
     }
 
-    static AgentViewDirection ConvertRadiantToAgentViewDirection(double radiant)
+    static AgentViewDirection ConvertRadianToAgentViewDirection(double radiant)
     {
-        if ((radiant <= M_PI_4) && (radiant >= -M_PI_4)) {
+        if ((radiant <= M_PI_4) && (radiant >= -M_PI_4))
+        {
             return AgentViewDirection::front;
-        } else if ((radiant > M_PI_4) && (radiant <= 3 * M_PI_4)) {
+        }
+        else if ((radiant > M_PI_4) && (radiant <= 3 * M_PI_4))
+        {
             return AgentViewDirection::left;
-        } else if ((radiant < -M_PI_4) && (radiant >= -3 * M_PI)) {
+        }
+        else if ((radiant < -M_PI_4) && (radiant >= -3 * M_PI))
+        {
             return AgentViewDirection::right;
-        } else if (((radiant < -3 * M_PI_4) && (radiant >= -M_PI))
-                   || ((radiant > 3 * M_PI_4) && (radiant <= M_PI))) {
+        }
+        else if (((radiant < -3 * M_PI_4) && (radiant >= -M_PI))
+                 || ((radiant > 3 * M_PI_4) && (radiant <= M_PI)))
+        {
             return AgentViewDirection::back;
-        } else {
+        }
+        else
+        {
             return AgentViewDirection::none;
         }
+    }
+
+    static double ConvertRadiantToDegree(double radian)
+    {
+        double degree = radian * 180 / M_PI;
+        return degree;
+    }
+
+    static double ConvertDegreeToRadian(double degree)
+    {
+        double radian = degree / 180 * M_PI;
+        return radian;
     }
 };
 
@@ -97,7 +119,8 @@ public:
         double vFront,
         double netDistance)
     {
-        if (netDistance < 0.0) {
+        if (netDistance < 0.0)
+        {
             return -1.0;
         }
 
@@ -134,7 +157,8 @@ public:
         double vRear,
         double netDistance)
     {
-        if (netDistance < 0.0) {
+        if (netDistance < 0.0)
+        {
             return -1.0;
         }
 

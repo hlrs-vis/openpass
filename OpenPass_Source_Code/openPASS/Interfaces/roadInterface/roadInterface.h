@@ -1,5 +1,6 @@
 /******************************************************************************
 * Copyright (c) 2017 ITK Engineering GmbH.
+* Copyright (c) 2018 in-tech GmbH on behalf of BMW AG
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -11,28 +12,28 @@
 //! @brief This file contains a interface representing a road.
 //-----------------------------------------------------------------------------
 
-#ifndef ROADINTERFACE_H
-#define ROADINTERFACE_H
+#pragma once
 
 #include <cassert>
 #include <cmath>
 #include <algorithm>
 #include <list>
 #include <map>
-#include "vector2d.h"
-#include "worldInterface.h"
 #include "roadElementTypes.h"
-#include "roadLaneSectionInterface.h"
 #include "roadElevation.h"
 #include "roadLaneInterface.h"
-#include "roadLaneWidth.h"
 #include "roadLaneOffset.h"
-#include "roadGeometryInterface.h"
+#include "roadLaneSectionInterface.h"
+#include "roadLaneWidth.h"
 #include "roadLinkInterface.h"
+#include "roadGeometryInterface.h"
 #include "roadGeometryLineInterface.h"
 #include "roadGeometryArcInterface.h"
 #include "roadGeometryPoly3Interface.h"
 #include "roadGeometrySpiralInterface.h"
+#include "roadObjectInterface.h"
+#include "roadSignalInterface.h"
+#include "vector2d.h"
 
 //-----------------------------------------------------------------------------
 //! Class representing a road.
@@ -194,6 +195,17 @@ public:
     virtual RoadLaneSectionInterface *AddRoadLaneSection(double start) = 0;
 
     //-----------------------------------------------------------------------------
+    //! Adds a new lane section to a road by creating a new RoadLaneSection object
+    //! and adding it to the stored list of lane sections.
+    //!
+    //! @param[in]  start               start position s-coordinate
+    //! @return                         created road lane section
+    //-----------------------------------------------------------------------------
+    virtual RoadSignalInterface *AddRoadSignal(const RoadSignalSpecification &signal) = 0;
+
+    virtual RoadObjectInterface *AddRoadObject(const RoadObjectSpecification &object) = 0;
+
+    //-----------------------------------------------------------------------------
     //! Returns the ID of the road.
     //!
     //! @return                         ID of the road
@@ -236,6 +248,15 @@ public:
     virtual std::list<RoadLaneSectionInterface*> &GetLaneSections() = 0;
 
     //-----------------------------------------------------------------------------
+    //! Returns the stored list signals
+    //!
+    //! @return                         list of signals
+    //-----------------------------------------------------------------------------
+    virtual std::vector<RoadSignalInterface*> & GetRoadSignals() = 0;
+
+    virtual std::vector<RoadObjectInterface*> & GetRoadObjects() = 0;
+
+    //-----------------------------------------------------------------------------
     //! Sets the flag, if the road is in the reference direction or not.
     //!
     //! @param[in]  inDirection         Flag, if the road is in the reference
@@ -250,6 +271,10 @@ public:
     //!                                 direction or not
     //-----------------------------------------------------------------------------
     virtual bool GetInDirection() const = 0;
+
+    virtual void AddRoadType(const RoadTypeSpecification &info) = 0;
+
+    virtual RoadTypeInformation GetRoadType(double start) = 0;
+
 };
 
-#endif // ROADINTERFACE_H
