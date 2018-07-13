@@ -1,14 +1,18 @@
 /******************************************************************************
 * Copyright (c) 2016 ITK Engineering AG.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
+* Copyright (c) 2018 in-tech GmbH.
+*
+* This program and the accompanying materials are made available under the
+* terms of the Eclipse Public License 2.0 which is available at
+* https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
 ******************************************************************************/
 
 #include <memory>
 #include <qglobal.h>
 #include "action_brakelight_basic_implementation.h"
+#include "brakingSignal.h"
 
 void Action_BrakeLight_Basic_Implementation::UpdateInput(int localLinkId, const std::shared_ptr<SignalInterface const> &data, int time)
 {
@@ -41,6 +45,18 @@ void Action_BrakeLight_Basic_Implementation::UpdateInput(int localLinkId, const 
         }
 
         in_aCoasting = signal->value;
+    }
+    else if (localLinkId == 2)
+    {
+        const std::shared_ptr<BrakingSignal const> signal = std::dynamic_pointer_cast<BrakingSignal const>(data);
+        if(!signal)
+        {
+            const std::string msg = COMPONENTNAME + " invalid signaltype";
+            LOG(CbkLogLevel::Debug, msg);
+            throw std::runtime_error(msg);
+        }
+
+        in_aVehicle = signal->acceleration;
     }
     else
     {

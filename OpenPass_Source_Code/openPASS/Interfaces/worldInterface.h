@@ -66,6 +66,13 @@ public:
     virtual void SetWeekday(Weekday weekday) = 0;
 
     //-----------------------------------------------------------------------------
+    //! Retrieves the OSI world data
+    //!
+    //! @return                Pointer OSI world data structure
+    //-----------------------------------------------------------------------------
+    virtual void* GetWorldData() = 0;
+    
+    //-----------------------------------------------------------------------------
     //! Retrieves time of day (hour)
     //!
     //! @return                time of day [0, 23]

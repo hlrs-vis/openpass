@@ -1,9 +1,12 @@
 /******************************************************************************
 * Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
+* Copyright (c) 2018 in-tech GmbH.
+*
+* This program and the accompanying materials are made available under the
+* terms of the Eclipse Public License 2.0 which is available at
+* https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
 ******************************************************************************/
 
 //-----------------------------------------------------------------------------
@@ -15,6 +18,7 @@
 #define GLOBALDEFINITIONS
 
 #include <string>
+#include <tuple>
 
 //-----------------------------------------------------------------------------
 //! @brief Containing the three possible states regarding lane change
@@ -39,6 +43,17 @@ enum class Weekday
     Friday,
     Saturday,
     Sunday
+};
+
+//-----------------------------------------------------------------------------
+//! Agent category classification
+//-----------------------------------------------------------------------------
+enum class AgentCategory
+{
+    Ego = 0,
+    Scenario,
+    Common,
+    Any
 };
 
 //-----------------------------------------------------------------------------
@@ -77,6 +92,45 @@ struct Position
     double yPos;
     double yawAngle;
     double curvature;
+};
+
+struct RoadPosition
+{
+    double s;
+    double t;
+    double hdg;
+};
+
+enum class MeasurementPoint
+{
+    Front,
+    Reference,
+    Rear
+};
+
+//TODO: decide where this class should really be
+struct Remainder
+{
+    std::tuple<double, bool> left{0, false};
+    std::tuple<double, bool> right{0, false};
+
+    void setLeft(double value)
+    {
+        std::get<0>(left) = value;
+        std::get<1>(left) = true;
+    }
+
+    void setRight(double value)
+    {
+        std::get<0>(right) = value;
+        std::get<1>(right) = true;
+    }
+
+    void setBoth(double value)
+    {
+        setLeft(value);
+        setRight(value);
+    }
 };
 
 //! @brief Areas of interest for surrounding data.
@@ -125,6 +179,12 @@ enum class AgentViewDirection
     back,
     right,
     NumberOfCarViewDirections
+};
+
+enum class Side
+{
+    Left,
+    Right
 };
 
 class WorldParameter

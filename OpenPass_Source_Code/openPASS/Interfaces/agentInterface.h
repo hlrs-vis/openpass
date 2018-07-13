@@ -18,6 +18,8 @@
 #include <map>
 #include <list>
 #include <vector>
+
+#include "boostGeometryCommon.h"
 #include "globalDefinitions.h"
 #include "spawnPointInterface.h"
 #include "signalInterface.h"
@@ -169,6 +171,13 @@ public:
     virtual double GetTrackWidth() const = 0;
 
     //-----------------------------------------------------------------------------
+    //! Retrieves the current gear number
+    //!
+    // @return                Gear no.
+    //-----------------------------------------------------------------------------
+    virtual int GetGear() const = 0;
+
+    //-----------------------------------------------------------------------------
     //! Retrieves distance from COG to leading edge
     //!
     // @return                Distance from COG to leading edge
@@ -268,6 +277,29 @@ public:
     virtual void SetDistanceCOGtoFrontAxle(double distanceCOGtoFrontAxle) = 0;
 
     //-----------------------------------------------------------------------------
+    //! Sets gear of vehicle
+    //!
+    //! @param[in]     gear    current gear
+    //-----------------------------------------------------------------------------
+    virtual void SetGear(int gear) = 0;
+
+    virtual void SetEngineSpeed(double engineSpeed) = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Sets current position of acceleration pedal in percent
+    //!
+    //! @param[in]     percent    current percentage
+    //-----------------------------------------------------------------------------
+    virtual void SetEffAccelPedal(double percent) = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Sets current position of brake pedal in percent
+    //!
+    //! @param[in]     percent    current percentage
+    //-----------------------------------------------------------------------------
+    virtual void SetEffBrakePedal(double percent) = 0;
+
+    //-----------------------------------------------------------------------------
     //! Sets weight of agent
     //!
     //! @param[in]     weight    agents weight
@@ -308,6 +340,20 @@ public:
     //! @param[in]     momentInertiaYaw    moment of inertia for yaw axis
     //-----------------------------------------------------------------------------
     virtual void SetMomentInertiaYaw(double momentInertiaYaw) = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Sets maximum acceleration of the vehicle
+    //!
+    //! @param[in]     maxAcceleration   maximum acceleration
+    //-----------------------------------------------------------------------------
+    virtual void SetMaxAcceleration(double maxAcceleration) = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Sets maximum deceleration of the vehicle
+    //!
+    //! @param[in]     maxDeceleration   maximum deceleration
+    //-----------------------------------------------------------------------------
+    virtual void SetMaxDeceleration(double maxDeceleration) = 0;
 
     //-----------------------------------------------------------------------------
     //! Sets friction coefficient
@@ -400,7 +446,7 @@ public:
     //!
     // @return         true if brake light is on
     //-----------------------------------------------------------------------------
-    virtual bool GetBrakeLight() = 0;
+    virtual bool GetBrakeLight() const = 0;
 
     //-----------------------------------------------------------------------------
     //! Inits all physical and world specific parameters of an agent.
@@ -551,14 +597,14 @@ public:
     //!
     //! @return
     //-----------------------------------------------------------------------------
-    virtual AgentInterface *GetAgentInFront(int laneId) const = 0;
+    virtual const AgentInterface *GetAgentInFront(int laneId) const = 0;
 
     //-----------------------------------------------------------------------------
     //! Returns the AgentInterface of the next agent behind in a specific lane.
     //!
     //! @return
     //-----------------------------------------------------------------------------
-    virtual AgentInterface *GetAgentBehind(int laneId) const = 0;
+    virtual const AgentInterface *GetAgentBehind(int laneId) const = 0;
 
     //-----------------------------------------------------------------------------
     //! Returns the distance to another agent. (negative if other agent is behind)
@@ -1195,6 +1241,36 @@ public:
     //-----------------------------------------------------------------------------
     virtual double GetAccelerationAbsolute() const = 0;
 
+    virtual const polygon_t& GetBoundingBox2D() const = 0;
+
+    virtual RoadPosition GetRoadPosition() const = 0;
+
+    /// \brief  Get distance w.r.t. the specified measurement point
+    /// \return distance
+    virtual double GetDistanceToStartOfRoad(MeasurementPoint mp) const = 0;
+
+    virtual double GetDistanceReferencePointToLeadingEdge() const = 0;
+
+    virtual double GetEngineSpeed() const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Gets current position of acceleration pedal in percent
+    //!
+    //! @return     accelPedal    current percentage
+    //-----------------------------------------------------------------------------
+    virtual double GetEffAccelPedal() const = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Gets current position of brake pedal in percent
+    //!
+    //! @return     brakePedal    current percentage
+    //-----------------------------------------------------------------------------
+    virtual double GetEffBrakePedal() const = 0;
+
+    virtual double GetMaxAcceleration() const = 0;
+    virtual double GetMaxDeceleration() const = 0;
+
+    virtual double GetLaneRemainder(Side) const = 0;
 };
 
 #endif // AGENTINTERFACE_H

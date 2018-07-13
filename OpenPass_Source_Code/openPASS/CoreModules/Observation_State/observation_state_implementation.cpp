@@ -1,9 +1,12 @@
 /******************************************************************************
 * Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
+* Copyright (c) 2018 in-tech GmbH.
+*
+* This program and the accompanying materials are made available under the
+* terms of the Eclipse Public License 2.0 which is available at
+* https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
 ******************************************************************************/
 
 #include <cassert>
@@ -255,6 +258,9 @@ void Observation_State_Implementation::RecordAgentState(int time, const AgentInt
     Insert(time, agentId, Observation_State_Periodic_YPosition, std::to_string(agent->GetPositionY()));
     Insert(time, agentId, Observation_State_Periodic_VelocityEgo, std::to_string(agent->GetVelocityX()));
     Insert(time, agentId, Observation_State_Periodic_AccelerationEgo, std::to_string(agent->GetAccelerationX()));
+    Insert(time, agentId, Observation_State_Periodic_YawAngle, std::to_string(agent->GetYawAngle()));
+    Insert(time, agentId, Observation_State_Periodic_PositionRoute, std::to_string(agent->GetRoadPosition().s));
+    Insert(time, agentId, Observation_State_Periodic_BrakeLight, std::to_string(agent->GetBrakeLight()));
 }
 
 void Observation_State_Implementation::Insert(int time, int agentId, Observation_State_Periodic_Type valueType, const std::string &value)
