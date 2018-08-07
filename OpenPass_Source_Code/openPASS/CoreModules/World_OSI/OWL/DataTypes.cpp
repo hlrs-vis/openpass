@@ -304,17 +304,20 @@ const Interfaces::Sections& Road::GetSections() const
 
 void Road::AddSection(Interfaces::Section& section)
 {
-    double roadLength = osiRoad->length();
-    roadLength += section.GetLength();
-    osiRoad->set_length(roadLength);
-
     section.SetRoad(this);
     sections.push_back(&section);
 }
 
 double Road::GetLength() const
 {
-    return osiRoad->length();
+    double length = 0.0;
+
+    for (const auto& section : sections)
+    {
+        length += section->GetLength();
+    }
+
+    return length;
 }
 
 

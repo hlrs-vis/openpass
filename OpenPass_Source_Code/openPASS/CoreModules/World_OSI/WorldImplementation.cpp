@@ -50,8 +50,6 @@ void WorldImplementation::Clear()
 {
     agentNetwork.Clear();
     worldObjects.clear();
-
-    localizationCache.Clear();
 }
 
 void* WorldImplementation::GetGlobalDrivingView()
@@ -115,7 +113,6 @@ bool WorldImplementation::CreateScenery(SceneryInterface &scenery)
 
     SceneryConverter converter(&scenery,
                                worldData,
-                               localizationCache,
                                callbacks);
     if (converter.Convert())
     {
@@ -128,7 +125,7 @@ bool WorldImplementation::CreateScenery(SceneryInterface &scenery)
 
 AgentInterface* WorldImplementation::CreateAgentAdapterForAgent()
 {
-    AgentInterface *agentAdapter = new AgentAdapter(this, callbacks, localizationCache);
+    AgentInterface *agentAdapter = new AgentAdapter(this, callbacks);
 
     return agentAdapter;
 }

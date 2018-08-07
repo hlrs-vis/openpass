@@ -16,7 +16,6 @@
 #include "AgentNetwork.h"
 #include "SceneryConverter.h"
 #include "CommonSceneryHelper.h"
-#include "LocalizationCache.h"
 #include "parameterInterface.h"
 
 #include "WorldData.h"
@@ -113,8 +112,6 @@ public:
     double GetDistanceToEndOfLane(double currentPosition, int laneId);
     bool IntersectsWithAgent(double x, double y, double rotation, double length, double width, double center);
 
-    polygon_t GetBoundingBoxAroundAgent(AgentInterface* agent, double width, double length);
-
     const AgentInterface* GetBicycle() const override;
     const AgentInterface* GetLastCarInlane(int laneNumber) override;
 
@@ -167,8 +164,6 @@ private:
 
     const int stepSizeLookingForValidS = 100;
     SceneryInterface* scenery;
-
-    World::Localization::Cache localizationCache;
 };
 
 

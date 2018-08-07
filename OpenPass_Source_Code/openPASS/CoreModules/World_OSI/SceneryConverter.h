@@ -20,7 +20,6 @@
 #include "sceneryInterface.h"
 #include "vector3d.h"
 #include "worldInterface.h"
-#include "LocalizationCache.h"
 #include "WorldData.h"
 
 //todo: delete!
@@ -61,7 +60,6 @@ class SceneryConverter
 public:
     SceneryConverter(SceneryInterface *scenery,
                      OWL::WorldData& worldData,
-                     World::Localization::Cache& localizationCache,
                      const CallbackInterface *callbacks);
     SceneryConverter(const SceneryConverter&) = delete;
     SceneryConverter(SceneryConverter&&) = delete;
@@ -330,7 +328,6 @@ private:
 
     SceneryInterface *scenery;
     OWL::WorldData& worldData;
-    World::Localization::Cache& localizationCache;
 
     std::list<RoadInterface*> pendingCluster; // road cluster which is currently processed
 

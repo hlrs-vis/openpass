@@ -47,11 +47,14 @@ void WorldData::AddLane(RoadLaneSectionInterface& odSection, const RoadLaneInter
 
     Section& section = *(sections.at(osiSection->id().value()));
     osi3::world::RoadLane* osiLane = osiSection->add_lane();
+    osi3::Lane* osiBaseLane = osiLane->mutable_base_lane();
+
+
+
     Lane& lane = *(new Implementation::Lane(osiLane, &section));
 
     osiLane->mutable_id()->set_value(osiLaneId);
     osiLane->set_reverse_direction(!odLane.GetInDirection());
-
     for (const auto& odLaneMapItem : odSection.GetLanes())
     {
         try
@@ -186,7 +189,7 @@ void WorldData::AddLanePredecessor(/* const */ RoadLaneInterface& odLane,
 MovingObject* WorldData::AddMovingObject()
 {
     Id id = CreateUid();
-    osi3::MovingObject* osiMovingObject = osiGroundTruth.add_moving_object();
+    osi3::MovingObject* osiMovingObject = osiGroundTruth.mutable_groundtruth()->add_moving_object();
     MovingObject* movingObject = new MovingObject(osiMovingObject);
 
     osiMovingObject->mutable_id()->set_value(id);
@@ -199,7 +202,7 @@ MovingObject* WorldData::AddMovingObject()
 void WorldData::RemoveMovingObjectById(Id id)
 {
     bool found = false;
-    auto osiMovingObjects = osiGroundTruth.moving_object();
+    auto osiMovingObjects = osiGroundTruth.groundtruth().moving_object();
 
     for (int i = 0; i < osiMovingObjects.size(); ++i)
     {
@@ -220,7 +223,7 @@ void WorldData::RemoveMovingObjectById(Id id)
 
 void WorldData::AddStationaryObject(const RoadObjectInterface& odObject)
 {
-    osi3::StationaryObject* osiStationaryObject = osiGroundTruth.add_stationary_object();
+    osi3::StationaryObject* osiStationaryObject = osiGroundTruth.mutable_groundtruth()->add_stationary_object();
     StationaryObject* stationaryObject = new StationaryObject(osiStationaryObject);
     Id id = CreateUid();
 

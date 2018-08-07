@@ -23,7 +23,6 @@
 
 #include "worldInterface.h"
 #include "Localization.h"
-#include "LocalizationCache.h"
 #include "WorldData.h"
 #include "WorldObjectAdapter.h"
 
@@ -36,7 +35,7 @@ class AgentAdapter final : public AgentInterface
 public:
     const std::string MODULENAME = "AGENTADAPTER";
 
-    AgentAdapter(WorldInterface* world, const CallbackInterface* callbacks, World::Localization::Cache &localizationCache);
+    AgentAdapter(WorldInterface* world, const CallbackInterface* callbacks);
     AgentAdapter(const AgentAdapter&) = delete;
     AgentAdapter(AgentAdapter&&) = delete;
     AgentAdapter& operator=(const AgentAdapter&) = delete;
@@ -52,8 +51,6 @@ public:
     void InitDrivingView();
 
 //////////////////////////////////////////////////////////
-
-    const polygon_t& GetBoundingBox2D() const override;
 
     const OWL::MovingObject* GetBaseTrafficObject() const;
 
@@ -1342,8 +1339,6 @@ private:
     //-----------------------------------------------------------------------------
     void UpdateSectionViews();
 
-    const polygon_t CalculateBoundingBox() const;
-
     int frontMainLaneId = 0;
     int rearMainLaneId = 0;
 
@@ -1414,7 +1409,6 @@ private:
     bool collisionState = false;
     std::vector<int> idsCollisionPartners;
 
-    polygon_t boundingBox2D;
     RoadPosition roadPos; //localized position of agent reference point in road coordinate system
 
     bool isValid = true;
@@ -1436,11 +1430,8 @@ private:
     bool completlyInWorld = false;
     AreaOfInterest aoi = AreaOfInterest::NumberOfAreaOfInterests;
 
-    mutable polygon_t boundingBox;
-
 protected:
     OWL::MovingObject* baseTrafficObject{nullptr};
 
     double s{0.0};
-    mutable bool boundingBoxNeedsUpdate{true};
 };

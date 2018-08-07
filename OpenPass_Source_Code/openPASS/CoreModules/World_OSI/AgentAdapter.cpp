@@ -18,11 +18,11 @@
 
 namespace loc = World::Localization;
 
-AgentAdapter::AgentAdapter(WorldInterface *world, const CallbackInterface *callbacks, World::Localization::Cache& localizationCache) :
+AgentAdapter::AgentAdapter(WorldInterface *world, const CallbackInterface *callbacks) :
     world{world},
     worldData{static_cast<OWL::WorldData*>(world->GetWorldData())},
     callbacks{callbacks},
-    locator{static_cast<OWL::WorldData*>(world->GetWorldData())->GetRoads(), localizationCache}
+    locator{static_cast<OWL::WorldData*>(world->GetWorldData())->GetRoads()}
 {
 }
 
@@ -32,17 +32,6 @@ AgentAdapter::~AgentAdapter()
         delete carInfo;
         carInfo = nullptr;
     }
-}
-
-const polygon_t& AgentAdapter::GetBoundingBox2D() const
-{
-    if (boundingBoxNeedsUpdate)
-    {
-        boundingBox = CalculateBoundingBox();
-        boundingBoxNeedsUpdate = false;
-    }
-
-    return boundingBox;
 }
 
 void AgentAdapter::UpdateCollision(int collisionPartnerId)
@@ -155,42 +144,6 @@ const OWL::MovingObject* AgentAdapter::GetBaseTrafficObject() const
     return baseTrafficObject;
 }
 
-const polygon_t AgentAdapter::CalculateBoundingBox() const
-{
-    double length   = GetLength();
-    double width    = GetWidth();
-    double rotation = GetYawAngle();
-
-    double x = GetPositionX();
-    double y = GetPositionY();
-
-    double center = GetDistanceReferencePointToLeadingEdge();
-
-    double halfWidth = width / 2.0;
-
-    point_t boxPoints[]
-    {
-        {center - length, -halfWidth},
-        {center - length,  halfWidth},
-        {center,           halfWidth},
-        {center,          -halfWidth},
-        {center - length, -halfWidth}
-    };
-
-    polygon_t box;
-    polygon_t boxTemp;
-    bg::append(box, boxPoints);
-
-    bt::translate_transformer<double, 2, 2> translate(x, y);
-
-    // rotation in mathematical negativ order (boost) -> invert to match
-    bt::rotate_transformer<bg::radian, double, 2, 2> rotate(-rotation);
-
-    bg::transform(box, boxTemp, rotate);
-    bg::transform(boxTemp, box, translate);
-
-    return box;
-}
 bool AgentAdapter::InitAgentParameter(int id,
                                       int agentTypeId,
                                       int spawnTime,
@@ -260,9 +213,7 @@ bool AgentAdapter::InitAgentParameter(int id,
 
 bool AgentAdapter::Locate()
 {
-    boundingBoxNeedsUpdate = true;
-    boundingBox2D = GetBoundingBox2D();
-    locator.Locate(boundingBox2D);
+    locator.Locate();
 
     frontMainLaneId = locator.GetMainLaneId(World::Localization::Reference::Front);
     rearMainLaneId = locator.GetMainLaneId(World::Localization::Reference::Rear);

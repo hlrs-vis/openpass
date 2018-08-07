@@ -44,17 +44,15 @@ private:
     bool allPointsLocated;
     RoadPosition referencePointPosition;
     SearchInitializer searchInitializer{};
-    Cache& cache;
 
 public:
-    BaseTrafficObjectLocator(const std::unordered_map<OWL::Id, OWL::Interfaces::Road*>& roads, Cache& cache);
+    BaseTrafficObjectLocator(const std::unordered_map<OWL::Id, OWL::Interfaces::Road*>& roads);
 
     void SetBaseTrafficObject(OWL::MovingObject* bto);
 
-    void Locate(const polygon_t& boundingBox);
+    void Locate();
     void Unlocate();
 
-    const polygon_t& GetBoundingBox();
     int GetMainLaneId(Reference reference);
     const std::map<int, double>& GetLaneCoverages(Reference reference);
     const std::map<int, Remainder>& GetLaneRemainder();

@@ -64,9 +64,9 @@ class WorldData : WorldDataInterface
 public:
     ~WorldData();
 
-    void AddLane(RoadLaneSectionInterface &odSection, const RoadLaneInterface& odLane);
+    void AddLane(RoadLaneSectionInterface& odSection, const RoadLaneInterface& odLane);
     void AddSection(const RoadInterface& odRoad, const RoadLaneSectionInterface& odSection);
-    void AddRoad(/* const*/ RoadInterface &odRoad);
+    void AddRoad(/* const*/ RoadInterface& odRoad);
     void AddLanePairing(/* const */ RoadLaneInterface& odLane,
                         /* const */ RoadLaneInterface& predecessorOdLane,
                         /* const */ RoadLaneInterface& successorOdLane);

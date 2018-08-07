@@ -13,43 +13,13 @@
 #include "Localization.h"
 #include "PointAggregator.h"
 #include "PointLocator.h"
-#include "PolygonSampler.h"
 #include "SectionObjectGenerator.h"
 
 namespace World {
 namespace Localization {
 
-polygon_t GetBoundingBox(double x,double y,double length,double width,double rotation,double center)
-{
-    double halfWidth = width/ 2;
-
-    point_t boxPoints[]
-    {
-        point_t{center - length, -halfWidth},
-        point_t{center - length,  halfWidth},
-        point_t{center,           halfWidth},
-        point_t{center,          -halfWidth},
-        point_t{center - length, -halfWidth}
-    };
-
-    polygon_t box;
-    polygon_t boxTemp;
-    bg::append(box, boxPoints);
-
-    bt::translate_transformer<double, 2, 2> translate(x, y);
-
-    // rotation in mathematical negativ order (boost) -> invert to match
-    bt::rotate_transformer<bg::radian, double, 2, 2> rotate(-rotation);
-
-    bg::transform(box, boxTemp, rotate);
-    bg::transform(boxTemp, box, translate);
-
-    return box;
-}
-
-BaseTrafficObjectLocator::BaseTrafficObjectLocator(const std::unordered_map<OWL::Id, OWL::Interfaces::Road*> &roads, Cache& cache) :
-    roads{roads},
-    cache{cache}
+BaseTrafficObjectLocator::BaseTrafficObjectLocator(const std::unordered_map<OWL::Id, OWL::Interfaces::Road*> &roads) :
+    roads{roads}
 {
 }
 
@@ -58,11 +28,8 @@ void BaseTrafficObjectLocator::SetBaseTrafficObject(OWL::MovingObject* bto)
     this->baseTrafficObject = bto;
 }
 
-void BaseTrafficObjectLocator::Locate(const polygon_t& boundingBox)
+void BaseTrafficObjectLocator::Locate()
 {
-    PolygonSampler polygonSampler(boundingBox, BOUNDING_BOX_SAMPLE_WIDTH);
-    auto sampledBoundaryPoints = polygonSampler.sample();
-
     PointAggregator pointAggregator;
     const OWL::Primitive::AbsPosition objectPosition = baseTrafficObject->GetAbsPosition();
     const OWL::Primitive::AbsOrientation objectOrientation = baseTrafficObject->GetAbsOrientation();

@@ -10,9 +10,7 @@
 
 #pragma once
 
-#include "boostGeometryCommon.h"
 #include "globalDefinitions.h"
-#include "LocalizationCache.h"
 #include "WorldData.h"
 
 namespace OWL {
@@ -24,8 +22,6 @@ namespace Localization {
 
 using LaneWalkers = std::vector<std::shared_ptr<OWL::LaneWalker>>;
 using const_sectionIter = OWL::Interfaces::Sections::const_iterator;
-
-polygon_t GetBoundingBox(double x, double y, double length, double width, double rotation, double center);
 
 } // Localization
 } // World

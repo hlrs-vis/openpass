@@ -19,7 +19,6 @@
 #include <list>
 #include <vector>
 
-#include "boostGeometryCommon.h"
 #include "globalDefinitions.h"
 #include "spawnPointInterface.h"
 #include "signalInterface.h"
@@ -1240,8 +1239,6 @@ public:
     // @return                Sideward acceleration
     //-----------------------------------------------------------------------------
     virtual double GetAccelerationAbsolute() const = 0;
-
-    virtual const polygon_t& GetBoundingBox2D() const = 0;
 
     virtual RoadPosition GetRoadPosition() const = 0;
 

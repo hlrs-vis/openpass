@@ -28,11 +28,9 @@
 
 SceneryConverter::SceneryConverter(SceneryInterface* scenery,
                                    OWL::WorldData& worldData,
-                                   World::Localization::Cache& localizationCache,
                                    const CallbackInterface* callbacks) :
     scenery(scenery),
     worldData(worldData),
-    localizationCache{localizationCache},
     callbacks(callbacks)
 {}
 
