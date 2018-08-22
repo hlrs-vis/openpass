@@ -14,7 +14,7 @@
 #include "modelInterface.h"
 #include "observationInterface.h"
 #include "primitiveSignals.h"
-#include "AlgorithmLongitudinalDriverDataprovider.h"
+#include "AlgorithmLongitudinalDriverDP.h"
 
 /** \addtogroup AlgorithmLongitudinalDriver
 * @{

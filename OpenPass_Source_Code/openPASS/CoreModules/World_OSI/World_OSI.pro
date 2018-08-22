@@ -21,8 +21,7 @@ INCLUDEPATH += \
     $$SUBDIRS \
     ../../Interfaces \
     ../../Interfaces/roadInterface \
-    .. \
-    /home/developer/repos/ThirdParty/include
+    ..
 
 SOURCES += \
     $$getFiles(SUBDIRS, cpp) \
@@ -33,4 +32,4 @@ HEADERS += \
     $$getFiles(SUBDIRS, hpp) \
     $$getFiles(SUBDIRS, h)
 
-LIBS += -L$$system_path($$EXTRA_LIBS) -lopen_simulation_interface -lprotobuf
+LIBS += -lopen_simulation_interface -lprotobuf

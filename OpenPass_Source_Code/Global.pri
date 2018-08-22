@@ -16,7 +16,8 @@ unix:DESTDIR=$$DIR_DEBUG
 #unix:DESTDIR=$$DIR_RELEASE
 
 # adjust path to your needs
-EXTRA_LIBS=$$(HOME)/repos/ThirdParty/lib
+EXTRA_INCLUDE_PATH=C:/OpenPass/ThirdParty/include
+EXTRA_LIB_PATH=C:/OpenPass/ThirdParty/lib
 
 #CONFIG += USEOPENPASSSLAVEASLIBRARY
 #CONFIG += USEOPENPASSMASTERASLIBRARY
@@ -36,6 +37,8 @@ defineReplace(getFiles) {
 # prefer bundled libs in OpenPassSlave directory over system libraries
 QMAKE_LFLAGS += -Wl,-rpath=\'\$\$ORIGIN\'
 
+win32:DEFINES+=_USE_MATH_DEFINES
+
 ##################################################################
 # Configuration specific for open pass libraries                 #
 # Usage:                                                         #
@@ -46,6 +49,7 @@ OPENPASS_LIBRARY {
     TEMPLATE = lib
     CONFIG += shared
     CONFIG -= lib_bundle
-    DESTDIR = $$system_path($$DESTDIR/$$LIB_DIR)
+    QMAKE_LFLAGS += -L$$system_path($$EXTRA_LIB_PATH)
+    INCLUDEPATH += $$EXTRA_INCLUDE_PATH
     message("[$$TARGET] Build path set to $$DESTDIR")
 }

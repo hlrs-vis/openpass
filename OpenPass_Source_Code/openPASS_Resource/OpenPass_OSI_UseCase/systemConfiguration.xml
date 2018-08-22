@@ -22,7 +22,7 @@
 					<ComponentObservation id="0" observationRef="0"/>
 				</ComponentObservations>
 			</Component>
-			<Component Name="AlgorithmLongitudinalDriverModules" id="1" init="false" priority="49" offsetTime="0" responseTime="0" cycleTime="100" library="Algorithm_LongitudinalDriver_OSI">
+			<Component Name="AlgorithmLongitudinalDriverModules" id="1" init="false" priority="49" offsetTime="0" responseTime="0" cycleTime="100" library="Algorithm_LongDriver_OSI">
 				<ComponentInputs>
 					<ComponentInput id="0" channelRef="2"/>
 				</ComponentInputs>
@@ -55,7 +55,7 @@
 				</ComponentParameters>
 				<ComponentObservations/>
 			</Component>
-			<Component id="4" init="false" priority="100" library="Algorithm_AgentFollowingDriverModel" offsetTime="0" responseTime="0" cycleTime="100">
+			<Component id="4" init="false" priority="100" library="Algorithm_AgentFollower" offsetTime="0" responseTime="0" cycleTime="100">
 				<ComponentInputs>
 				</ComponentInputs>
 				<ComponentOutputs>

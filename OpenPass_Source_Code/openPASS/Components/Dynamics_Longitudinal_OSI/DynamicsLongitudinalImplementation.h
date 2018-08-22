@@ -48,7 +48,7 @@
 #include "modelInterface.h"
 #include "observationInterface.h"
 #include "primitiveSignals.h"
-#include "../Algorithm_LongitudinalDriver_OSI/AlgorithmLongitudinalDriverDataprovider.h"
+#include "../Algorithm_LongDriver_OSI/AlgorithmLongitudinalDriverDP.h"
 
 /**
 * \brief models the pedal operation of the driver and the reaction of the vehicle
