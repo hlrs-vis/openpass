@@ -1,12 +1,9 @@
 /******************************************************************************
 * Copyright (c) 2016 ITK Engineering AG.
-* Copyright (c) 2018 in-tech GmbH.
-*
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* https://www.eclipse.org/legal/epl-2.0/
-*
-* SPDX-License-Identifier: EPL-2.0
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 ******************************************************************************/
 
 #include <QtGlobal>
@@ -56,13 +53,11 @@ void SpawnPoint_Start_Implementation::SetSpawnItem(SpawnItemParameterInterface &
     // set index
     spawnItem.SetIndex(0);
 
-    // NOTE: changes for OSI showcase, may need spawnpoint fork
     // set position X
-    spawnItem.SetPositionX(6.);
+    spawnItem.SetPositionX(0);
 
     // set position Y
-    int laneIdx = GetStochastics()->GetUniformDistributed(0.0, 1.0) > 0.5 ? 1 : 0;
-    spawnItem.SetPositionY(laneIdx * 3.75 + 2.0);
+    spawnItem.SetPositionY(0);
 
     // set velocity X
     double velocity = std::max(Par_vMin, GetStochastics()->GetNormalDistributed(Par_vMean, Par_vSd)); //in m/s
@@ -78,8 +73,7 @@ void SpawnPoint_Start_Implementation::SetSpawnItem(SpawnItemParameterInterface &
     spawnItem.SetAccelerationY(0);
 
     // set yaw angle
-    int yawSign = GetStochastics()->GetUniformDistributed(0.0, 1.0) > 0.5 ? -1 : 1;
-    spawnItem.SetYawAngle(yawSign * 0.1);
+    spawnItem.SetYawAngle(0);
 
     return;
 }

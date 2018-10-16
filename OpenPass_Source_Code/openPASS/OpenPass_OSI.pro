@@ -4,7 +4,7 @@ SUBDIRS = \
         CoreFramework/OpenPassSlave \
         CoreModules/CollisionDetection \
         CoreModules/Observation_State \
-        CoreModules/SpawnPoint_Start \
+        CoreModules/SpawnPoint_OSI \
         CoreModules/Stochastics \
         CoreModules/World_OSI \
         Components/Action_BrakeLight_Basic \

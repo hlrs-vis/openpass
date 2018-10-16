@@ -10,7 +10,7 @@
   <CollisionDetection>CollisionDetection</CollisionDetection>
   <RandomSeed>0</RandomSeed>
   <SpawnPoints>
-    <SpawnPoint id="0" library="SpawnPoint_Start">
+    <SpawnPoint id="0" library="SpawnPoint_OSI">
       <AgentRefs>
         <AgentRef>0</AgentRef>
       </AgentRefs>
