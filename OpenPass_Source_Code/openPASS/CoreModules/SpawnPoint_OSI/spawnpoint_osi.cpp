@@ -1,29 +1,32 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
+* Copyright (c) 2016 ITK Engineering AG
+* Copyright (c) 2018 in-tech GmbH
+*
+* This program and the accompanying materials are made available under the
+* terms of the Eclipse Public License 2.0 which is available at
+* https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
 ******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  spawnpoint_start.cpp
+//! @file  spawnpoint_osi.cpp
 //! @brief This file contains the DLL wrapper.
 //-----------------------------------------------------------------------------
 
-#include "spawnpoint_start.h"
-#include "spawnpoint_start_implementation.h"
+#include "spawnpoint_osi.h"
+#include "spawnpoint_osi_implementation.h"
 #include "spawnPointInterface.h"
 
 const std::string Version = "0.0.1";
 static const CallbackInterface *Callbacks = nullptr;
 
-extern "C" SPAWNPOINT_STARTSHARED_EXPORT const std::string &OpenPASS_GetVersion()
+extern "C" SPAWNPOINT_OSISHARED_EXPORT const std::string &OpenPASS_GetVersion()
 {
     return Version;
 }
 
-extern "C" SPAWNPOINT_STARTSHARED_EXPORT SpawnPointInterface *OpenPASS_CreateInstance(
+extern "C" SPAWNPOINT_OSISHARED_EXPORT SpawnPointInterface *OpenPASS_CreateInstance(
         StochasticsInterface *stochastics,
         WorldInterface *world,
         const ParameterInterface *parameters,
@@ -33,7 +36,7 @@ extern "C" SPAWNPOINT_STARTSHARED_EXPORT SpawnPointInterface *OpenPASS_CreateIns
 
     try
     {
-        return (SpawnPointInterface*)(new (std::nothrow) SpawnPoint_Start_Implementation(
+        return (SpawnPointInterface*)(new (std::nothrow) SpawnPoint_OSI_Implementation(
                                           stochastics,
                                           world,
                                           parameters,
@@ -59,12 +62,12 @@ extern "C" SPAWNPOINT_STARTSHARED_EXPORT SpawnPointInterface *OpenPASS_CreateIns
     }
 }
 
-extern "C" SPAWNPOINT_STARTSHARED_EXPORT void OpenPASS_DestroyInstance(SpawnPointInterface *implementation)
+extern "C" SPAWNPOINT_OSISHARED_EXPORT void OpenPASS_DestroyInstance(SpawnPointInterface *implementation)
 {
     delete implementation;
 }
 
-extern "C" SPAWNPOINT_STARTSHARED_EXPORT bool OpenPASS_SetSpawnItem(SpawnPointInterface *implementation,
+extern "C" SPAWNPOINT_OSISHARED_EXPORT bool OpenPASS_SetSpawnItem(SpawnPointInterface *implementation,
                                                                         SpawnItemParameterInterface &spawnItem,
                                                                         int maxIndex)
 {

@@ -10,9 +10,9 @@
 ******************************************************************************/
 
 #include <QtGlobal>
-#include "spawnpoint_start_implementation.h"
+#include "spawnpoint_osi_implementation.h"
 
-SpawnPoint_Start_Implementation::SpawnPoint_Start_Implementation(StochasticsInterface *stochastics,
+SpawnPoint_OSI_Implementation::SpawnPoint_OSI_Implementation(StochasticsInterface *stochastics,
                                                                            WorldInterface *world,
                                                                            const ParameterInterface *parameters,
                                                                            const CallbackInterface *callbacks):
@@ -34,7 +34,7 @@ SpawnPoint_Start_Implementation::SpawnPoint_Start_Implementation(StochasticsInte
     _carRate = Par_demandHighway / 3600; //demandHighway - cars per hour, carRate - cars per second
 }
 
-void SpawnPoint_Start_Implementation::SetSpawnItem(SpawnItemParameterInterface &spawnItem, int maxIndex)
+void SpawnPoint_OSI_Implementation::SetSpawnItem(SpawnItemParameterInterface &spawnItem, int maxIndex)
 {
     Q_UNUSED(maxIndex);
 

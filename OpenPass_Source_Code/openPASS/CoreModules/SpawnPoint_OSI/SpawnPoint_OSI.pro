@@ -1,14 +1,16 @@
 #-----------------------------------------------------------------------------
-# \file  SpawnPoint_Start.pro
+# \file  SpawnPoint_OSI.pro
 # \brief This file contains the information for the QtCreator-project of the
-#        SpawnPoint_Start modul
+#        SpawnPoint_OSI module
 #
 # Copyright (c) 2016 ITK Engineering AG.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the Eclipse Public License v1.0
-# which accompanies this distribution, and is available at
-# http://www.eclipse.org/legal/epl-v10.html
-#-----------------------------------------------------------------------------/
+# Copyright (c) 2018 in-tech GmbH.
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License 2.0 which is available at
+# https://www.eclipse.org/legal/epl-2.0/
+#
+# SPDX-License-Identifier: EPL-2.0
+#-----------------------------------------------------------------------------
 include(../../../Global.pri)
 
 QT       -= gui
@@ -20,7 +22,7 @@ LIBS += -lws2_32
 QMAKE_CXXFLAGS += -std=c++11 -Dunix
 }
 
-TARGET = SpawnPoint_Start
+TARGET = SpawnPoint_OSI
 TEMPLATE = lib
 
 Release:DESTDIR = $${DIR_RELEASE}$${SUBDIR_LIB_SIMS}
@@ -31,7 +33,7 @@ MOC_DIR = .moc
 RCC_DIR = .rcc
 UI_DIR = .ui
 
-DEFINES += SPAWNPOINT_START_LIBRARY
+DEFINES += SPAWNPOINT_OSI_LIBRARY
 
 # accumulate list of files for given directories (first parameter)
 # according to file name ending (second parameter)
