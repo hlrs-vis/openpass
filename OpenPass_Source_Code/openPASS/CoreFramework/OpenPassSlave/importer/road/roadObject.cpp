@@ -21,6 +21,21 @@ double RoadObject::GetHdg() const
     return object.hdg;
 }
 
+double RoadObject::GetHeight() const
+{
+    return object.height;
+}
+
+double RoadObject::GetPitch() const
+{
+    return object.pitch;
+}
+
+double RoadObject::GetRoll() const
+{
+    return object.roll;
+}
+
 std::string RoadObject::GetId() const
 {
     return object.id;

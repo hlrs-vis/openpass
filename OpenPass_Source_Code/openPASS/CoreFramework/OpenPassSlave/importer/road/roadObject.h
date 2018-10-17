@@ -35,6 +35,11 @@ public:
     //-----------------------------------------------------------------------------
     double GetHdg() const;
 
+    // TODO: documentation, virtual?
+    double GetHeight() const;
+    double GetPitch() const;
+    double GetRoll() const;
+
     //-----------------------------------------------------------------------------
     //! @brief Check, if road object is valid for provided lane id
     //!

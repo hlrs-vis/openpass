@@ -42,6 +42,13 @@ public:
     double GetS() const;
 
     //-----------------------------------------------------------------------------
+    /// @brief Returns the t coordinate of the signal
+    ///
+    /// @return s [m]
+    //-----------------------------------------------------------------------------
+    double GetT() const;
+
+    //-----------------------------------------------------------------------------
     //! Returns the road from which this section is a part of.
     //!
     //! @return                         Road from which this section is a part of
@@ -58,6 +65,55 @@ public:
     //! @return             true if signal is valid
     //-----------------------------------------------------------------------------
     bool IsValidForLane(int laneId) const;
+
+    //-----------------------------------------------------------------------------
+    /// @brief Returns the height of the signal
+    ///
+    /// @return height [m]
+    //-----------------------------------------------------------------------------
+    virtual double GetHeight() const;
+
+    //-----------------------------------------------------------------------------
+    /// @brief Returns the width of the signal
+    ///
+    /// @return height [m]
+    //-----------------------------------------------------------------------------
+    virtual double GetWidth() const;
+
+    //-----------------------------------------------------------------------------
+    /// @brief Returns the length of the signal
+    ///
+    /// @return height [m]
+    //-----------------------------------------------------------------------------
+    virtual double GetLength() const;
+
+    //-----------------------------------------------------------------------------
+    /// @brief Returns the pitch of the signal
+    ///
+    /// @return height [m]
+    //-----------------------------------------------------------------------------
+    virtual double GetPitch() const;
+
+    //-----------------------------------------------------------------------------
+    /// @brief Returns the roll of the signal
+    ///
+    /// @return height [m]
+    //-----------------------------------------------------------------------------
+    virtual double GetRoll() const;
+
+    //-----------------------------------------------------------------------------
+    /// @brief Returns the yaw of the signal
+    ///
+    /// @return height [m]
+    //-----------------------------------------------------------------------------
+    virtual double GetYaw() const;
+
+    //-----------------------------------------------------------------------------
+    /// @brief Returns true if the signal is dynamic
+    ///
+    /// @return true if dynamic == "yes"
+    //-----------------------------------------------------------------------------
+    virtual bool GetIsDynamic() const;
 
 private:
     RoadInterface* road;

@@ -55,9 +55,48 @@ double RoadSignal::GetS() const
     return signal.s;
 }
 
+double RoadSignal::GetT() const
+{
+    return signal.t;
+}
+
 bool RoadSignal::IsValidForLane(int laneId) const
 {
     return signal.validity.all ||
       ( std::find( signal.validity.lanes.begin(), signal.validity.lanes.end(), laneId) != signal.validity.lanes.end() );
 }
 
+double RoadSignal::GetHeight() const
+{
+    return signal.height;
+}
+
+double RoadSignal::GetWidth() const
+{
+    return signal.width;
+}
+
+double RoadSignal::GetLength() const
+{
+    return signal.length;
+}
+
+double RoadSignal::GetPitch() const
+{
+   return signal.pitch;
+}
+
+double RoadSignal::GetRoll() const
+{
+    return signal.roll;
+}
+
+double RoadSignal::GetYaw() const
+{
+    return signal.yaw;
+}
+
+bool RoadSignal::GetIsDynamic() const
+{
+    return signal.dynamic == "yes";
+}

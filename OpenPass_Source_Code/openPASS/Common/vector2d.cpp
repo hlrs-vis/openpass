@@ -1,13 +1,18 @@
 /******************************************************************************
 * Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
+* Copyright (c) 2018 in-tech GmbH.
+*
+* This program and the accompanying materials are made available under the
+* terms of the Eclipse Public License 2.0 which is available at
+* https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
 ******************************************************************************/
 
 #include <cmath>
 #include "vector2d.h"
+
+#define EPSILON 1e-9
 
 namespace Common {
 
@@ -53,12 +58,12 @@ void Vector2d::Sub(const Vector2d &in)
     y -= in.y;
 }
 
-double Vector2d::Dot(const Vector2d &in)
+double Vector2d::Dot(const Vector2d &in) const
 {
     return x * in.x + y * in.y;
 }
 
-double Vector2d::Cross(const Vector2d &in)
+double Vector2d::Cross(const Vector2d &in) const
 {
     return x * in.y - y * in.x;
 }
@@ -86,24 +91,25 @@ double Vector2d::Angle() const
     return atan2(y, x);
 }
 
-Vector2d Vector2d::operator-(const Vector2d &in)
+Vector2d Vector2d::operator-(const Vector2d &in) const
 {
     return Vector2d(x - in.x, y - in.y);
 }
 
-Vector2d Vector2d::operator+(const Vector2d &in)
+Vector2d Vector2d::operator+(const Vector2d &in) const
 {
     return Vector2d(x + in.x, y + in.y);
 }
 
-Vector2d Vector2d::operator*(double in)
+Vector2d Vector2d::operator*(double in) const
 {
     return Vector2d(x * in, y * in);
 }
 
 bool Vector2d::operator==(const Vector2d &in) const
 {
-    return x == in.x && y == in.y;
+    return (std::abs(x - in.x) < EPSILON) &&
+           (std::abs(y - in.y) < EPSILON);
 }
 
 } // namespace Common
