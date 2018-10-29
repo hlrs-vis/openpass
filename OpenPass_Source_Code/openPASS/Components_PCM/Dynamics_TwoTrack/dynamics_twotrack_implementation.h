@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 #ifndef DYNAMICS_TWOTRACK_IMPLEMENTATION_H
 #define DYNAMICS_TWOTRACK_IMPLEMENTATION_H
@@ -134,6 +136,20 @@ private:
     InputPort<DoubleSignal, double> brakePedal {1, &inputPorts}; //!< State of the brake pedal [0...1]
     InputPort<DoubleSignal, double> angleTireFront {2, &inputPorts}; //!< Mean pointing angle of the front tires in car coordinate system [rad]
     InputPort<SignalVectorDouble, std::vector<double>> brakeSuperpose {3, &inputPorts}; //!< Brake superposition (e.g. correction of the trajectory by lane assist)
+    InputPort<SignalVectorDouble, std::vector<double>> forceWheelVertical {4, &inputPorts}; //!< Vertical force on the wheels
+    /**
+     *      @}
+     *  @}
+     */
+
+    std::map<int, ComponentPort *> outputPorts; //!< map for all OutputPort
+    /** \addtogroup Dynamics_TwoTrack
+     *  @{
+     *      \name OutputPorts
+     *      All output ports with PortId
+     *      @{
+     */
+    OutputPort<SignalVectorDouble, std::vector<double>> forceGlobalInertia {0, &outputPorts}; //!< inertia force on vehicle's CoG
     /**
      *      @}
      *  @}

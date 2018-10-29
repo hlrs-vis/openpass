@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 //-----------------------------------------------------------------------------
 //! @file  egoSensor.cpp
@@ -13,6 +15,7 @@
 
 #include "egoSensor.h"
 #include "egoSensor_implementation.h"
+#include "defaultPrio_PCM.h"
 
 const std::string Version = "1.1.0";
 static const CallbackInterface *Callbacks = nullptr;
@@ -39,7 +42,7 @@ extern "C" EGO_SENSOR_SHARED_EXPORT ModelInterface *OpenPASS_CreateInstance(int 
 
     if (priority == 0)
     {
-        priority = 203;
+        priority = (int)PCMdefaultPrio::EgoSensor;
     }
     try
     {

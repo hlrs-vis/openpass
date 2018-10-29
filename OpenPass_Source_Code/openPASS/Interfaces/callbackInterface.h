@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 //-----------------------------------------------------------------------------
 //! @file  callbackInterface.h
@@ -22,6 +24,10 @@
 //! (e.g. classes derived from ModelInterface, ObservationInterface SpawnPointInterface).
 //-----------------------------------------------------------------------------
 #define LOG(level, message) Log(level, __FILE__, __LINE__, message)
+#define LOGERROR(message) Log(CbkLogLevel::Error, __FILE__, __LINE__, message)
+#define LOGWARN(message) Log(CbkLogLevel::Warning, __FILE__, __LINE__, message)
+#define LOGINFO(message) Log(CbkLogLevel::Info, __FILE__, __LINE__, message)
+#define LOGDEBUG(message) Log(CbkLogLevel::Debug, __FILE__, __LINE__, message)
 
 //-----------------------------------------------------------------------------
 //! Log level for the log callback

@@ -1,3 +1,13 @@
+/*********************************************************************
+* Copyright c 2017, 2018 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
+
 #include "XmlScenery.h"
 
 bool XmlScenery::WriteToXml(QXmlStreamWriter *xmlWriter)
@@ -57,7 +67,7 @@ void XmlScenery::AddTrajectory(int agentId, PCM_Trajectory *trajectory)
 
 void XmlScenery::AddIntendedCourse(PCM_IntendedCourses &intendedCourse)
 {
-    this->intendedCourse = XmlIntendedCourses(&intendedCourse);
+    this->intendedCourse = XmlIntendedCourses(intendedCourse);
 }
 
 void XmlScenery::AddGlobalData(PCM_GlobalData &globalData)

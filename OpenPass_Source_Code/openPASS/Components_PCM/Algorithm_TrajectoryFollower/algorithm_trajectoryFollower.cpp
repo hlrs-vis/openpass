@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 //! @file  algorithm_trajectoryFollower.cpp
 //! @brief This file contains the implementation of of the interface for model
@@ -12,6 +14,7 @@
 
 #include "algorithm_trajectoryFollower.h"
 #include "algorithm_trajectoryFollower_implementation.h"
+#include "defaultPrio_PCM.h"
 
 const std::string Version =
     "1.1.0"; //!< version of the current module - has to be incremented manually
@@ -58,12 +61,12 @@ ModelInterface *OpenPASS_CreateInstance(int componentId,
 {
     Q_UNUSED(world);
     Callbacks = callbacks;
+    if (priority == 0)
+    {
+        priority = (int)PCMdefaultPrio::Algorithm_Trajectory;
+    }
     try
     {
-        if (priority == 0)
-        {
-            priority = 105;
-        }
         return (ModelInterface *)(new (std::nothrow) Algorithm_TrajectoryFollower_Implementation(
                                       componentId,
                                       isInit,

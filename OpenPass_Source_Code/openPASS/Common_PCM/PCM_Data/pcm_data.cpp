@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017, 2018 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 #include "pcm_data.h"
 
@@ -37,6 +39,12 @@ bool PCM_Data::SetPCM_GlobalData(const PCM_GlobalData *globalData)
     return true;
 }
 
+bool PCM_Data::SetCallbacks(const CallbackInterface *callbacks)
+{
+    this->callbacks = callbacks;
+    return true;
+}
+
 bool PCM_Data::AddPCM_Course(const PCM_Course *course)
 {
     intendedCourses.push_back(course);
@@ -66,6 +74,8 @@ const PCM_Marks *PCM_Data::GetMarksOfType(MarkType markType) const
 bool PCM_Data::AddPCM_Agent(int id, double xPos, double yPos, double yawAngle, double width,
                             double height)
 {
+//    LOGINFO(QString().sprintf("To dd PCM_Agent %d with width %.2f and height %.2f", id, width, height).toStdString());
+
     PCM_Agent *agent = new PCM_Agent(id);
     PCM_Line *line = new PCM_Line(0);
 
@@ -140,19 +150,18 @@ void PCM_Data::Clear()
 }
 
 MarkType PCM_Data::GetMarkTypeOfNearestLineSegment(const PCM_Point *point,
-                                                   double viewDirection,
+                                                   double viewAngle,
                                                    double range) const
 {
     MarkType minMarkType = MarkType::NONE;
     double minDistance = INFINITY;
     for (int i = 1; i < static_cast<int>(MarkType::NumberOfMarkTypes); i++)
     {
-        PCM_LineSegment lineSegment;
         MarkType currentType = static_cast<MarkType>(i);
-        lineSegment = GetNearestLineSegmentOfMarks(currentType, point,
-                                                   viewDirection, range);
+        PCM_LineSegment lineSegment = GetNearestLineSegmentOfMarks(currentType, point,
+                                                   viewAngle, range);
 
-        double distance = lineSegment.CalcDistanceFromPoint(point, viewDirection, range);
+        double distance = lineSegment.CalcDistanceFromPoint(point, viewAngle, range);
 
         if ((minDistance > distance) && (!std::isinf(distance)))
         {
@@ -164,45 +173,62 @@ MarkType PCM_Data::GetMarkTypeOfNearestLineSegment(const PCM_Point *point,
     return minMarkType;
 }
 
-int PCM_Data::GetIdOfNearestAgent(int egoId, const PCM_Point *point, double viewDirection,
-                                  double range) const
+AgentDetection PCM_Data::GetNearestAgent(int egoId, const PCM_Point *point,
+                                         double viewAngle, double range) const
 {
-    int id = -1;
-    double minDistance = INFINITY;
+    AgentDetection detection;
+    if((egoId<0) || (point == nullptr))
+        return detection;
+
+    detection.egoId = egoId;
+    detection.egoPoint = point;
+    detection.viewAngle = viewAngle;
+    detection.range = range;
+
     for (int i = 0; i < static_cast<int>(agentVec.size()); i++)
     {
         if (i != egoId)
         {
-            PCM_LineSegment lineSegment;
-            lineSegment = GetNearestLineSegmentOfAgents(egoId, point,
-                                                        viewDirection, range);
+            // find nearest line segment from point to the agent i (agent i must not be ego)
+            PCM_LineSegment fullLineSegment = GetNearestLineSegmentOfAgents(i, egoId, point, viewAngle, range, false);
+            PCM_LineSegment subLineSegment = fullLineSegment.CalcSubLineSegmentInViewRange(point, viewAngle, range);
 
-            double distance = lineSegment.CalcDistanceFromPoint(point, viewDirection, range);
+//            LOGINFO(QString().sprintf("PCM_Data: GetNearestAgent: ego%d (%.2f, %.2f), (%.2f, %.2f) viewAngle %.2f, range %.2f", egoId,
+//                          fullLineSegment.GetFirstPoint().GetX(), fullLineSegment.GetFirstPoint().GetY(),
+//                          fullLineSegment.GetSecondPoint().GetX(), fullLineSegment.GetSecondPoint().GetY(), viewAngle, range).toStdString());
+//            LOGINFO(QString().sprintf("PCM_Data: GetNearestAgent: ego%d, line length %f", egoId, subLineSegment.CalculateLength()).toStdString());
 
-            if ((minDistance > distance) && (!std::isinf(distance)))
+            double distance = subLineSegment.CalcDistanceFromPoint(point, viewAngle, range);
+
+            if ((!std::isinf(distance)) && (distance < detection.distance))
             {
-                minDistance = distance;
-                id = i;
+                detection.oppId = i;
+                detection.fullOppLineSegment = fullLineSegment;
+                detection.subOppLineSegment = subLineSegment;
+                detection.oppPoint = subLineSegment.GetNearestPointFromPoint(point, viewAngle, range);
+                detection.distance = distance;
+
+//                if(fullLineSegment.CalculateLength() > subLineSegment.CalculateLength())
+//                    LOGINFO(QString().sprintf("GetNearestAgent: subOppLineSegment (%f m) is shorter than fullOppLineSegment (%f m)",
+//                                              subLineSegment.CalculateLength(), fullLineSegment.CalculateLength()).toStdString());
             }
         }
     }
-
-    return id;
+    return detection;
 }
 
-ObjectType PCM_Data::GetObjectTypeOfNearestLineSegment(const PCM_Point *point, double viewDirection,
+ObjectType PCM_Data::GetObjectTypeOfNearestLineSegment(const PCM_Point *point, double viewAngle,
                                                        double range) const
 {
     ObjectType minObjectType = ObjectType::NONE;
     double minDistance = INFINITY;
     for (int i = 1; i < static_cast<int>(ObjectType::NumberOfObjectTypes); i++)
     {
-        PCM_LineSegment lineSegment;
         ObjectType currentType = static_cast<ObjectType>(i);
-        lineSegment = GetNearestLineSegmentOfObject(currentType, point,
-                                                    viewDirection, range);
+        PCM_LineSegment lineSegment = GetNearestLineSegmentOfObject(currentType, point,
+                                                    viewAngle, range);
 
-        double distance = lineSegment.CalcDistanceFromPoint(point, viewDirection, range);
+        double distance = lineSegment.CalcDistanceFromPoint(point, viewAngle, range);
 
         if ((minDistance > distance) && (!std::isinf(distance)))
         {
@@ -215,7 +241,7 @@ ObjectType PCM_Data::GetObjectTypeOfNearestLineSegment(const PCM_Point *point, d
 }
 
 PCM_LineSegment PCM_Data::GetNearestLineSegmentOfMarks(MarkType markType, const PCM_Point *point,
-                                                       double viewDirection, double range) const
+                                                       double viewAngle, double range) const
 {
     PCM_LineSegment minLineSegment;
 
@@ -231,11 +257,10 @@ PCM_LineSegment PCM_Data::GetNearestLineSegmentOfMarks(MarkType markType, const 
     {
         for (int i = 1; i < static_cast<int>(MarkType::NumberOfMarkTypes); i++)
         {
-            PCM_LineSegment lineSegment;
-            lineSegment = GetNearestLineSegmentOfMarks(static_cast<MarkType>(i), point,
-                                                       viewDirection, range);
+            PCM_LineSegment lineSegment = GetNearestLineSegmentOfMarks(static_cast<MarkType>(i), point,
+                                                       viewAngle, range);
 
-            double distance = lineSegment.CalcDistanceFromPoint(point, viewDirection, range);
+            double distance = lineSegment.CalcDistanceFromPoint(point, viewAngle, range);
 
             if ((minDistance > distance) && (!std::isinf(distance)))
             {
@@ -247,14 +272,14 @@ PCM_LineSegment PCM_Data::GetNearestLineSegmentOfMarks(MarkType markType, const 
     else
     {
         const PCM_Marks *marks = GetMarksOfType(markType);
-        minLineSegment = marks->GetNearestLineSegment(point, viewDirection, range);
+        minLineSegment = marks->GetNearestLineSegment(point, viewAngle, range);
     }
 
     return minLineSegment;
 }
 
-PCM_LineSegment PCM_Data::GetNearestLineSegmentOfAgents(int egoId, const PCM_Point *point,
-                                                        double viewDirection, double range) const
+PCM_LineSegment PCM_Data::GetNearestLineSegmentOfAgents(int agentId, int agentIdExclude, const PCM_Point *point,
+                                                        double viewAngle, double range, bool calculateSubLine) const
 {
     PCM_LineSegment minLineSegment;
 
@@ -267,18 +292,33 @@ PCM_LineSegment PCM_Data::GetNearestLineSegmentOfAgents(int egoId, const PCM_Poi
 
     for (int  i = 0; i < static_cast<int>(agentVec.size()); i++)
     {
-        if (i != egoId)
+        if (((agentId >= 0) && (i == agentId))
+                || ((agentIdExclude >= 0) && (i != agentIdExclude)) )
         {
-            PCM_LineSegment lineSegment;
-            lineSegment = agentVec.at(i)->GetNearestLineSegment(point, viewDirection, range);
+            PCM_LineSegment lineSegment = agentVec.at(i)->GetNearestLineSegment(point, viewAngle, range, calculateSubLine);
 
-            double distance = lineSegment.CalcDistanceFromPoint(point, viewDirection, range);
+            double distance = lineSegment.CalcDistanceFromPoint(point, viewAngle, range);
 
             if ((minDistance > distance) && (!std::isinf(distance)))
             {
                 minDistance = distance;
                 minLineSegment = lineSegment;
             }
+
+            //debug
+//            QString logStr = QString().sprintf("debug: lines of agent %d", i);
+//            const std::map<int, PCM_Line *> *lineMap = agentVec.at(i)->GetLineMap();
+//            for (std::pair<int, PCM_Line *> pcmLinePair : *lineMap)
+//            {
+//                PCM_Line *line = pcmLinePair.second;
+//                const std::map<int, const PCM_Point *> *pointMap = line->GetPointMap();
+//                for (std::pair<int, const PCM_Point *> pcmPointPair : *pointMap)
+//                {
+//                    const PCM_Point *point = pcmPointPair.second;
+//                    logStr += QString().sprintf(" point (%.2f, %.2f)", point->GetX(), point->GetY());
+//                }
+//            }
+//            LOGINFO(logStr.toStdString());
         }
     }
 
@@ -286,7 +326,7 @@ PCM_LineSegment PCM_Data::GetNearestLineSegmentOfAgents(int egoId, const PCM_Poi
 }
 
 PCM_LineSegment PCM_Data::GetNearestLineSegmentOfObject(ObjectType objectType,
-                                                        const PCM_Point *point, double viewDirection, double range) const
+                                                        const PCM_Point *point, double viewAngle, double range) const
 {
     PCM_LineSegment minLineSegment;
 
@@ -302,11 +342,10 @@ PCM_LineSegment PCM_Data::GetNearestLineSegmentOfObject(ObjectType objectType,
     {
         for (int i = 1; i < static_cast<int>(ObjectType::NumberOfObjectTypes); i++)
         {
-            PCM_LineSegment lineSegment;
-            lineSegment = GetNearestLineSegmentOfObject(static_cast<ObjectType>(i), point,
-                                                        viewDirection, range);
+            PCM_LineSegment lineSegment = GetNearestLineSegmentOfObject(static_cast<ObjectType>(i), point,
+                                                        viewAngle, range);
 
-            double distance = lineSegment.CalcDistanceFromPoint(point, viewDirection, range);
+            double distance = lineSegment.CalcDistanceFromPoint(point, viewAngle, range);
 
             if ((minDistance > distance) && (!std::isinf(distance)))
             {
@@ -320,10 +359,10 @@ PCM_LineSegment PCM_Data::GetNearestLineSegmentOfObject(ObjectType objectType,
         switch (objectType)
         {
         case ObjectType::OBJECT:
-            minLineSegment = object->GetNearestLineSegment(point, viewDirection, range);
+            minLineSegment = object->GetNearestLineSegment(point, viewAngle, range);
             break;
         case ObjectType::VIEWOBJECT:
-            minLineSegment = viewObject->GetNearestLineSegment(point, viewDirection, range);
+            minLineSegment = viewObject->GetNearestLineSegment(point, viewAngle, range);
             break;
         default:
             break;
@@ -334,28 +373,27 @@ PCM_LineSegment PCM_Data::GetNearestLineSegmentOfObject(ObjectType objectType,
 }
 
 PCM_Point PCM_Data::GetNearestPointOfMarks(MarkType markType, const PCM_Point *point,
-                                           double viewDirection,
+                                           double viewAngle,
                                            double range) const
 {
-    PCM_LineSegment minLineSegment = GetNearestLineSegmentOfMarks(markType, point, viewDirection,
+    PCM_LineSegment minLineSegment = GetNearestLineSegmentOfMarks(markType, point, viewAngle,
                                                                   range);
-    return minLineSegment.GetNearestPointFromPoint(point, viewDirection, range);
+    return minLineSegment.GetNearestPointFromPoint(point, viewAngle, range);
 }
 
-PCM_Point PCM_Data::GetNearestPointOfAgents(int egoId, const PCM_Point *point, double viewDirection,
+PCM_Point PCM_Data::GetNearestPointOfAgents(int agentId, int agentIdExclude, const PCM_Point *point, double viewAngle,
                                             double range) const
 {
-    PCM_LineSegment minLineSegment = GetNearestLineSegmentOfAgents(egoId, point, viewDirection,
-                                                                   range);
-    return minLineSegment.GetNearestPointFromPoint(point, viewDirection, range);
+    PCM_LineSegment minLineSegment = GetNearestLineSegmentOfAgents(agentId, agentIdExclude, point, viewAngle, range);
+    return minLineSegment.GetNearestPointFromPoint(point, viewAngle, range);
 }
 
 PCM_Point PCM_Data::GetNearestPointOfObject(ObjectType objectType, const PCM_Point *point,
-                                            double viewDirection, double range) const
+                                            double viewAngle, double range) const
 {
-    PCM_LineSegment minLineSegment = GetNearestLineSegmentOfObject(objectType, point, viewDirection,
+    PCM_LineSegment minLineSegment = GetNearestLineSegmentOfObject(objectType, point, viewAngle,
                                                                    range);
-    return minLineSegment.GetNearestPointFromPoint(point, viewDirection, range);
+    return minLineSegment.GetNearestPointFromPoint(point, viewAngle, range);
 }
 
 const PCM_Object *PCM_Data::GetObject() const

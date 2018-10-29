@@ -1,3 +1,13 @@
+/*********************************************************************
+* Copyright c 2017, 2018 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
+
 #include "ConfigWriter.h"
 
 ConfigWriter::ConfigWriter():
@@ -205,6 +215,7 @@ const QString ConfigWriter::CreateSceneryConfiguration(const QString &configPath
                                                        PCM_IntendedCourses &intendedCourses,
                                                        PCM_GlobalData &globalData)
 {
+    Q_UNUSED(intendedCourses);
     XmlScenery sceneryConfig;
 
     for (size_t i = 0; i < marksVec.size(); i++)
@@ -214,7 +225,29 @@ const QString ConfigWriter::CreateSceneryConfiguration(const QString &configPath
 
     sceneryConfig.AddObject(object);
     sceneryConfig.AddViewObject(viewObject);
-    sceneryConfig.AddIntendedCourse(intendedCourses);
+//    sceneryConfig.AddIntendedCourse(intendedCourses); // comment out to avoid run-time crash. The intendedCourses is optional data anyway.
+
+    /* **************** Debug code ***********************
+    QString log;
+    PCM_Course *course;
+    for(int i=1; i<3; i++)
+    {
+        if(!intendedCourses.IsCoursePresent(i))
+            continue;
+
+        course = intendedCourses.GetCourseByBetNr(i);
+        const std::map<int, const PCM_Point *> *pointMap = course->GetPointMap();
+        log = QString().sprintf("\t\t agent %d has %d course points: ", i, pointMap->size());
+
+        for (std::pair<int, const PCM_Point *> pcmPointPair : *pointMap)
+        {
+            const PCM_Point *p = pcmPointPair.second;
+            log += QString().sprintf(" (%.2f, %.2f),", p->GetX(), p->GetY());
+        }
+        qDebug(log.toStdString().c_str());
+    }
+    ************************** */
+
     sceneryConfig.AddGlobalData(globalData);
 
     for (size_t i = 0; i < participants.size(); i++)
@@ -254,7 +287,11 @@ const QString ConfigWriter::CreateFrameworkConfiguration(QString frameworkConfig
     xmlWriter.writeTextElement("SlavePath", "OpenPassSlave");
     xmlWriter.writeTextElement("LogFileMaster",
                                baseDirectory.relativeFilePath(frameworkConfigPath + "/openPassMaster.log"));
-    xmlWriter.writeTextElement("LogLevel", "2"); //"0"
+#ifdef QT_DEBUG
+    xmlWriter.writeTextElement("LogLevel", "2"); // print Error/Warning/Info messages
+#else
+    xmlWriter.writeTextElement("LogLevel", "0"); // print Error messages
+#endif
 
     for (QMap<QString, QString> configSet : configList)
     {

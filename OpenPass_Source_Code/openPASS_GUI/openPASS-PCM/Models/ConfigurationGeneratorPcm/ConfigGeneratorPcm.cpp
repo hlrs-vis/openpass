@@ -1,3 +1,13 @@
+/*********************************************************************
+* Copyright c 2017, 2018 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
+
 #include "ConfigGeneratorPcm.h"
 
 ConfigGenerator::ConfigGenerator():
@@ -66,7 +76,7 @@ bool ConfigGenerator::GenerateConfigs(DatabaseReader &dbReader,
     if (trajectories.size() > 0)
     {
         supposedCollisionTime = QString::number(trajectories[0]->GetEndTime());
-        endTime = QString::number(supposedCollisionTime.toInt() * 2);
+        endTime = QString::number(supposedCollisionTime.toInt() * 2); //set endTime twice as supposedCollisionTime in order to allow simulation after collision
     }
 
     const QString systemConfigFile = configWriter->CreateSystemConfiguration(configPath,

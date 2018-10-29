@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 #ifndef VEHICLESIMPLETT_H
 #define VEHICLESIMPLETT_H
@@ -12,7 +14,7 @@
 #include <QtGlobal>
 #include "vector2d.h"
 #include "dynamics_twotrack_tire.h"
-#define NUMBER_TIRES 4
+#define NUMBER_OF_WHEELS 4
 
 class Tire;
 
@@ -31,8 +33,7 @@ public:
     void InitSetEngine(double weight,
                        double P_engine, double T_brakeLimit);
     //! Initialize car's physics
-    void InitSetGeometry(double h_COG, double x_COG,
-                         double y_wheelbase, double y_track);
+    void InitSetGeometry(double x_wheelbase, double x_COG, double y_track, double y_COG);
     //! Initialize car's velocity
     void InitSetTire(double vel,
                      double F_max, double F_slide,
@@ -60,7 +61,7 @@ public:
     //! Calculate local tire torques
     void DriveTrain(double throttlePedal, double brakePedal, std::vector<double> brakeSuperpose);
     //! Local forces and moments transferred onto road
-    void ForceLocal(double timeStep, double);
+    void ForceLocal(double timeStep, double, std::vector<double> forceVertical);
     //! Global force and moment
     void ForceGlobal();
     /**
@@ -79,13 +80,22 @@ public:
      *    @}
     */
 
+    /**
+     *    \name Parameters
+     *    @{
+    */
+    double forceTireVerticalStatic[NUMBER_OF_WHEELS];
+    /**
+     *    @}
+    */
+
 private:
 
     /** \name Parameters
      *    @{
     */
     //! Inertial moment of tires [kg*m^2]
-    double inertiaTireX[NUMBER_TIRES];
+    double inertiaTireX[NUMBER_OF_WHEELS];
 
     //! Maximal engine power [W]
     double powerEngineLimit;
@@ -95,13 +105,7 @@ private:
     //! Mass of the car [kg]
     double massTotal;
     //! Tire positions in car CS [m]
-    Common::Vector2d positionTire[NUMBER_TIRES];
-    //! Inertial moment of car around Z [kg*m^2]
-    //double inertiaCarZ;
-    //! Vertical position of the center of mass of the car [m]
-    double heightCOG;
-    //! Wheelbase [m]
-    double wheelBase;
+    Common::Vector2d positionTire[NUMBER_OF_WHEELS];
     /**
      *  @}
     */
@@ -123,22 +127,21 @@ private:
     //! Brake balance
     const double brakeBalance = 0.67;
     //! Max. engine moment
-    const double torqueEngineLimit = 300.0;
+    const double torqueEngineLimit = 10000.0;
     /**
      *  @}
     */
 
     // Dynamics to remember
-    double rotationVelocityTireX[NUMBER_TIRES];
-    double rotationVelocityGradTireX[NUMBER_TIRES];
+    double rotationVelocityTireX[NUMBER_OF_WHEELS];
+    double rotationVelocityGradTireX[NUMBER_OF_WHEELS];
     double yawVelocity;
-    double forceTireVerticalStatic[NUMBER_TIRES];
     Common::Vector2d velocityCar;
-    Common::Vector2d forceTire[NUMBER_TIRES];
-    Common::Vector2d slipTire[NUMBER_TIRES];
-    double torqueTireXthrottle[NUMBER_TIRES];
-    double torqueTireXbrake[NUMBER_TIRES];
-    double momentTireZ[NUMBER_TIRES];
+    Common::Vector2d forceTire[NUMBER_OF_WHEELS];
+    Common::Vector2d slipTire[NUMBER_OF_WHEELS];
+    double torqueTireXthrottle[NUMBER_OF_WHEELS];
+    double torqueTireXbrake[NUMBER_OF_WHEELS];
+    double momentTireZ[NUMBER_OF_WHEELS];
 
     /** \name Container
      *    @{

@@ -1,3 +1,13 @@
+/*********************************************************************
+* Copyright c 2017, 2018 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
+
 #include "Models/ModelPcm.h"
 
 ModelPcm::ModelPcm(QObject *parent)
@@ -118,6 +128,7 @@ void ModelPcm::StartSimulation()
     Q_EMIT SimulationProgressChanged(progress++);
 
     configGenerator->Clear();
+
     for (QModelIndex &pcmCaseIndex : pcmCaseIndexList)
     {
         if (simulationStop)
@@ -130,6 +141,7 @@ void ModelPcm::StartSimulation()
         int otherSystemCount = 0;
         for (QString otherSystem : otherSytemList)
         {
+
             if (otherSystem.isEmpty())
             {
                 continue;
@@ -159,24 +171,33 @@ void ModelPcm::StartSimulation()
                     QDir configDir(configPath);
                     if (configDir.exists())
                     {
-                        FileHelper::RemoveDirectory(configPath);
+                        if(!configDir.removeRecursively())
+                        {
+                            qDebug("\t Error when deleting the directgory %s", configPath.toStdString().c_str());
+                            return;
+                        }
                     }
-                    configDir.mkpath(configDir.absolutePath());
 
-                    if ( !configGenerator->GenerateConfigs(dbReader,
-                                                           pcmCase,
-                                                           configPath,
-                                                           otherSystem,
-                                                           car1System,
-                                                           car2System,
-                                                           resultPathPcmCase))
+                    if(!configDir.mkpath(configDir.absolutePath()))
+                    {
+                         qDebug("\t Error when creating the directgory %s", configPath.toStdString().c_str());
+                        return;
+                    }
+
+//                    qDebug("\t GenerateConfigs for pcmCase: %d at %s", pcmCaseIndex.data().toInt(), configPath.toStdString().c_str());
+                    if (!configGenerator->GenerateConfigs(dbReader,
+                                                          pcmCase,
+                                                          configPath,
+                                                          otherSystem,
+                                                          car1System,
+                                                          car2System,
+                                                          resultPathPcmCase))
                     {
                         Q_EMIT ShowMessage("ERROR",
                                            "Failed to generate configuration file for case: " + pcmCase);
                         Q_EMIT SimulationFinished();
                         return;
                     }
-
                     car2SystemCount++;
 
                     Q_EMIT SimulationProgressChanged(progress++);
@@ -186,15 +207,14 @@ void ModelPcm::StartSimulation()
             otherSystemCount++;
         }
     }
+
     const QString frameworkConfigFile = configGenerator->GenerateFrameworkConfig(resultFolder);
     if (frameworkConfigFile == "")
     {
-        Q_EMIT ShowMessage("ERROR",
-                           "Failed to generate framework configuration file");
+        Q_EMIT ShowMessage("ERROR", "Failed to generate framework configuration file");
         Q_EMIT SimulationFinished();
         return;
     }
-
     QString masterPath = baseFolder + "/OpenPassMaster.exe";
     QProcess *masterProcess = new QProcess();
     QStringList arguments;

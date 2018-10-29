@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 #include "agent.h"
 #include "component.h"
@@ -51,7 +53,7 @@ void Scheduler::Run(const std::function<bool(int, RunResult&)> &updateCallback,
 
     ScheduleItem *task;
     int deltaTimeStep = 0;
-    int lastTime = schedulePolicy.GetCurrentTime();
+    int lastTime = schedulePolicy.GetTimeCurrent();
 
     // update observation modules (observe initial time step)
     if(!updateCallback(lastTime, runResult))
@@ -69,7 +71,7 @@ void Scheduler::Run(const std::function<bool(int, RunResult&)> &updateCallback,
 
         if(task->GetValid())
         {
-            LOG_INTERN(LogLevel::DebugAPI) << "*** currentTime: " << schedulePolicy.GetCurrentTime() << "ms";
+            LOG_INTERN(LogLevel::DebugAPI) << "*** currentTime: " << schedulePolicy.GetTimeCurrent() << "ms";
 
             if(ScheduleItemType::ScheduleTriggerItemType == task->GetType())
             {
@@ -116,7 +118,7 @@ void Scheduler::Run(const std::function<bool(int, RunResult&)> &updateCallback,
             }
         }
 
-        lastTime = schedulePolicy.GetCurrentTime(); // remember time before potential time step
+        lastTime = schedulePolicy.GetTimeCurrent(); // remember time before potential time step
         deltaTimeStep = schedulePolicy.TimeStep();
         if(0 < deltaTimeStep) // if time step occurred
         {

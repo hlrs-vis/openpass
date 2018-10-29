@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 //-----------------------------------------------------------------------------
 //! @file  dynamics_copyTrajectory.cpp
@@ -14,6 +16,7 @@
 
 #include "dynamics_copyTrajectory.h"
 #include "dynamics_copyTrajectory_implementation.h"
+#include "defaultPrio_PCM.h"
 
 const std::string Version =
     "1.1.0";    //!< version of the current module - has to be incremented manually
@@ -62,6 +65,10 @@ extern "C" DYNAMICS_COPYTRAJECTORYSHARED_EXPORT DynamicsInterface *OpenPASS_Crea
 {
     Callbacks = callbacks;
 
+    if (priority == 0)
+    {
+        priority = (int)PCMdefaultPrio::Dynamics;
+    }
     return (DynamicsInterface *)(new (std::nothrow) Dynamics_CopyTrajectory_Implementation(componentId,
                                                                                            isInit,
                                                                                            priority,

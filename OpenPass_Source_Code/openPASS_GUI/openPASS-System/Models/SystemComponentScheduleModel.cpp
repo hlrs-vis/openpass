@@ -25,14 +25,14 @@ SystemComponentScheduleModel::SystemComponentScheduleModel(ComponentScheduleInte
 
 bool SystemComponentScheduleModel::setPriority(SystemComponentScheduleInterface::Priority const & _priority)
 {
-    if (checkValidPriority(_priority))
-    {
+//    if (checkValidPriority(_priority))
+//    {
         priority = _priority;
-    }
-    else
-    {
-        priority = 0;
-    }
+//    }
+//    else
+//    {
+//        priority = 0;
+//    }
     Q_EMIT modifiedPriority();
     return true;
 }

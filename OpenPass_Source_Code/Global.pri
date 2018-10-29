@@ -1,3 +1,14 @@
+# /*********************************************************************
+# * Copyright (c) 2018 ITK Engineering GmbH
+# * Copyright (c) 2018 in-tech GmbH
+# *
+# * This program and the accompanying materials are made
+# * available under the terms of the Eclipse Public License 2.0
+# * which is available at https://www.eclipse.org/legal/epl-2.0/
+# *
+# * SPDX-License-Identifier: EPL-2.0
+# **********************************************************************/
+
 ## executable destination directories ##
 win32 {
     DIR_DEBUG = "C:\OpenPASS\BinDebug"
@@ -9,23 +20,8 @@ unix {
     DIR_RELEASE = "/OpenPASS/BinRelease"
 }
 
-Debug:DESTDIR=$$DIR_DEBUG
-Release:DESTDIR=$$DIR_RELEASE
-
-#debug/release predicates are buggy on linux qmake
-unix:DESTDIR=$$DIR_DEBUG
-#unix:DESTDIR=$$DIR_RELEASE
-
-# adjust path to your needs
-win32 {
-    EXTRA_INCLUDE_PATH=C:/OpenPass/ThirdParty/include
-    EXTRA_LIB_PATH=C:/OpenPass/ThirdParty/lib
-}
-
-unix {
-    EXTRA_INCLUDE_PATH=/OpenPASS/ThirdParty/include
-    EXTRA_LIB_PATH=/OpenPASS/ThirdParty/lib
-}
+## activate log time output
+DEFINES += LOG_TIME_ENABLED
 
 ## simulation libraries destination sub-directory ##
 SUBDIR_LIB_SIMS = "/sim"
@@ -37,6 +33,27 @@ DEFINES += SUBDIR_LIB_GUI=\\\"/gui\\\"
 
 ## Qt plugins sub-directory ##
 DEFINES += SUBDIR_LIB_PLUGIN=\\\"/plugin\\\"
+
+## Default destination
+Debug:DESTDIR = $${DIR_DEBUG}$${SUBDIR_LIB_SIMS}
+Release:DESTDIR = $${DIR_RELEASE}$${SUBDIR_LIB_SIMS}
+#Debug:DESTDIR=$$DIR_DEBUG
+#Release:DESTDIR=$$DIR_RELEASE
+
+#debug/release predicates are buggy on linux qmake
+unix:DESTDIR=$${DIR_DEBUG}$${SUBDIR_LIB_SIMS}
+#unix:DESTDIR=$${DIR_RELEASE}$${SUBDIR_LIB_SIMS}
+
+# adjust path to your needs
+win32 {
+    EXTRA_INCLUDE_PATH=C:/OpenPass/ThirdParty/include
+    EXTRA_LIB_PATH=C:/OpenPass/ThirdParty/lib
+}
+
+unix {
+    EXTRA_INCLUDE_PATH=/OpenPASS/ThirdParty/include
+    EXTRA_LIB_PATH=/OpenPASS/ThirdParty/lib
+}
 
 ## Export configuration ##
 #CONFIG += USEOPENPASSSLAVEASLIBRARY

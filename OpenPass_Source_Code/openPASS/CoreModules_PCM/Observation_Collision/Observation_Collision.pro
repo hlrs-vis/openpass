@@ -1,13 +1,17 @@
+# /*********************************************************************
+# * Copyright (c) 2017 ITK Engineering GmbH
+# *
+# * This program and the accompanying materials are made
+# * available under the terms of the Eclipse Public License 2.0
+# * which is available at https://www.eclipse.org/legal/epl-2.0/
+# *
+# * SPDX-License-Identifier: EPL-2.0
+# **********************************************************************/
+
 #-----------------------------------------------------------------------------
 # \file  Observation_Collision.pro
 # \brief This file contains the information for the QtCreator-project of the
 #        module Observation_Collision
-#
-# Copyright (c) 2017 ITK Engineering GmbH.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the Eclipse Public License v1.0
-# which accompanies this distribution, and is available at
-# http://www.eclipse.org/legal/epl-v10.html
 #-----------------------------------------------------------------------------/
 
 include(../../../Global.pri)
@@ -24,8 +28,8 @@ QMAKE_CXXFLAGS += -std=c++11 -Dunix
 TARGET = Observation_Collision
 TEMPLATE = lib
 
-Release:DESTDIR = $${DIR_RELEASE}$${SUBDIR_LIB_SIMS}
-Debug:DESTDIR = $${DIR_DEBUG}$${SUBDIR_LIB_SIMS}
+#Release:DESTDIR = $${DIR_RELEASE}$${SUBDIR_LIB_SIMS}
+#Debug:DESTDIR = $${DIR_DEBUG}$${SUBDIR_LIB_SIMS}
 
 OBJECTS_DIR = .obj
 MOC_DIR = .moc

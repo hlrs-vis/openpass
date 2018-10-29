@@ -1,3 +1,13 @@
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
+
 #include "selector.h"
 
 
@@ -45,18 +55,8 @@ void Selector::Perform(double driverThrottle, double driverBrake, double driverS
     }
     else if (laneAssistActive == true)
     {
-        resultingThrottle = 0.0;
-        resultingBrake = 0.0;
-        resultingSteering = 0.0;
         resultingBrakeSuperpose = laneAssistBrakeSuperpose;
         assistantActivation = true;
-    }
-    else if (assistantActivation == true)
-    {
-        resultingThrottle = 0.0;
-        resultingBrake = 0.0;
-        resultingSteering = 0.0;
-        resultingBrakeSuperpose = std::vector<double> {0.0, 0.0, 0.0, 0.0};
     }
 }
 

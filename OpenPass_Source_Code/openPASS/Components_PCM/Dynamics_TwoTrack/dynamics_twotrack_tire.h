@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 #ifndef TIRE_H
 #define TIRE_H
@@ -26,20 +28,25 @@ public:
     double GetForce(const double);
     double GetLongSlip(const double tq);
     double CalcSlipY(double slipX, double vx, double vy);
-    double GetRollFriction(const double velTireX, const double F_add);
+    double GetRollFriction(const double velTireX);
+    void Rescale(const double forceZ_update);
 
 private:
 
     double forceZ_static;
+    double forceZ;
 
-    double forcePeak;
-    double forceSat;
+    double forcePeak_static;
+    double forceSat_static;
     double slipPeak;
     double slipSat;
+    double forcePeak;
+    double forceSat;
 
     const double frictionRoll = 0.01;
     const double stiffnessRoll = 0.3;
     const double velocityLimit = 0.27; // ca. 1 km/h
+    const double s_slide = 0.4;
 
 };
 

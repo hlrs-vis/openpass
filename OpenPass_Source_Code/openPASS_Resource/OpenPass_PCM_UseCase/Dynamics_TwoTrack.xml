@@ -80,6 +80,20 @@
       <unit></unit>
       <cardinality>1</cardinality>
     </input>
+	<input>
+      <id>4</id>
+      <type>VectorDouble</type>
+      <title>VerticalForce</title>
+      <unit></unit>
+      <cardinality>1</cardinality>
+    </input>
   </inputs>
-  <outputs/>
+  <outputs>
+    <output>
+      <id>0</id>
+      <type>VectorDouble</type>
+      <title>InertiaForce</title>
+      <unit></unit>
+    </output>
+  </outputs>
 </component>

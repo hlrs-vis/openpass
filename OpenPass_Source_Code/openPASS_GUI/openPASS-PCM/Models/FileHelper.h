@@ -1,3 +1,13 @@
+/*********************************************************************
+* Copyright c 2017, 2018 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
+
 #ifndef FILEHELPER_H
 #define FILEHELPER_H
 
@@ -17,7 +27,6 @@ public:
 
     static bool CopyFiles(QString extension, QString sourceDirectory, QString targetDirectory);
     static bool DeleteFiles(QString extension, QString sourceDirectory);
-    static bool RemoveDirectory(QString targetDirectory);
 };
 
 #endif // FILEHELPER_H

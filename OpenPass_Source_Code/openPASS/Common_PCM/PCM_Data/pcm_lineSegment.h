@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017, 2018 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 #ifndef PCM_LINESEGMENT_H
 #define PCM_LINESEGMENT_H
@@ -29,7 +31,7 @@ public:
     //! @param[in]     firstPoint     first pcm point
     //! @param[in]     secondPoint    second pcm point
     //-----------------------------------------------------------------------------
-    PCM_LineSegment(const PCM_Point *firstPoint, const PCM_Point *secondPoint);
+    PCM_LineSegment(const PCM_Point &firstPoint, const PCM_Point &secondPoint);
 
     // removing operators
     PCM_LineSegment(const PCM_LineSegment &) = default;
@@ -47,67 +49,67 @@ public:
     //!
     //! @return                     first point of line segment
     //-----------------------------------------------------------------------------
-    const PCM_Point *GetFirstPoint() const;
+    const PCM_Point GetFirstPoint() const;
 
     //-----------------------------------------------------------------------------
     //! Retrieve the pointer to the second point of the line segment.
     //!
     //! @return                     second point of line segment
     //-----------------------------------------------------------------------------
-    const PCM_Point *GetSecondPoint() const;
+    const PCM_Point GetSecondPoint() const;
 
     //-----------------------------------------------------------------------------
     //! Set the pointer of the first point of the line segment.
     //!
     //! @return                     first point of line segment
     //-----------------------------------------------------------------------------
-    void SetFirstPoint(const PCM_Point *point);
+    void SetFirstPoint(const PCM_Point point);
 
     //-----------------------------------------------------------------------------
     //! Set the pointer of the second point of the line segment.
     //!
     //! @return                     second point of line segment
     //-----------------------------------------------------------------------------
-    void SetSecondPoint(const PCM_Point *point);
+    void SetSecondPoint(const PCM_Point point);
 
     //-----------------------------------------------------------------------------
     //! Calculate the nearest point on a line segment from a pcm point either in a
-    //! specific viewDirection, within a range or none.
+    //! specific viewAngle, within a range or none.
     //!
     //! @param[in]    point         pcm Point from where to calculate nearest point
-    //! @param[in]    viewDirection viewDirection (INFINITY if no viewDirection is set in
+    //! @param[in]    viewAngle     viewAngle (INFINITY if no viewAngle is set in
     //!                             in function)
     //! @param[in]    range         range (INFINITY if no range is set in
     //!                             in function)
     //! @return                     distance from point to line line segment,
-    //!                             INFINITY if line is not in viewDirection or range
+    //!                             INFINITY if line is not in viewAngle or range
     //!                             from point.
     //-----------------------------------------------------------------------------
     PCM_Point GetNearestPointFromPoint(const PCM_Point *point,
-                                       double viewDirection = INFINITY,
+                                       double viewAngle = INFINITY,
                                        double range = INFINITY) const;
 
     //-----------------------------------------------------------------------------
     //! Calculate the distance from a pcm point to a pcm line segment either in a
-    //! specific viewDirection, within a range or none.
+    //! specific viewAngle, within a range or none.
     //!
     //! @param[in]    point         pcm Point from where to calculate distance
-    //! @param[in]    viewDirection viewDirection (INFINITY if no viewDirection is set in
+    //! @param[in]    viewAngle     viewAngle (INFINITY if no viewAngle is set in
     //!                             in function)
     //! @param[in]    range         range (INFINITY if no range is set in
     //!                             in function)
     //! @return                     distance from point to line line segment,
-    //!                             INFINITY if line is not in viewDirection or range
+    //!                             INFINITY if line is not in viewAngle or range
     //!                             from point.
     //-----------------------------------------------------------------------------
     double CalcDistanceFromPoint(const PCM_Point *point,
-                                 double viewDirection = INFINITY,
+                                 double viewAngle = INFINITY,
                                  double range = INFINITY) const;
 
     //-----------------------------------------------------------------------------
-    //! Calculate the viewDirection from a pcm point to a pcm line in minimal distance.
+    //! Calculate the viewAngle from a pcm point to a pcm line in minimal distance.
     //!
-    //! @param[in]     point        pcm Point from where to calculate viewDirection
+    //! @param[in]     point        pcm Point from where to calculate viewAngle
     //! @return                     distance from point to line,
     //!                             INFINITY if point or lineSegment == nullptr
     //-----------------------------------------------------------------------------
@@ -122,24 +124,12 @@ public:
     //-----------------------------------------------------------------------------
     double CalculateAngle() const;
 
-private:
     //-----------------------------------------------------------------------------
-    //! Calculate the distance from a pcm point to a pcm line in a specific viewDirection.
+    //! Calculate the distance between two end points of the line segment.
     //!
-    //! @param[in]    point         pcm Point from where to calculate distance
-    //! @param[in]    viewDirection viewDirection to calculate the distance
-    //! @return                     distance from point to line in specific viewDirection,
-    //!                             INFINITY if line is not in viewDirection from point
+    //! @return                     length of line segment
     //-----------------------------------------------------------------------------
-    double CalcDistanceFromPointInViewDirection(const PCM_Point *point, double viewDirection) const;
-
-    //-----------------------------------------------------------------------------
-    //! Calculate the nearest point on the line segment to the input point.
-    //!
-    //! @param[in]    point         point from where to calculate
-    //! @return                     nearest point on line segment to input point
-    //-----------------------------------------------------------------------------
-    PCM_Point CalcNearestPointFromPoint(const PCM_Point *point) const;
+    double CalculateLength() const;
 
     //-----------------------------------------------------------------------------
     //! Calculate the intersection point on the line segment from point in direction.
@@ -152,15 +142,44 @@ private:
                                                double direction) const;
 
     //-----------------------------------------------------------------------------
+    //! Calculate the sub line segment in a view range.
+    //!
+    //!
+    //! @param[in]    viewAngle     viewAngle to calculate the nearest point
+    //! @param[in]    range         range
+    //! @return                     sub line segment
+    //-----------------------------------------------------------------------------
+    PCM_LineSegment CalcSubLineSegmentInViewRange(const PCM_Point *point, double viewAngle, double range) const;
+
+private:
+    //-----------------------------------------------------------------------------
+    //! Calculate the distance from a pcm point to a pcm line in a specific viewAngle.
+    //!
+    //! @param[in]    point         pcm Point from where to calculate distance
+    //! @param[in]    viewAngle     viewAngle to calculate the distance
+    //! @return                     distance from point to line in specific viewAngle,
+    //!                             INFINITY if line is not in viewAngle from point
+    //-----------------------------------------------------------------------------
+    double CalcDistanceFromPointInViewDirection(const PCM_Point *point, double viewAngle) const;
+
+    //-----------------------------------------------------------------------------
+    //! Calculate the nearest point on the line segment to the input point.
+    //!
+    //! @param[in]    point         point from where to calculate
+    //! @return                     nearest point on line segment to input point
+    //-----------------------------------------------------------------------------
+    PCM_Point CalcNearestPointFromPoint(const PCM_Point *point) const;
+
+    //-----------------------------------------------------------------------------
     //! Calculate the nearest point on the line segment to the input point in a
     //! view range.
     //!
     //! @param[in]    point         point from where to calculate
-    //! @param[in]    viewDirection viewDirection to calculate the nearest point
+    //! @param[in]    viewAngle     viewAngle to calculate the nearest point
     //! @param[in]    range         range
     //! @return                     nearest point on line segment to input point
     //-----------------------------------------------------------------------------
-    PCM_Point CalcNearestPointFromPointInViewRange(const PCM_Point *point, double viewDirection,
+    PCM_Point CalcNearestPointFromPointInViewRange(const PCM_Point *point, double viewAngle,
                                                    double range) const;
 
     //-----------------------------------------------------------------------------
@@ -187,8 +206,8 @@ private:
     //-----------------------------------------------------------------------------
     bool CheckLineSegValid() const;
 
-    const PCM_Point *firstPoint = nullptr;  //!< first point
-    const PCM_Point *secondPoint = nullptr; //!< second point
+    PCM_Point firstPoint;
+    PCM_Point secondPoint;
 };
 
 #endif // PCM_LINESEGMENT_H
