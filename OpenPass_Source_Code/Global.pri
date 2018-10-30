@@ -11,8 +11,8 @@
 
 ## executable destination directories ##
 win32 {
-    DIR_DEBUG = "C:\OpenPASS\BinDebug"
-    DIR_RELEASE = "C:\OpenPASS\BinRelease"
+    DIR_DEBUG = "C:/OpenPASS/BinDebug"
+    DIR_RELEASE = "C:/OpenPASS/BinRelease"
 }
 
 unix {
