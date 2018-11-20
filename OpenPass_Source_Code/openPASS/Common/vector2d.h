@@ -1,9 +1,12 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
+* Copyright (c) 2017 ITK Engineering GmbH.
+* Copyright (c) 2018 in-tech GmbH.
+*
+* This program and the accompanying materials are made available under the
+* terms of the Eclipse Public License 2.0 which is available at
+* https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
 ******************************************************************************/
 
 //! \brief This file implements a generic 2D vector.
@@ -11,15 +14,12 @@
 #ifndef VECTOR2D_H
 #define VECTOR2D_H
 
-#include "opExport.h"
-
-namespace Common
-{
+namespace Common {
 
 /*!
  * class for 2d vectors in cartesian coordinate system
  */
-class OPENPASSCOMMONEXPORT Vector2d
+class Vector2d
 {
 public:
     /*!
@@ -29,10 +29,10 @@ public:
      * \param[in] y     y-value
      */
     Vector2d(double x = 0, double y = 0);
-    Vector2d(const Vector2d&) = default;
-    Vector2d(Vector2d&&) = default;
-    Vector2d& operator=(const Vector2d&) = default;
-    Vector2d& operator=(Vector2d&&) = default;
+    Vector2d(const Vector2d &) = default;
+    Vector2d(Vector2d &&) = default;
+    Vector2d &operator=(const Vector2d &) = default;
+    Vector2d &operator=(Vector2d &&) = default;
     virtual ~Vector2d() = default;
 
     /*!
@@ -44,11 +44,11 @@ public:
     void Translate(double x, double y);
 
     /*!
-     * translation of vector
-     *
-     * \param[in] t    displacement vector
+     * \brief Translate
+     * translation of vector via another vector
+     * \param[in] translationVector vector of translation
      */
-    void Translate(Common::Vector2d t);
+    void Translate(Vector2d translationVector);
 
     /*!
      * rotates vector by angle
@@ -84,7 +84,7 @@ public:
      * \param[in] in      2d vector
      * \return returns dot product of the 2 vectors
      */
-    double Dot(const Vector2d &in);
+    double Dot(const Vector2d &in) const;
 
     /*!
      * cross product with Z=0
@@ -92,7 +92,7 @@ public:
      * \param[in] in      2d vector
      * \return returns z-component of the cross product
      */
-    double Cross(const Vector2d &in);
+    double Cross(const Vector2d &in) const;
 
     /*!
      * Normalizes the 2d vector
@@ -119,9 +119,9 @@ public:
      */
     double Angle() const;
 
-    Vector2d operator-(const Vector2d &in);
-    Vector2d operator+(const Vector2d &in);
-    Vector2d operator*(double in);
+    Vector2d operator-(const Vector2d &in) const;
+    Vector2d operator+(const Vector2d &in) const;
+    Vector2d operator*(double in) const;
     bool operator==(const Vector2d &in) const;
 
     double x;

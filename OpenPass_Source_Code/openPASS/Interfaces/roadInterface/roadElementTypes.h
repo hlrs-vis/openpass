@@ -1,6 +1,6 @@
 /******************************************************************************
 * Copyright (c) 2017 ITK Engineering GmbH.
-* Copyright (c) 2018 in-tech GmbH on behalf of BMW AG
+* Copyright (c) 2018 in-tech GmbH
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -222,9 +222,12 @@ struct RoadSignalSpecification
     RoadSignalUnit unit{};
     double height{0};
     double width{0};
+    double length{0};
     std::string text{};
     double hOffset{0};
     double pitch{0};
+    double roll{0};
+    double yaw{0};
 
     RoadElementValidity validity;
 };

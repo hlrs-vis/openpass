@@ -1,9 +1,12 @@
 /******************************************************************************
-* Copyright (c) 2016 ITK Engineering AG.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
+* Copyright (c) 2017 ITK Engineering GmbH.
+* Copyright (c) 2018 in-tech GmbH.
+*
+* This program and the accompanying materials are made available under the
+* terms of the Eclipse Public License 2.0 which is available at
+* https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
 ******************************************************************************/
 
 //-----------------------------------------------------------------------------
@@ -80,6 +83,11 @@ public:
         return implementation->SetWeekday(weekday);
     }
 
+    void* GetWorldData()
+    {
+        return implementation->GetWorldData();
+    }
+
     Weekday GetWeekday() const
     {
         return implementation->GetWeekday();
@@ -145,6 +153,7 @@ public:
     {
         return implementation->CreateWorldScenery(sceneryFilename);
     }
+
     bool CreateWorldScenario(const  std::string &scenarioFilename)
     {
         return implementation->CreateWorldScenario(scenarioFilename);
@@ -181,7 +190,7 @@ public:
     //-----------------------------------------------------------------------------
     bool isInstantiated()
     {
-        return implementation!=NULL;
+        return implementation;
     }
 
 private:
