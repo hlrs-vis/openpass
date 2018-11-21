@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017, 2018 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 //-----------------------------------------------------------------------------
 //! @file  pcm_lineContainer.h
@@ -77,33 +79,35 @@ public:
 
     //-----------------------------------------------------------------------------
     //! Retrieve the nearest line segment(two points of a line) from a pcm point
-    //! either in a specific viewDirection, within a range or none.
+    //! either in a specific viewAngle, within a range or none.
     //!
-    //! @param[in]     point           base point
-    //! @param[in]     viewDirection   viewDirection (INFINITY if no viewDirection
-    //!                                is set in function)
-    //! @param[in]     range           range (INFINITY if no range is set in
-    //!                                in function)
-    //! @return                        pair of points which are the nearest,
-    //!                                pair of nullptr if there are no points
+    //! @param[in]     point                base point
+    //! @param[in]     viewAngle            viewAngle (INFINITY if no viewAngle
+    //!                                     is set in function)
+    //! @param[in]     range                range (INFINITY if no range is set in
+    //!                                     in function)
+    //! @param[in]     calculateSubLine     whether to return a sub line segment based on the view range
+    //! @return                             pair of points which are the nearest,
+    //!                                     pair of nullptr if there are no points
     //-----------------------------------------------------------------------------
     PCM_LineSegment GetNearestLineSegment(const PCM_Point *point,
-                                          double viewDirection = INFINITY,
-                                          double range = INFINITY) const;
+                                          double viewAngle = INFINITY,
+                                          double range = INFINITY,
+                                          bool calculateSubLine = true) const;
 
     //-----------------------------------------------------------------------------
     //! Retrieve the nearest point on a line segment of all lines of marks from a
-    //! pcm point either in a specific viewDirection, within a range or none.
+    //! pcm point either in a specific viewAngle, within a range or none.
     //!
     //! @param[in]     point           base point
-    //! @param[in]     viewDirection   viewDirection (INFINITY if no viewDirection
+    //! @param[in]     viewAngle       viewAngle (INFINITY if no viewAngle
     //!                                is set in function)
     //! @param[in]     range           range (INFINITY if no range is set in
     //!                                in function)
     //! @return                        nearest point on marks
     //-----------------------------------------------------------------------------
     PCM_Point GetNearestPoint(const PCM_Point *point,
-                              double viewDirection = INFINITY,
+                              double viewAngle = INFINITY,
                               double range = INFINITY) const;
 
 private:

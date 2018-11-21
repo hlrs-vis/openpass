@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 #include <cassert>
 #include <map>
@@ -98,7 +100,7 @@ bool ScheduleSpawnItem::Execute(SchedulePolicy *schedule)
 
     LOG_INTERN(LogLevel::DebugCore) << "spawn point " << spawnPoint->GetId() << " creates agent instance ref " << (agentSpawnItems[index])->GetId();
 
-    Agent *agent = spawnPoint->GetAgentFactory()->AddAgent(agentSpawnItems[index], spawnItemParameter, schedule->GetCurrentTime());
+    Agent *agent = spawnPoint->GetAgentFactory()->AddAgent(agentSpawnItems[index], spawnItemParameter, schedule->GetTimeCurrent());
     if(!agent)
     {
         return false;
@@ -226,7 +228,7 @@ bool ScheduleTriggerItem::Execute(SchedulePolicy *schedule)
         return true;
     }
 
-    if(!component->TriggerCycle(schedule->GetCurrentTime()))
+    if(!component->TriggerCycle(schedule->GetTimeCurrent()))
     {
         LOG_INTERN(LogLevel::Error) << "an error occurred during trigger agent: " << agent->GetId();
         return false;
@@ -261,7 +263,7 @@ bool ScheduleUpdateItem::Execute(SchedulePolicy *schedule)
         int outputLinkId = itChannel.first;
 
         // trigger update of output data
-        if(!component->AcquireOutputData(outputLinkId, schedule->GetCurrentTime()))
+        if(!component->AcquireOutputData(outputLinkId, schedule->GetTimeCurrent()))
         {
             LOG_INTERN(LogLevel::Error) << "an error occurred during the time loop";
             return false;
@@ -273,7 +275,7 @@ bool ScheduleUpdateItem::Execute(SchedulePolicy *schedule)
             Component *targetComponent = std::get<static_cast<size_t>(Channel::TargetLinkType::Component)>(item);
 
             // trigger update of input data
-            if(!targetComponent->UpdateInputData(targetLinkId, schedule->GetCurrentTime()))
+            if(!targetComponent->UpdateInputData(targetLinkId, schedule->GetTimeCurrent()))
             {
                 LOG_INTERN(LogLevel::Error) << "an error occurred during the time loop";
                 return false;

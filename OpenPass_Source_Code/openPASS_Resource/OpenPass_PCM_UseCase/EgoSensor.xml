@@ -47,6 +47,12 @@
       <unit>m/s^2</unit>
     </output>
 	<output>
+      <id>6</id>
+      <type>double</type>
+      <title>EgoAccelerationY</title>
+      <unit>m/s^2</unit>
+    </output>
+	<output>
       <id>12</id>
       <type>double</type>
       <title>EgoYawAngle</title>

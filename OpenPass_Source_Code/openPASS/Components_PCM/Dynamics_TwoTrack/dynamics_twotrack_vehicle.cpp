@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
@@ -20,13 +22,13 @@ VehicleSimpleTT::VehicleSimpleTT()
 {
     forceTotalXY.Scale(0.0);
     momentTotalZ = 0.0;
-    tires.resize(NUMBER_TIRES);
+    tires.resize(NUMBER_OF_WHEELS);
 
 }
 
 VehicleSimpleTT::~VehicleSimpleTT()
 {
-    for (int i = 0; i < NUMBER_TIRES; ++i)
+    for (int i = 0; i < NUMBER_OF_WHEELS; ++i)
     {
         delete tires[i];
     }
@@ -39,30 +41,29 @@ void VehicleSimpleTT::InitSetEngine(double weight, double P_engine, double T_bra
     massTotal = weight;
 }
 
-void VehicleSimpleTT::InitSetGeometry(double h_COG, double x_COG,
-                                      double y_wheelbase, double y_track)
+void VehicleSimpleTT::InitSetGeometry(double x_wheelbase, double x_COG,
+                                      double y_track, double y_COG)
 {
 
-    heightCOG = h_COG;
     yawVelocity = 0.0;
 
-    wheelBase = y_wheelbase;
+    positionTire[0].x = x_wheelbase/2.0 - x_COG; // > 0
+    positionTire[1].x = positionTire[0].x; // > 0
+    positionTire[2].x = -x_wheelbase/2.0 - x_COG; // < 0
+    positionTire[3].x = positionTire[2].x; // < 0
 
-    positionTire[0].x = x_COG;
-    positionTire[1].x = positionTire[0].x;
-    positionTire[2].x = positionTire[0].x - y_wheelbase;
-    positionTire[3].x = positionTire[2].x;
+    positionTire[0].y = y_track/2.0 - y_COG; // > 0
+    positionTire[1].y = -y_track/2.0 - y_COG; // < 0
+    positionTire[2].y = positionTire[0].y; // > 0
+    positionTire[3].y = positionTire[1].y; // < 0
 
-    positionTire[0].y = y_track / 2.0;
-    positionTire[1].y = -positionTire[0].y;
-    positionTire[2].y = y_track / 2.0;
-    positionTire[3].y = -positionTire[2].y;
+    double massFront = -massTotal * positionTire[2].x / x_wheelbase;
+    double massRear = massTotal * positionTire[0].x / x_wheelbase;
 
-    forceTireVerticalStatic[0] = massTotal * accelVerticalEarth / 2.0 * x_COG / y_wheelbase;
-    forceTireVerticalStatic[1] = forceTireVerticalStatic[0];
-    forceTireVerticalStatic[2] = massTotal * accelVerticalEarth / 2.0 * (y_wheelbase - x_COG) /
-                                 y_wheelbase;
-    forceTireVerticalStatic[3] = forceTireVerticalStatic[2];
+    forceTireVerticalStatic[0] = -accelVerticalEarth * massFront * positionTire[1].y / y_track;
+    forceTireVerticalStatic[1] = accelVerticalEarth * massFront * positionTire[0].y / y_track;
+    forceTireVerticalStatic[2] = -accelVerticalEarth * massRear * positionTire[3].y / y_track;
+    forceTireVerticalStatic[3] = accelVerticalEarth * massRear * positionTire[2].y / y_track;
 
     // RWD
     torqueTireXthrottle[0] = 0.0;
@@ -73,7 +74,7 @@ void VehicleSimpleTT::InitSetGeometry(double h_COG, double x_COG,
 void VehicleSimpleTT::InitSetTire(double vel, double F_max, double F_slide, double s_max,
                                   double r_tire, double frictionScaleRoll)
 {
-    for (int i = 0; i < NUMBER_TIRES; ++i)
+    for (int i = 0; i < NUMBER_OF_WHEELS; ++i)
     {
         tires[i] = new Tire(forceTireVerticalStatic[i], F_max, F_slide, s_max, r_tire, frictionScaleRoll);
         rotationVelocityTireX[i] = vel / r_tire;
@@ -104,7 +105,7 @@ void VehicleSimpleTT::DriveTrain(double throttlePedal, double brakePedal,
 
     torqueEngineMax = Saturate(torqueEngineMax, 0.0, torqueEngineLimit);
     double brakePedalMod;
-    for (int i = 0; i < NUMBER_TIRES; ++i)
+    for (int i = 0; i < NUMBER_OF_WHEELS; ++i)
     {
 
         // brake balance
@@ -129,10 +130,10 @@ void VehicleSimpleTT::DriveTrain(double throttlePedal, double brakePedal,
     }
 }
 
-void VehicleSimpleTT::ForceLocal(double timeStep, double angleTireFront)
+void VehicleSimpleTT::ForceLocal(double timeStep, double angleTireFront, std::vector<double> forceVertical)
 {
 
-    double angleTire[NUMBER_TIRES];
+    double angleTire[NUMBER_OF_WHEELS];
     angleTire[0] = angleTireFront + anglePreSet;
     angleTire[1] = angleTireFront - anglePreSet;
     angleTire[2] = -anglePreSet;
@@ -143,10 +144,11 @@ void VehicleSimpleTT::ForceLocal(double timeStep, double angleTireFront)
     double rotVelNew, forceAbs, torqueTireSum;
 
     // slips + forces
-    for (int i = 0; i < NUMBER_TIRES; ++i)
+    for (int i = 0; i < NUMBER_OF_WHEELS; ++i)
     {
 
         tire_tmp = tires[i];
+        tire_tmp->Rescale(forceVertical[i]); // here goes the delta_F_z scaling
         slipTire[i].Scale(0.0);
 
         // global rotation of the tire
@@ -189,7 +191,7 @@ void VehicleSimpleTT::ForceLocal(double timeStep, double angleTireFront)
 
         // roll friction
         bool posForce = forceTire[i].x > 0.0;
-        forceTire[i].x += tire_tmp->GetRollFriction(velocityTire.x, 0.0);
+        forceTire[i].x += tire_tmp->GetRollFriction(velocityTire.x);
         if ((forceTire[i].x < 0.0 && posForce) || (forceTire[i].x > 0.0 && !posForce))
         {
             forceTire[i].x = 0.0;
@@ -218,7 +220,7 @@ void VehicleSimpleTT::ForceGlobal()
 
     forceTotalXY.Scale(0.0);
     momentTotalZ = 0.0;
-    for (int i = 0; i < NUMBER_TIRES; ++i)
+    for (int i = 0; i < NUMBER_OF_WHEELS; ++i)
     {
         // total force
         forceTotalXY.Add(forceTire[i]);

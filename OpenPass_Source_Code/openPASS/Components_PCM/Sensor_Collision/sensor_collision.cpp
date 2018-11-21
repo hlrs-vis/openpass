@@ -1,10 +1,12 @@
-//*****************************************************************************
-// Copyright (c) 2017 ITK Engineering GmbH.
-// All rights reserved. This program and the accompanying materials
-// are made available under the terms of the Eclipse Public License v1.0
-// which accompanies this distribution, and is available at
-// http://www.eclipse.org/legal/epl-v10.html
-//*****************************************************************************
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 //-----------------------------------------------------------------------------
 //! @file  sensor_collision.cpp
@@ -14,6 +16,7 @@
 #include "sensor_collision.h"
 #include "modelInterface.h"
 #include "sensor_collision_implementation.h"
+#include "defaultPrio_PCM.h"
 
 const std::string Version = "0.0.1";
 static const CallbackInterface *Callbacks = nullptr;
@@ -40,7 +43,7 @@ extern "C" SENSOR_COLLISION_SHARED_EXPORT ModelInterface *OpenPASS_CreateInstanc
 
     if (priority == 0)
     {
-        priority = 201;
+        priority = (int)PCMdefaultPrio::Sensor_Collision;
     }
     try
     {

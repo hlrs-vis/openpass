@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 //-----------------------------------------------------------------------------
 //! @file  agentAdapter.h
@@ -134,6 +136,10 @@ public:
     {
         return trackWidth;
     }
+    virtual int GetGear() const
+    {
+        return 0;    // dummy
+    }
 
     double GetDistanceCOGtoLeadingEdge() const
     {
@@ -256,6 +262,23 @@ public:
         },
         distanceCOGtoFrontAxle);
     }
+    virtual void SetGear(int gear)
+    {
+        Q_UNUSED(gear);    // dummy
+    }
+
+    virtual void SetEngineSpeed(double engineSpeed)
+    {
+        Q_UNUSED(engineSpeed);    // dummy
+    }
+    virtual void SetEffAccelPedal(double percent)
+    {
+        Q_UNUSED(percent);    // dummy
+    }
+    virtual void SetEffBrakePedal(double percent)
+    {
+        Q_UNUSED(percent);    // dummy
+    }
 
     void SetWeight(double weight)
     {
@@ -309,6 +332,14 @@ public:
             UpdateMomentInertiaYaw(arg);
         },
         momentInertiaYaw);
+    }
+    virtual void SetMaxAcceleration(double maxAcceleration)
+    {
+        Q_UNUSED(maxAcceleration);    // dummy
+    }
+    virtual void SetMaxDeceleration(double maxDeceleration)
+    {
+        Q_UNUSED(maxDeceleration);    // dummy
     }
 
     void SetFrictionCoeff(double frictionCoeff)
@@ -522,7 +553,7 @@ public:
         this->brakeLightStatus = brakeLightStatus;
     }
 
-    bool GetBrakeLight()
+    bool GetBrakeLight() const
     {
         return brakeLightStatus;
     }
@@ -613,12 +644,12 @@ public:
         Q_UNUSED(laneId);    //dummy
         return 0;
     }
-    AgentInterface *GetAgentInFront(int laneId) const
+    const AgentInterface *GetAgentInFront(int laneId) const
     {
         Q_UNUSED(laneId);    //dummy
         return nullptr;
     }
-    AgentInterface *GetAgentBehind(int laneId) const
+    const AgentInterface *GetAgentBehind(int laneId) const
     {
         Q_UNUSED(laneId);    //dummy
         return nullptr;
@@ -840,6 +871,8 @@ public:
     double GetViewDirectionToNearestAgentInViewRange(double mainViewDirection,
                                                      double range) const;
 
+    double GetVisibilityToNearestAgentInViewRange(double mainViewDirection, double range) const;
+
     double GetYawVelocity();
     void SetYawVelocity(double yawVelocity);
     double GetYawAcceleration();
@@ -877,7 +910,7 @@ protected:
     void Log(CbkLogLevel logLevel,
              const char *file,
              int line,
-             const std::string &message)
+             const std::string &message) const
     {
         if (callbacks)
         {
@@ -887,10 +920,53 @@ protected:
                            message);
         }
     }
+    virtual RoadPosition GetRoadPosition() const
+    {
+        RoadPosition rp;
+        return rp;//dummy
+    }
+    virtual double GetDistanceToStartOfRoad(MeasurementPoint mp) const
+    {
+        Q_UNUSED(mp);
+        return 0.0;//dummy
+    }
+    virtual double GetDistanceReferencePointToLeadingEdge() const
+    {
+        return 0.0;//dummy
+    }
+    virtual double GetEngineSpeed() const
+    {
+        return 0.0;//dummy
+    }
+    virtual double GetEffAccelPedal() const
+    {
+        return 0.0;//dummy
+    }
+    virtual double GetEffBrakePedal() const
+    {
+        return 0.0;//dummy
+    }
+    virtual double GetMaxAcceleration() const
+    {
+        return 0.0;//dummy
+    }
+    virtual double GetMaxDeceleration() const
+    {
+        return 0.0;//dummy
+    }
+    virtual double GetLaneRemainder(Side) const
+    {
+        return 0.0;//dummy
+    }
 
 private:
     double GetAbsoluteViewAngle(double mainViewDirection) const ;
-    double ConvertAngleToPi(double angle) const;
+    double GetViewDirectionToPoint(const PCM_Point &point) const;
+    AgentDetection GetNearestAgent(double mainViewDirection,double range) const;
+    bool GetObstacleViewRanges(double viewAngle, double range,
+                               double distanceMax,
+                               const std::map<int, PCM_Line *> *lineMap,
+                               std::vector<std::pair<double, double>> &obstacleViewRanges) const;
 
     double positionX = 0.0;
     double positionY = 0.0;

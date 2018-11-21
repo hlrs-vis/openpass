@@ -33,14 +33,14 @@
 	<input>
       <id>3</id>
       <type>bool</type>
-      <title>BrakeAssist active</title>
+      <title>Cpa active</title>
       <unit></unit>
       <cardinality>1</cardinality>	  
     </input>
 	<input>
       <id>4</id>
       <type>double</type>
-      <title>BrakeAssist Brake Pedal</title>
+      <title>Cpa Brake Pedal</title>
       <unit></unit>
       <cardinality>1</cardinality>	  
     </input>

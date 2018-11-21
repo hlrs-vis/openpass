@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 #ifndef COMMONTOOLS
 #define COMMONTOOLS
@@ -80,6 +82,37 @@ public:
     {
         double radian = degree / 180 * M_PI;
         return radian;
+    }
+
+    static double ConvertAngleToPi(double angle)
+    {
+        double out_angle = angle;
+        if (fabs(out_angle) > M_PI)
+        {
+            if (out_angle > 0)
+            {
+                out_angle -= 2 * M_PI;
+            }
+            else
+            {
+                out_angle += 2 * M_PI;
+            }
+        }
+
+        return out_angle;
+    }
+
+    // check if an angle is in the range of [angleRight, angleLeft]. All 3 inputs should be in the range of [-PI, PI]
+    static bool Angle_In_Range(double angel, double angleRight, double angleLeft)
+    {
+      if (angleRight <= angleLeft)
+      {
+          return ((angel >= angleRight) && (angel <= angleLeft));
+      }
+      else // angleRight > angleLeft, meaning that the range passes through the line of PI/-PI
+      {
+          return ((angel >= angleRight) || (angel <= angleLeft));
+      }
     }
 };
 

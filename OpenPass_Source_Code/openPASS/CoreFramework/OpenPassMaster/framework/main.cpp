@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 //! @file  main.cpp
 //! @brief This file contains the main entry point.
@@ -142,6 +144,19 @@ extern "C" Q_DECL_EXPORT int run(int argc, char *argv[])
         {
             LOG_INTERN(LogLevel::Error) << slavePath.toStdString() << " not started, check path.";
             exit(EXIT_FAILURE);
+        }
+        else
+        {
+            QString arglist;
+            foreach (QString arc, arguments)
+            {
+                arglist.append(arc);
+                arglist.append("\n");
+            }
+            LOG_INTERN(LogLevel::Info)
+                    << slavePath.toStdString()
+                    << " started with \n"
+                    << arglist.toStdString() << "\n";
         }
 
     }

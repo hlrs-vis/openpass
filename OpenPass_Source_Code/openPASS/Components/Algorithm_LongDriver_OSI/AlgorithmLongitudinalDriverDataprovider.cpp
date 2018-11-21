@@ -18,7 +18,7 @@
 #include <limits>
 #include <map>
 #include <iostream>
-#include "AlgorithmLongitudinalDriverDataprovider.h"
+#include "AlgorithmLongitudinalDriverDP.h"
 
 
 double ALongitudinalDataProvider::ClosedLoopController(double xVel, double lastXVel, double lastIn_aVehicle, double cycleTime){

@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 //-----------------------------------------------------------------------------
 //! @file  Evaluation_Pcm/agent.h
@@ -113,6 +115,10 @@ public:
     {
         return 0.0;    // dummy
     }
+    virtual int GetGear() const
+    {
+        return 0;    // dummy
+    }
     virtual double GetDistanceCOGtoLeadingEdge() const
     {
         return distanceCOGtoLeadingEdge;
@@ -174,6 +180,23 @@ public:
     {
         Q_UNUSED(distanceCOGtoFrontAxle);    // dummy
     }
+    virtual void SetGear(int gear)
+    {
+        Q_UNUSED(gear);    // dummy
+    }
+
+    virtual void SetEngineSpeed(double engineSpeed)
+    {
+        Q_UNUSED(engineSpeed);    // dummy
+    }
+    virtual void SetEffAccelPedal(double percent)
+    {
+        Q_UNUSED(percent);    // dummy
+    }
+    virtual void SetEffBrakePedal(double percent)
+    {
+        Q_UNUSED(percent);    // dummy
+    }
     virtual void SetWeight(double weight)
     {
         Q_UNUSED(weight);    // dummy
@@ -197,6 +220,14 @@ public:
     virtual void SetMomentInertiaYaw(double momentInertiaYaw)
     {
         Q_UNUSED(momentInertiaYaw);    // dummy
+    }
+    virtual void SetMaxAcceleration(double maxAcceleration)
+    {
+        Q_UNUSED(maxAcceleration);    // dummy
+    }
+    virtual void SetMaxDeceleration(double maxDeceleration)
+    {
+        Q_UNUSED(maxDeceleration);    // dummy
     }
     virtual void SetFrictionCoeff(double frictionCoeff)
     {
@@ -259,7 +290,7 @@ public:
     {
         Q_UNUSED(brakeLightStatus);   //dummy
     }
-    virtual bool GetBrakeLight()
+    virtual bool GetBrakeLight() const
     {
         return false;   //dummy
     }
@@ -376,12 +407,12 @@ public:
         Q_UNUSED(laneId);    //dummy
         return 0;
     }
-    virtual AgentInterface *GetAgentInFront(int laneId) const
+    virtual const AgentInterface *GetAgentInFront(int laneId) const
     {
         Q_UNUSED(laneId);    //dummy
         return nullptr;
     }
-    virtual AgentInterface *GetAgentBehind(int laneId) const
+    virtual const AgentInterface *GetAgentBehind(int laneId) const
     {
         Q_UNUSED(laneId);    //dummy
         return nullptr;
@@ -758,6 +789,14 @@ public:
 
         return INFINITY;
     }//dummy
+    double GetVisibilityToNearestAgentInViewRange(double mainViewDirection,
+                                                  double range) const
+    {
+        Q_UNUSED(mainViewDirection);
+        Q_UNUSED(range);
+
+        return INFINITY;
+    }//dummy
     double GetYawVelocity()
     {
         return 0;   //dummy
@@ -836,6 +875,44 @@ public:
     {
         return 0;//dummy
     }
+    virtual RoadPosition GetRoadPosition() const
+    {
+        RoadPosition rp;
+        return rp;//dummy
+    }
+    virtual double GetDistanceToStartOfRoad(MeasurementPoint mp) const
+    {
+        Q_UNUSED(mp);
+        return 0.0;//dummy
+    }
+    virtual double GetDistanceReferencePointToLeadingEdge() const
+    {
+        return 0.0;//dummy
+    }
+    virtual double GetEngineSpeed() const
+    {
+        return 0.0;//dummy
+    }
+    virtual double GetEffAccelPedal() const
+    {
+        return 0.0;//dummy
+    }
+    virtual double GetEffBrakePedal() const
+    {
+        return 0.0;//dummy
+    }
+    virtual double GetMaxAcceleration() const
+    {
+        return 0.0;//dummy
+    }
+    virtual double GetMaxDeceleration() const
+    {
+        return 0.0;//dummy
+    }
+    virtual double GetLaneRemainder(Side) const
+    {
+        return 0.0;//dummy
+    }
 
 private:
     double positionX = 0.0;         //!< x-coordinate of the agent
@@ -846,7 +923,7 @@ private:
     double velocityX = 0.0;         //!< lateral velocity of the agent
     double velocityY = 0.0;         //!< vertical velocity of the agent
     double distanceCOGtoLeadingEdge =
-        0.0;      //!< distance center of gravity to leading edge of the agent
+            0.0;      //!< distance center of gravity to leading edge of the agent
     double accelerationX = 0.0;     //!< lateral acceleration of the agent
     double accelerationY = 0.0;     //!< vertical acceleration of the agent
     double yawAngle = 0.0;          //!< yaw angle of the agent

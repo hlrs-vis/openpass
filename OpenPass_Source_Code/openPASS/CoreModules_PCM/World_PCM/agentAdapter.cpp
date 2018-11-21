@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 #include <cassert>
 #include <algorithm>
@@ -213,14 +215,14 @@ double AgentAdapter::GetDistanceToNearestMarkInViewRange(MarkType markType,
 double AgentAdapter::GetDistanceToNearestMarkInViewRange(MarkType markType,
                                                          double mainViewDirection, double range) const
 {
-    double resultingAngle = GetAbsoluteViewAngle(mainViewDirection);
+    double viewAngle = GetAbsoluteViewAngle(mainViewDirection);
 
     const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
     const PCM_Data *data = worldPCM->GetPCM_Data();
     PCM_LineSegment minLineSegment = data->GetNearestLineSegmentOfMarks(markType, &agentPoint,
-                                                                        resultingAngle, range);
+                                                                        viewAngle, range);
 
-    double minDistance = minLineSegment.CalcDistanceFromPoint(&agentPoint, resultingAngle, range);
+    double minDistance = minLineSegment.CalcDistanceFromPoint(&agentPoint, viewAngle, range);
 
     return minDistance;
 }
@@ -235,13 +237,12 @@ double AgentAdapter::GetOrientationOfNearestMarkInViewRange(MarkType markType,
 double AgentAdapter::GetOrientationOfNearestMarkInViewRange(MarkType markType,
                                                             double mainViewDirection, double range) const
 {
-    double resultingAngle = GetAbsoluteViewAngle(mainViewDirection);
+    double viewAngle = GetAbsoluteViewAngle(mainViewDirection);
 
     const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
     const PCM_Data *data = worldPCM->GetPCM_Data();
     PCM_LineSegment minLineSegment = data->GetNearestLineSegmentOfMarks(markType, &agentPoint,
-                                                                        resultingAngle,
-                                                                        range);
+                                                                        viewAngle, range);
 
     double lineAngle = minLineSegment.CalculateAngle();
     double agentAngle = GetYawAngle();
@@ -276,18 +277,18 @@ double AgentAdapter::GetViewDirectionToNearestMarkInViewRange(MarkType markType,
 double AgentAdapter::GetViewDirectionToNearestMarkInViewRange(MarkType markType,
                                                               double mainViewDirection, double range) const
 {
-    double resultingAngle = GetAbsoluteViewAngle(mainViewDirection);
+    double viewAngle = GetAbsoluteViewAngle(mainViewDirection);
 
     const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
     const PCM_Data *data = worldPCM->GetPCM_Data();
-    PCM_Point nearestPoint = data->GetNearestPointOfMarks(markType, &agentPoint, resultingAngle, range);
+    PCM_Point nearestPoint = data->GetNearestPointOfMarks(markType, &agentPoint, viewAngle, range);
 
     double pointAngle = PCM_Helper::CalcAngleBetweenPoints(&agentPoint, &nearestPoint);
 
     double agentAngle = GetYawAngle();
     double viewDirection = pointAngle - agentAngle;
 
-    viewDirection = ConvertAngleToPi(viewDirection);
+    viewDirection = CommonHelper::ConvertAngleToPi(viewDirection);
 
     return viewDirection;
 }
@@ -319,14 +320,14 @@ double AgentAdapter::GetDistanceToNearestObjectInViewRange(ObjectType objectType
 double AgentAdapter::GetDistanceToNearestObjectInViewRange(ObjectType objectType,
                                                            double mainViewDirection, double range) const
 {
-    double resultingAngle = GetAbsoluteViewAngle(mainViewDirection);
+    double viewAngle = GetAbsoluteViewAngle(mainViewDirection);
 
     const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
     const PCM_Data *data = worldPCM->GetPCM_Data();
     PCM_LineSegment minLineSegment = data->GetNearestLineSegmentOfObject(objectType, &agentPoint,
-                                                                         resultingAngle, range);
+                                                                         viewAngle, range);
 
-    double minDistance = minLineSegment.CalcDistanceFromPoint(&agentPoint, resultingAngle, range);
+    double minDistance = minLineSegment.CalcDistanceFromPoint(&agentPoint, viewAngle, range);
 
     return minDistance;
 }
@@ -341,19 +342,18 @@ double AgentAdapter::GetViewDirectionToNearestObjectInViewRange(ObjectType objec
 double AgentAdapter::GetViewDirectionToNearestObjectInViewRange(ObjectType objectType,
                                                                 double mainViewDirection, double range) const
 {
-    double resultingAngle = GetAbsoluteViewAngle(mainViewDirection);
+    double viewAngle = GetAbsoluteViewAngle(mainViewDirection);
 
     const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
     const PCM_Data *data = worldPCM->GetPCM_Data();
-    PCM_Point nearestPoint = data->GetNearestPointOfObject(objectType, &agentPoint, resultingAngle,
-                                                           range);
+    PCM_Point nearestPoint = data->GetNearestPointOfObject(objectType, &agentPoint, viewAngle, range);
 
     double pointAngle = PCM_Helper::CalcAngleBetweenPoints(&agentPoint, &nearestPoint);
 
     double agentAngle = GetYawAngle();
     double viewDirection = pointAngle - agentAngle;
 
-    viewDirection = ConvertAngleToPi(viewDirection);
+    viewDirection = CommonHelper::ConvertAngleToPi(viewDirection);
 
     return viewDirection;
 }
@@ -366,12 +366,23 @@ int AgentAdapter::GetIdOfNearestAgent(AgentViewDirection agentViewDirection, dou
 
 int AgentAdapter::GetIdOfNearestAgent(double mainViewDirection, double range) const
 {
-    int egoId = GetAgentId();
-    const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
-    const PCM_Data *data = worldPCM->GetPCM_Data();
-    int id = data->GetIdOfNearestAgent(egoId, &agentPoint, mainViewDirection, range);
+    AgentDetection agentDet = GetNearestAgent(mainViewDirection, range);
+    return agentDet.oppId;
+}
 
-    return id;
+double AgentAdapter::GetViewDirectionToPoint(const PCM_Point &point) const
+{
+    if(PCM_Helper::CheckPointValid(&point))
+    {
+        const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
+        double pointAngle = PCM_Helper::CalcAngleBetweenPoints(&agentPoint, &point);
+
+        double agentAngle = GetYawAngle();
+        double viewDirection = pointAngle - agentAngle;
+
+        return CommonHelper::ConvertAngleToPi(viewDirection);
+    }
+    return INFINITY;
 }
 
 double AgentAdapter::GetDistanceToNearestAgentInViewRange(AgentViewDirection agentViewDirection,
@@ -384,17 +395,30 @@ double AgentAdapter::GetDistanceToNearestAgentInViewRange(AgentViewDirection age
 double AgentAdapter::GetDistanceToNearestAgentInViewRange(double mainViewDirection,
                                                           double range) const
 {
-    double resultingAngle = GetAbsoluteViewAngle(mainViewDirection);
+    AgentDetection agentDet = GetNearestAgent(mainViewDirection, range);
 
-    int egoId = GetAgentId();
-    const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
-    const PCM_Data *data = worldPCM->GetPCM_Data();
-    PCM_LineSegment minLineSegment = data->GetNearestLineSegmentOfAgents(egoId, &agentPoint,
-                                                                         resultingAngle, range);
+//    LOGINFO(QString().sprintf("%.2f m from ego center to nearest agent", distance).toStdString());
 
-    double minDistance = minLineSegment.CalcDistanceFromPoint(&agentPoint, resultingAngle, range);
+//    // calculate the ego edge towards the nearest opponent
+//    const PCM_Data *data = worldPCM->GetPCM_Data();
+//    int egoId = GetAgentId();
+//    double viewDirection = GetViewDirectionToPoint(&nearestPoint);
+//    const PCM_Point egoCrossPoint = data->GetNearestPointOfAgents(egoId, -1, &agentPoint, viewDirection);
 
-    return minDistance;
+//    // calculate the distance from ego center to the ego edge (towards the nearest opponent)
+//    double distanceInner = PCM_Helper::CalcDistanceBetweenPoints(&agentPoint, &egoCrossPoint);
+
+//    if(distanceInner > 0)
+//        LOGINFO(QString().sprintf("%.2f m from ego center to ego edge", distanceInner).toStdString());
+//    else{
+//        LOGINFO(QString().sprintf("No distance between ego (%.2f, %.2f) and ego crossing point (%.2f, %.2f)",
+//                                  GetPositionX(), GetPositionY(), egoCrossPoint.GetX(), egoCrossPoint.GetY()).toStdString());
+//    }
+
+//    // deduct the line segment within ego from the distance
+//    distance = distance - distanceInner;
+
+    return agentDet.distance;
 }
 
 double AgentAdapter::GetViewDirectionToNearestAgentInViewRange(AgentViewDirection
@@ -407,22 +431,210 @@ double AgentAdapter::GetViewDirectionToNearestAgentInViewRange(AgentViewDirectio
 double AgentAdapter::GetViewDirectionToNearestAgentInViewRange(double mainViewDirection,
                                                                double range) const
 {
-    double resultingAngle = GetAbsoluteViewAngle(mainViewDirection);
+    AgentDetection agentDet = GetNearestAgent(mainViewDirection, range);
+    return GetViewDirectionToPoint(agentDet.oppPoint);
+}
 
+// private method
+AgentDetection AgentAdapter::GetNearestAgent(double mainViewDirection,double range) const
+{
     int egoId = GetAgentId();
-    const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
     const PCM_Data *data = worldPCM->GetPCM_Data();
-    PCM_Point nearestPoint = data->GetNearestPointOfAgents(egoId, &agentPoint, resultingAngle,
-                                                           range);
+    const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
+    double viewAngle = GetAbsoluteViewAngle(mainViewDirection); // convert the view direction from the ego coordinate to the world coordinate
 
-    double pointAngle = PCM_Helper::CalcAngleBetweenPoints(&agentPoint, &nearestPoint);
+    AgentDetection agentDet = data->GetNearestAgent(egoId, &agentPoint, viewAngle, range);
+//    LOGINFO(QString().sprintf("AgentAdapter: ego%d 's nearest agent at (%.2f, %.2f) with viewAngle %.2f and range %.2f",
+//                                      agentDet.egoId, agentDet.oppPoint.GetX(), agentDet.oppPoint.GetY(), viewAngle, range).toStdString());
 
-    double agentAngle = GetYawAngle();
-    double viewDirection = pointAngle - agentAngle;
+    return agentDet;
+}
 
-    viewDirection = ConvertAngleToPi(viewDirection);
+bool AgentAdapter::GetObstacleViewRanges(double viewAngle, double range,
+                                         double distanceMax,
+                                         const std::map<int, PCM_Line *> *lineMap,
+                                         std::vector<std::pair<double, double>> &obstacleViewRanges) const
+{
+    const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
+    PCM_Point *prevPoint = nullptr;
 
-    return viewDirection;
+    for (std::pair<int, PCM_Line *> pcmLinePair : *lineMap)
+    {
+        PCM_Line *line = pcmLinePair.second;
+        const std::map<int, const PCM_Point *> *pointMap = line->GetPointMap();
+        for (std::pair<int, const PCM_Point *> pcmPointPair : *pointMap)
+        {
+            const PCM_Point *point = pcmPointPair.second;
+            if(prevPoint != nullptr)
+            {
+                PCM_LineSegment objLineSeg = PCM_LineSegment(*prevPoint, *point);
+                double objDistance = objLineSeg.CalcDistanceFromPoint(&agentPoint, viewAngle, range);
+
+                if ((objDistance > 0) && (objDistance < distanceMax))
+                {
+                    // restrict the object line segment within ego' view range
+                    PCM_LineSegment objLineSegSub = objLineSeg.CalcSubLineSegmentInViewRange(&agentPoint, viewAngle, range);
+
+                    double viewDirObjMin = GetViewDirectionToPoint(objLineSegSub.GetFirstPoint());
+                    double viewDirObjMax = GetViewDirectionToPoint(objLineSegSub.GetSecondPoint());
+                    if(viewDirObjMin > viewDirObjMax)
+                        std::swap(viewDirObjMin, viewDirObjMax);
+
+//                    LOGINFO(QString().sprintf("AgentAdapter: obstacle line from (%f, %f) to (%f, %f) (%f m restricted from %f m) with range %f (%f - %f)",
+//                                              objLineSegSub.GetFirstPoint().GetX(), objLineSegSub.GetFirstPoint().GetY(),
+//                                              objLineSegSub.GetSecondPoint().GetX(), objLineSegSub.GetSecondPoint().GetY(),
+//                                              objLineSegSub.CalculateLength(), objLineSeg.CalculateLength(),
+//                                (viewDirObjMax - viewDirObjMin), viewDirObjMin, viewDirObjMax).toStdString());
+
+                    if((!std::isinf(viewDirObjMin)) && (!std::isinf(viewDirObjMax)))
+                    {
+                        bool rangeUpdated = false;
+                        for (auto& viewRange : obstacleViewRanges)
+                        {
+                            if((viewDirObjMin >= viewRange.first) && (viewDirObjMax <= viewRange.second))
+                            {   // overlapped in the middle
+                                rangeUpdated = true;
+                                break;
+                            }
+                            else
+                            {
+                                if((viewDirObjMin < viewRange.first) && (viewDirObjMax >= viewRange.first))
+                                {   // overlapped on the right
+//                                    LOGINFO(QString().sprintf("AgentAdapter: update obstacleViewRange min from %f (%f - %f) to %f (%f - %f)",
+//                                                (viewRange.second - viewRange.first), viewRange.first, viewRange.second,
+//                                                (viewRange.second - viewDirObjMin), viewDirObjMin, viewRange.second).toStdString());
+                                    viewRange.first = viewDirObjMin;
+                                    rangeUpdated = true;
+                                }
+
+                                if((viewDirObjMin <= viewRange.second) && (viewDirObjMax > viewRange.second))
+                                {   // overlapped on the left
+//                                    LOGINFO(QString().sprintf("AgentAdapter: update obstacleViewRange max from %f (%f - %f) to %f (%f - %f)",
+//                                                (viewRange.second - viewRange.first), viewRange.first, viewRange.second,
+//                                                (viewDirObjMax - viewRange.first), viewRange.first, viewDirObjMax).toStdString());
+                                    viewRange.second = viewDirObjMax;
+                                    rangeUpdated = true;
+                                }
+
+                                if(rangeUpdated)
+                                    break;
+                            }
+                        }
+                        if(!rangeUpdated)
+                        {
+//                            LOGINFO(QString().sprintf("AgentAdapter: add new obstacleViewRange %f (%.10f - %.10f)",
+//                                        (viewDirObjMax - viewDirObjMin), viewDirObjMin, viewDirObjMax).toStdString());
+                            obstacleViewRanges.push_back(std::pair<double, double>(viewDirObjMin, viewDirObjMax));
+                        }
+
+                    }
+                }
+            }
+            prevPoint = (PCM_Point *)point;
+        }
+    }
+    return true;
+}
+
+double AgentAdapter::GetVisibilityToNearestAgentInViewRange(double mainViewDirection, double range) const
+{
+    int egoId = GetAgentId();
+    const PCM_Data *data = worldPCM->GetPCM_Data();
+    const PCM_Point agentPoint(-1, GetPositionX(), GetPositionY(), 0);
+    double viewAngle = GetAbsoluteViewAngle(mainViewDirection);
+
+    /** @addtogroup sim_step_ac_2
+     * Find the nearest agent.
+    */
+    AgentDetection agentDet = data->GetNearestAgent(egoId, &agentPoint, viewAngle, range);
+
+    if(agentDet.oppId<0) // opponent is not found
+        return 0;
+
+    /** @addtogroup sim_step_ac_2
+     * Calculate the full view range of opponent from ego's perspective, regardless of ego's view range.
+    */
+    double viewDirOppFullMin = GetViewDirectionToPoint(agentDet.fullOppLineSegment.GetFirstPoint());
+    double viewDirOppFullMax = GetViewDirectionToPoint(agentDet.fullOppLineSegment.GetSecondPoint());
+    if(viewDirOppFullMin > viewDirOppFullMax)
+        std::swap(viewDirOppFullMin, viewDirOppFullMax);
+
+    /** @addtogroup sim_step_ac_2
+     * Calculate the actual view range of opponent from ego's perspective, which might be limited by ego's view range.
+    */
+    double viewDirOppSubMin = GetViewDirectionToPoint(agentDet.subOppLineSegment.GetFirstPoint());
+    double viewDirOppSubMax = GetViewDirectionToPoint(agentDet.subOppLineSegment.GetSecondPoint());
+    if(viewDirOppSubMin > viewDirOppSubMax)
+        std::swap(viewDirOppSubMin, viewDirOppSubMax);
+
+    double viewDirMin = viewDirOppSubMin, viewDirMax = viewDirOppSubMax;
+
+    /** @addtogroup sim_step_ac_2
+     * Calculate the view ranges of obstacles (if any) between ego and the opponent, including both objects and view objects.
+    */
+    double viewDirOpp = (viewDirMin + viewDirMax)/2.0;
+    double viewRange = viewDirMax - viewDirMin;
+    std::vector<std::pair<double, double>> obstacleViewRanges;
+    GetObstacleViewRanges(viewDirOpp, viewRange, agentDet.distance, data->GetObject()->GetLineMap(),     obstacleViewRanges);
+    GetObstacleViewRanges(viewDirOpp, viewRange, agentDet.distance, data->GetViewObject()->GetLineMap(), obstacleViewRanges);
+
+    LOGINFO(QString().sprintf("AgentAdapter: agent %d sees agent %d with view-range %f (%.2f - %.2f) out of %f (%.2f - %.2f) and %d obstacleViewRanges",
+                              egoId, agentDet.oppId, viewRange, viewDirMin, viewDirMax, (viewDirOppFullMax - viewDirOppFullMin),
+                              viewDirOppFullMin, viewDirOppFullMax, obstacleViewRanges.size()).toStdString());
+
+    /** @addtogroup sim_step_ac_2
+     * Reduce the actual view range of opponent with the ranges of obstacles between ego and opponent. This may have 4 situations:
+     *  - opponent is fully covered by the object.
+     *  - object is at the right edge of ego's view range to opponent.
+     *  - object is at the left edge of ego's view range to opponent.
+     *  - object is inside ego's view range to opponent
+    */
+    double viewDirObjMin, viewDirObjMax;
+    for (auto& objViewRange : obstacleViewRanges)
+    {
+        viewDirObjMin = objViewRange.first;
+        viewDirObjMax = objViewRange.second;
+
+        LOGINFO(QString().sprintf("AgentAdapter: agent %d sees agent %d with viewRange %f (%.15f - %.15f) and an obstacleViewRange at (%.15f - %.15f)",
+                                  egoId, agentDet.oppId, viewRange, viewDirMin, viewDirMax, viewDirObjMin, viewDirObjMax).toStdString());
+
+        if((viewDirObjMin <= viewDirMin) && (viewDirObjMax >= viewDirMax))
+        {
+            // opponent is fully covered by the object
+            viewRange = 0.0;
+            break;
+        }
+        else if((viewDirObjMin <= viewDirMin) && (viewDirObjMax > viewDirMin))
+        {   // object is at the right edge of ego's view range to opponent
+            LOGINFO(QString().sprintf("AgentAdapter: agent %d sees agent %d with view range (%f - %f) and an obstacle on the right edge at (%f - %f)",
+                                          egoId, agentDet.oppId, viewDirMin, viewDirMax, viewDirObjMin, viewDirObjMax).toStdString());
+            viewRange -= (viewDirObjMax - viewDirMin);
+            viewDirMin = viewDirObjMax; // reduce the right (min) edge of view range
+        }
+        else if((viewDirObjMax >= viewDirMax) && (viewDirObjMin < viewDirMax))
+        {   // object is at the left edge of ego's view range to opponent
+            LOGINFO(QString().sprintf("AgentAdapter: agent %d sees agent %d with view range (%.2f - %.2f) and an obstacle on the left edge at (%f - %f)",
+                                          egoId, agentDet.oppId, viewDirMin, viewDirMax, viewDirObjMin, viewDirObjMax).toStdString());
+            viewRange -= (viewDirMax - viewDirObjMin);
+            viewDirMax = viewDirObjMin; // reduce the left (max) edge of view range
+        }
+        else if((viewDirObjMin > viewDirMin) && (viewDirObjMax < viewDirMax))
+        {   // object is inside ego's view range to opponent
+            LOGINFO(QString().sprintf("AgentAdapter: agent %d sees agent %d with view range (%f - %f) and an obstacle in the middle at (%f - %f)",
+                                          egoId, agentDet.oppId, viewDirMin, viewDirMax, viewDirObjMin, viewDirObjMax).toStdString());
+            viewRange -= (viewDirObjMax - viewDirObjMin);
+        }
+    }
+
+    /** @addtogroup sim_step_ac_2
+     * Finally, the visibility is calculated as (the reduced view range / full view range of opponent )
+    */
+    double visibility = viewRange / (viewDirOppFullMax - viewDirOppFullMin);
+
+//    if(agentDet.oppId >0)
+//        LOGINFO(QString().sprintf("AgentAdapter: agent %d sees agent %d in %.2fm with visibility of %.2f (%.2f - %.2f) at direction of (%.2f # %.2f)",
+//                                egoId, agentDet.oppId, agentDet.distance, visibility, viewDirMin, viewDirMax, mainViewDirection, range).toStdString());
+    return visibility;
 }
 
 double AgentAdapter::GetYawVelocity()
@@ -542,32 +754,14 @@ double AgentAdapter::GetAccelerationAbsolute() const
 
 double AgentAdapter::GetAbsoluteViewAngle(double mainViewDirection) const
 {
-    double resultingAngle = INFINITY;
+    double viewAngle = INFINITY;
     if (!std::isinf(mainViewDirection))
     {
         double agentAngle = GetYawAngle();
-        resultingAngle = agentAngle + mainViewDirection;
+        viewAngle = agentAngle + mainViewDirection;
 
-        resultingAngle = ConvertAngleToPi(resultingAngle);
+        viewAngle = CommonHelper::ConvertAngleToPi(viewAngle);
     }
 
-    return resultingAngle;
-}
-
-double AgentAdapter::ConvertAngleToPi(double angle) const
-{
-    double out_angle = angle;
-    if (fabs(out_angle) > M_PI)
-    {
-        if (out_angle > 0)
-        {
-            out_angle -= 2 * M_PI;
-        }
-        else
-        {
-            out_angle += 2 * M_PI;
-        }
-    }
-
-    return out_angle;
+    return viewAngle;
 }

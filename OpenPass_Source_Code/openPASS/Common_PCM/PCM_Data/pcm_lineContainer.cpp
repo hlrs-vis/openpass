@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017, 2018 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 #include "pcm_lineContainer.h"
 
@@ -57,9 +59,9 @@ PCM_Line *PCM_LineContainer::GetLineById(int id) const
 }
 
 PCM_LineSegment PCM_LineContainer::GetNearestLineSegment(const PCM_Point *point,
-                                                         double viewDirection, double range) const
+                                                         double viewAngle, double range, bool calculateSubLine) const
 {
-    PCM_LineSegment minLineSegment(nullptr, nullptr);
+    PCM_LineSegment minLineSegment;
 
     if (point == nullptr)
     {
@@ -72,9 +74,9 @@ PCM_LineSegment PCM_LineContainer::GetNearestLineSegment(const PCM_Point *point,
     {
         const PCM_Line *line = pcmLinePair.second;
 
-        PCM_LineSegment lineSegment = line->GetNearestLineSegment(point, viewDirection, range);
+        PCM_LineSegment lineSegment = line->GetNearestLineSegment(point, viewAngle, range, calculateSubLine);
 
-        double distance = lineSegment.CalcDistanceFromPoint(point, viewDirection, range);
+        double distance = lineSegment.CalcDistanceFromPoint(point, viewAngle, range);
 
         if ((minDistance > distance) && (!std::isinf(distance)))
         {
@@ -86,9 +88,9 @@ PCM_LineSegment PCM_LineContainer::GetNearestLineSegment(const PCM_Point *point,
     return minLineSegment;
 }
 
-PCM_Point PCM_LineContainer::GetNearestPoint(const PCM_Point *point, double viewDirection,
+PCM_Point PCM_LineContainer::GetNearestPoint(const PCM_Point *point, double viewAngle,
                                              double range) const
 {
-    PCM_LineSegment minLineSegment = GetNearestLineSegment(point, viewDirection, range);
-    return minLineSegment.GetNearestPointFromPoint(point, viewDirection, range);
+    PCM_LineSegment minLineSegment = GetNearestLineSegment(point, viewAngle, range);
+    return minLineSegment.GetNearestPointFromPoint(point, viewAngle, range);
 }

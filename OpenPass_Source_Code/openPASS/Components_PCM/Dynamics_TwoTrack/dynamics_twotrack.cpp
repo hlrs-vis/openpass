@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 //-----------------------------------------------------------------------------
 //! @file  dynamics_twotrack.cpp
@@ -14,8 +16,9 @@
 
 #include "dynamics_twotrack.h"
 #include "dynamics_twotrack_implementation.h"
+#include "defaultPrio_PCM.h"
 
-const std::string Version = "0.0.1";
+const std::string Version = "1.0.0";
 static const CallbackInterface *Callbacks = nullptr;
 
 //-----------------------------------------------------------------------------
@@ -45,7 +48,7 @@ extern "C" DYNAMICS_TWOTRACKSHARED_EXPORT const std::string &OpenPASS_GetVersion
 //! @param[in]     callbacks      Pointer to the callbacks
 //! @return                       A pointer to the created module instance.
 //-----------------------------------------------------------------------------
-extern "C" DYNAMICS_TWOTRACKSHARED_EXPORT ModelInterface *OpenPASS_CreateInstance(
+extern "C" DYNAMICS_TWOTRACKSHARED_EXPORT DynamicsInterface *OpenPASS_CreateInstance(
     int componentId,
     bool isInit,
     int priority,
@@ -63,11 +66,11 @@ extern "C" DYNAMICS_TWOTRACKSHARED_EXPORT ModelInterface *OpenPASS_CreateInstanc
 
     if (priority == 0)
     {
-        priority = 1;
+        priority = (int)PCMdefaultPrio::Dynamics;
     }
     try
     {
-        return (ModelInterface *)(new (std::nothrow) Dynamics_TwoTrack_Implementation(
+        return (DynamicsInterface *)(new (std::nothrow) Dynamics_TwoTrack_Implementation(
                                       componentId,
                                       isInit,
                                       priority,
@@ -107,7 +110,7 @@ extern "C" DYNAMICS_TWOTRACKSHARED_EXPORT ModelInterface *OpenPASS_CreateInstanc
 //! @param[in]     implementation    The instance that should be freed
 //-----------------------------------------------------------------------------
 extern "C" DYNAMICS_TWOTRACKSHARED_EXPORT void OpenPASS_DestroyInstance(
-    ModelInterface *implementation)
+    DynamicsInterface *implementation)
 {
     delete (Dynamics_TwoTrack_Implementation *)implementation;
 }

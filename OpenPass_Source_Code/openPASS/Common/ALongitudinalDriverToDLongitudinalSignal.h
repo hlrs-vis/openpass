@@ -19,7 +19,7 @@
 #pragma once
 
 #include "modelInterface.h"
-#include "../Algorithm_LongitudinalDriver_OSI//AlgorithmLongitudinalDriverDataprovider.h"
+#include "../Algorithm_LongDriver_OSI/AlgorithmLongitudinalDriverDP.h"
 
 class ALongitudinalDriverToDLongitudinalSignal: public SignalInterface
 {

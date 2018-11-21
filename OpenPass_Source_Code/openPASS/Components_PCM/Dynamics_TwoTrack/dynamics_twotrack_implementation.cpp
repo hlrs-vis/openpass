@@ -1,20 +1,18 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
-
-
-#include <memory>
-#include <qglobal.h>
-#include "dynamics_twotrack_implementation.h"
-#include "dynamics_twotrack_local.h"
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 /**
- * @defgroup module_tt 2-dimensional two-track vehicle model
+ * @defgroup module_tt Two-track vehicle model
  * The dynamics of the vehicle is modelled in 2 dimensions. In the sub items the principle function is described in order of execution.
+ */
+/** @addtogroup module_tt
  * Abbreviations:
  * - COG = center-of-gravity
  * - CS = coordinate system
@@ -22,20 +20,26 @@
 
 /**
  * @ingroup module_tt
- * @defgroup init Initialization
+ * @defgroup init_tt Initialization
 */
 /**
  * @ingroup module_tt
- * @defgroup sim_step_00 Simulation step entry
+ * @defgroup sim_step_00_tt Entry
 */
 /**
  * @ingroup module_tt
- * @defgroup sim_step_10 Simulation step process
+ * @defgroup sim_step_10_tt Process
 */
 /**
  * @ingroup module_tt
- * @defgroup sim_step_20 Simulation step output
+ * @defgroup sim_step_20_tt Output
 */
+
+#include <memory>
+#include <qglobal.h>
+#include "dynamics_twotrack_implementation.h"
+#include "dynamics_twotrack_local.h"
+#include <QString>
 
 
 Dynamics_TwoTrack_Implementation::Dynamics_TwoTrack_Implementation(
@@ -80,7 +84,7 @@ Dynamics_TwoTrack_Implementation::Dynamics_TwoTrack_Implementation(
 
     vehicle = new VehicleSimpleTT();
 
-    /** @addtogroup init
+    /** @addtogroup init_tt
      * Define vehicle's body and engine characteristics:
      *  - total mass
      *  - power
@@ -88,17 +92,17 @@ Dynamics_TwoTrack_Implementation::Dynamics_TwoTrack_Implementation(
     */
     vehicle->InitSetEngine(agent->GetWeight(), powerEngineMax, torqueBrakeMin);
 
-    /** @addtogroup init
+    /** @addtogroup init_tt
      * Define vehicle's geometry:
      *  - set the height of the COG
      *  - set the longitudinal position of the COG
      *  - set the wheelbase
      *  - set the track width
     */
-    vehicle->InitSetGeometry(agent->GetHeightCOG(), agent->GetDistanceCOGtoFrontAxle(),
-                             agent->GetWheelbase(), agent->GetTrackWidth());
+    vehicle->InitSetGeometry(agent->GetWheelbase(), agent->GetWheelbase()/2.0 - agent->GetDistanceCOGtoFrontAxle(),
+                             agent->GetTrackWidth(), 0.0);
 
-    /** @addtogroup init
+    /** @addtogroup init_tt
      * Define vehicle's tire properties:
      *  - set initial velicity
      *  - set peak tire force
@@ -115,10 +119,23 @@ Dynamics_TwoTrack_Implementation::Dynamics_TwoTrack_Implementation(
     if (!brakeSuperpose.SetDefaultValue(defaultBrake))
     {
         std::stringstream log;
-        log << COMPONENTNAME << " Default value set failed";
+        log << COMPONENTNAME << " Default brake superposition value set failed";
         LOG(CbkLogLevel::Error, log.str());
     }
 
+    std::vector<double> defaultForceVertical = {
+        vehicle->forceTireVerticalStatic[0],
+        vehicle->forceTireVerticalStatic[1],
+        vehicle->forceTireVerticalStatic[2],
+        vehicle->forceTireVerticalStatic[3]};
+    if (!forceWheelVertical.SetDefaultValue(defaultForceVertical))
+    {
+        std::stringstream log;
+        log << COMPONENTNAME << " Default vertical force value set failed";
+        LOG(CbkLogLevel::Error, log.str());
+    }
+
+    LOGINFO("Constructing Dynamics_TwoTrack successful");
 }
 
 Dynamics_TwoTrack_Implementation::~Dynamics_TwoTrack_Implementation()
@@ -153,9 +170,25 @@ void Dynamics_TwoTrack_Implementation::UpdateInput(int localLinkId,
 void Dynamics_TwoTrack_Implementation::UpdateOutput(int localLinkId,
                                                     std::shared_ptr<SignalInterface const> &data, int time)
 {
-    Q_UNUSED(localLinkId);
-    Q_UNUSED(data);
     Q_UNUSED(time);
+
+    std::stringstream log;
+    log << COMPONENTNAME << " UpdateOutput";
+    LOG(CbkLogLevel::Debug, log.str());
+    log.str(std::string());
+
+    bool success = outputPorts.at(localLinkId)->GetSignalValue(data);
+
+    if (success)
+    {
+        log << COMPONENTNAME << " UpdateOutput successful";
+        LOG(CbkLogLevel::Debug, log.str());
+    }
+    else
+    {
+        log << COMPONENTNAME << " UpdateOutput failed";
+        LOG(CbkLogLevel::Error, log.str());
+    }
 }
 
 void Dynamics_TwoTrack_Implementation::Trigger(int time)
@@ -163,7 +196,7 @@ void Dynamics_TwoTrack_Implementation::Trigger(int time)
 
     Q_UNUSED(time);
 
-    /** @addtogroup sim_step_00
+    /** @addtogroup sim_step_00_tt
      * Record intentions of the driver or assistant systems:
      *  - throttle pedal
      *  - brake pedal
@@ -173,7 +206,7 @@ void Dynamics_TwoTrack_Implementation::Trigger(int time)
     GetAgent()->SetDecelerationIntention(brakePedal.GetValue());
     GetAgent()->SetAngleIntention(angleTireFront.GetValue());
 
-    /** @addtogroup sim_step_00
+    /** @addtogroup sim_step_00_tt
      * Read and update previous vehicle's state:
      *  - global position (cartesian coordinates)
      *  - direction of vehicle's longitudinal axes (angle in polar coordinates)
@@ -185,7 +218,10 @@ void Dynamics_TwoTrack_Implementation::Trigger(int time)
     ReadPreviousState();
     vehicle->SetVelocity(velocityCar, yawVelocity);
 
-    /** @addtogroup sim_step_10
+    LOGINFO(QString().sprintf("time %d, agent %d: positionCar (%.4f, %.2f), velocityCar (%.4f, %.2f)", time, GetAgent()->GetAgentId(),
+                                  positionCar.x, positionCar.y, velocityCar.x, velocityCar.y).toStdString());
+
+    /** @addtogroup sim_step_10_tt
      * Apply acceleration/deceleration intentions:
      *  - calculate tire torques due to engine
      *  - calculate tire torques due to braking by
@@ -196,15 +232,15 @@ void Dynamics_TwoTrack_Implementation::Trigger(int time)
                         Saturate(brakePedal.GetValue(), 0.0, 1.0),
                         brakeSuperpose.GetValue());
 
-    /** @addtogroup sim_step_10
+    /** @addtogroup sim_step_10_tt
      * Apply tire forces at the tire/road interface:
      *  - calculate longitudinal tire slips and forces
      *  - calculate lateral tire slips and forces
      *  - calculate friction forces
     */
-    vehicle->ForceLocal(timeStep, angleTireFront.GetValue());
+    vehicle->ForceLocal(timeStep, angleTireFront.GetValue(), forceWheelVertical.GetValue());
 
-    /** @addtogroup sim_step_10
+    /** @addtogroup sim_step_10_tt
      * Combine local tire forces to a global force at the vehicle's body:
      *  - total longitudinal force
      *  - total lateral force
@@ -213,7 +249,7 @@ void Dynamics_TwoTrack_Implementation::Trigger(int time)
     */
     vehicle->ForceGlobal();
 
-    /** @addtogroup sim_step_20
+    /** @addtogroup sim_step_20_tt
      * Perform a translational Euler step:
      *  - calculate next vehicle's position from prevoius velocity values
      *  - calculate new velocity from previous acceleration values
@@ -221,7 +257,7 @@ void Dynamics_TwoTrack_Implementation::Trigger(int time)
     */
     NextStateTranslation();
 
-    /** @addtogroup sim_step_20
+    /** @addtogroup sim_step_20_tt
      * Perform a rotational Euler step:
      *  - calculate vehicle's orientation from previous rotational velocity
      *  - calculate vehicle's rotational velocity from previous rotational acceleration
@@ -229,7 +265,7 @@ void Dynamics_TwoTrack_Implementation::Trigger(int time)
     */
     NextStateRotation();
 
-    /** @addtogroup sim_step_20
+    /** @addtogroup sim_step_20_tt
      * Write actual vehicle's state:
      *  - global position (cartesian coordinates)
      *  - direction of vehicle's longitudinal axes (angle in polar coordinates)
@@ -237,6 +273,7 @@ void Dynamics_TwoTrack_Implementation::Trigger(int time)
      *  - vehicle's rotational velociy
      *  - vehicle's longitudinal and lateral acceleration in vehicle's CS
      *  - vehicle's rotational acceleration
+     *  - inertia forces on vehicle's COG
     */
     NextStateSet();
 
@@ -341,5 +378,10 @@ void Dynamics_TwoTrack_Implementation::NextStateSet()
     GetAgent()->SetAccelerationX( accelerationCar.x  );
     GetAgent()->SetAccelerationY( accelerationCar.y  );
     GetAgent()->SetYawAcceleration( yawAcceleration );
+
+    // update outputs
+    std::vector<double> forceInert = {-vehicle->forceTotalXY.x, -vehicle->forceTotalXY.y};
+    forceGlobalInertia.SetValue(forceInert);
+
 }
 

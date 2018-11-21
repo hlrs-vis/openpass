@@ -7,6 +7,6 @@
     <SceneryConfigFile />
     <LogFileMaster />
     <LogFileSlave />
-    <LogLevel>5</LogLevel>
+    <LogLevel>0</LogLevel>
     <SlavePath>"OpenPassSlave.exe"</SlavePath>
 </FrameworkConfiguration>

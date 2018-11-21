@@ -254,7 +254,12 @@ bool ImportSystemParameters(QDomElement &parametersElement, Parameters &paramete
             CHECKFALSE(parameters.AddParameterDouble(id, value.toDouble()));
         }else if(type == "bool"){
             value.toLower();
-            CHECKFALSE(parameters.AddParameterBool(id, value == "true" ? true : false));
+            bool valueRobust = false;
+            if (value == "true" || (value.size()==1 && value.toInt()>0))
+            {
+                valueRobust = true;
+            }
+            CHECKFALSE(parameters.AddParameterBool(id, valueRobust));
         }else if(type == "string"){
             CHECKFALSE(parameters.AddParameterString(id, value.toStdString()));
         }else if(type == "intVector"){

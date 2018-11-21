@@ -1,10 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-******************************************************************************/
+/*********************************************************************
+* Copyright (c) 2017 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 #include "dynamics_twotrack_tire.h"
 #include "dynamics_twotrack_local.h"
@@ -14,8 +16,9 @@
 #include <cmath>
 #include <QtGlobal>
 
-Tire::Tire(): radius(1.0), forceZ_static(-100.0), forcePeak(100.0), forceSat (50.0), slipPeak(0.1)
+Tire::Tire(): radius(1.0), forceZ_static(-100.0), forcePeak_static(100.0), forceSat_static (50.0), slipPeak(0.1)
 {
+    Rescale(forceZ_static);
 }
 
 Tire::Tire(const double F_ref, const double F_max, const double F_slide, const double s_max,
@@ -24,10 +27,11 @@ Tire::Tire(const double F_ref, const double F_max, const double F_slide, const d
     forceZ_static (F_ref)
 {
     // implicite roll friction scaling
-    forcePeak  = F_max*mu_scale;
-    forceSat  = F_slide*mu_scale;
+    forcePeak_static  = F_max*mu_scale;
+    forceSat_static  = F_slide*mu_scale;
     slipPeak = s_max*mu_scale;
-    slipSat = 0.4*mu_scale;
+    slipSat = s_slide*mu_scale;
+    Rescale(forceZ_static);
 }
 
 double Tire::GetForce(const double slip)
@@ -88,9 +92,9 @@ double Tire::CalcSlipY(double slipX, double vx, double vy)
     }
 }
 
-double Tire::GetRollFriction(const double velTireX, const double F_add)
+double Tire::GetRollFriction(const double velTireX)
 {
-    double forceFriction = (forceZ_static + F_add) * frictionRoll;
+    double forceFriction = forceZ * frictionRoll;
 
     if (velTireX < 0.0)
     {
@@ -102,4 +106,14 @@ double Tire::GetRollFriction(const double velTireX, const double F_add)
     }
 
     return forceFriction;
+}
+
+void Tire::Rescale(const double forceZ_update)
+{
+
+    forceZ = forceZ_update;
+    double scaling = Saturate(forceZ/forceZ_static, 0.1, 2.0);
+
+    forcePeak = forcePeak_static*scaling;
+    forceSat = forceSat_static*scaling;
 }

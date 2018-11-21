@@ -1,3 +1,13 @@
+/*********************************************************************
+* Copyright c 2017, 2018 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
+
 #include "FileHelper.h"
 
 bool FileHelper::CopyFiles(QString extension, QString sourceDirectory, QString targetDirectory)
@@ -53,34 +63,4 @@ bool FileHelper::DeleteFiles(QString extension, QString sourceDirectory)
     {
         return false;
     }
-}
-
-bool FileHelper::RemoveDirectory(QString targetDirectory)
-{
-    bool success = true;
-    QDir targetDir(targetDirectory);
-
-    if (targetDir.exists())
-    {
-        for (QFileInfo info : targetDir.entryInfoList(QDir::NoDotAndDotDot | QDir::System | QDir::Hidden
-                                                      | QDir::AllDirs | QDir::Files, QDir::DirsFirst))
-        {
-            if (info.isDir())
-            {
-                success = RemoveDirectory(info.absoluteFilePath());
-            }
-            else
-            {
-                success = QFile::remove(info.absoluteFilePath());
-            }
-
-            if (!success)
-            {
-                return success;
-            }
-        }
-        success = targetDir.rmdir(targetDirectory);
-    }
-
-    return success;
 }
