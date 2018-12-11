@@ -12,11 +12,12 @@
 #define PCM_PARTICIPANTDATA_H
 
 #include <QString>
+#include "opExport.h"
 
 //-----------------------------------------------------------------------------
 //! Class to store the information on the pcm participants
 //-----------------------------------------------------------------------------
-class PCM_ParticipantData
+class OPENPASSCOMMONPCMEXPORT PCM_ParticipantData
 {
 public:
     //-----------------------------------------------------------------------------

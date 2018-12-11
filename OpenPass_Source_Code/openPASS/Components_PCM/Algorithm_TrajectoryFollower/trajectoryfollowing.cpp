@@ -67,7 +67,7 @@ int TrajectoryFollowingControl::computeNumberOfLookaheadPoints(double totalDista
                                                                const vector<double> &distances,
                                                                int fromWayPointIndex)
 {
-    int n = distances.size();
+    size_t n = distances.size();
     if (totalDistance <= 0)
     {
         return 1;
@@ -108,7 +108,7 @@ int TrajectoryFollowingControl::findClosestWayPointAheadIndex(Common::Vector2d &
 
     mindist = u.Length();
     int currentIndex = index;
-    int d = numWayPoints_ - 1 - index;
+    size_t d = numWayPoints_ - 1 - index;
     if (d < numPointsLookAhead)
     {
         //end of trajectory before maximum lookahead
@@ -362,7 +362,7 @@ double TrajectoryFollowingControl::lateralControl()
 //! @return                         the required gas value
 double TrajectoryFollowingControl::gasControl()
 {
-    int referenceWaypointIndex;
+    size_t referenceWaypointIndex;
     if (previousWayPointIndex_ >= 0)
     {
         referenceWaypointIndex =  previousWayPointIndex_ + numVelocityLookAheadPoints;
@@ -401,7 +401,7 @@ double TrajectoryFollowingControl::gasControl()
 double TrajectoryFollowingControl::brakeControl()
 {
     double velocity = CurrentState_.positionData.velocity;
-    int referenceWaypointIndex;
+    size_t referenceWaypointIndex;
     if (previousWayPointIndex_ >= 0)
     {
         referenceWaypointIndex =  previousWayPointIndex_ + numVelocityLookAheadPoints;
@@ -495,7 +495,7 @@ bool TrajectoryFollowingControl::setWaypoints(std::vector<double> &X,
                                               std::vector<double> &Velocity,
                                               std::vector<double> &Time)
 {
-    unsigned int n = X.size();
+    size_t n = X.size();
     if (Y.size() != n || Velocity.size() != n)
     {
         return false;

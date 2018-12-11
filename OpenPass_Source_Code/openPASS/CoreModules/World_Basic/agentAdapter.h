@@ -134,6 +134,11 @@ public:
         return trackWidth;
     }
 
+    virtual int GetGear() const
+    {
+        return gear;
+    }
+
     double GetDistanceCOGtoLeadingEdge() const
     {
         return distanceCOGtoLeadingEdge;
@@ -266,6 +271,41 @@ public:
         distanceCOGtoFrontAxle);
     }
 
+    //-----------------------------------------------------------------------------
+    //! Sets gear of vehicle
+    //!
+    //! @param[in]     gear    current gear
+    //-----------------------------------------------------------------------------
+    virtual void SetGear(int g)
+    {
+        gear = g;
+    }
+
+    virtual void SetEngineSpeed(double es)
+    {
+        engineSpeed = es;
+    }
+
+    //-----------------------------------------------------------------------------
+    //! Sets current position of acceleration pedal in percent
+    //!
+    //! @param[in]     percent    current percentage
+    //-----------------------------------------------------------------------------
+    virtual void SetEffAccelPedal(double percent)
+    {
+        accelPedal = percent;
+    }
+
+    //-----------------------------------------------------------------------------
+    //! Sets current position of brake pedal in percent
+    //!
+    //! @param[in]     percent    current percentage
+    //-----------------------------------------------------------------------------
+    virtual void SetEffBrakePedal(double percent)
+    {
+        brakePedal = percent;
+    }
+
     void SetWeight(double weight)
     {
         world->QueueAgentUpdate([this](double arg)
@@ -318,6 +358,26 @@ public:
             UpdateMomentInertiaYaw(arg);
         },
         momentInertiaYaw);
+    }
+
+    //-----------------------------------------------------------------------------
+    //! Sets maximum acceleration of the vehicle
+    //!
+    //! @param[in]     maxAcceleration   maximum acceleration
+    //-----------------------------------------------------------------------------
+    virtual void SetMaxAcceleration(double ma)
+    {
+        maxAcceleration = ma;
+    }
+
+    //-----------------------------------------------------------------------------
+    //! Sets maximum deceleration of the vehicle
+    //!
+    //! @param[in]     maxDeceleration   maximum deceleration
+    //-----------------------------------------------------------------------------
+    virtual void SetMaxDeceleration(double md)
+    {
+        maxDeceleration = md;
     }
 
     void SetFrictionCoeff(double frictionCoeff)
@@ -496,12 +556,12 @@ public:
         return isValid;
     }
 
-    void SetBrakeLight(bool brakeLightStatus)
+    virtual void SetBrakeLight(bool bLS)
     {
-        this->brakeLightStatus = brakeLightStatus;
+        brakeLightStatus = bLS;
     }
 
-    bool GetBrakeLight()
+    virtual bool GetBrakeLight() const
     {
         return brakeLightStatus;
     }
@@ -551,10 +611,64 @@ public:
     {
         Q_UNUSED(pos);   //dummy
     }
-    double GetDistanceToStartOfRoad() const
+
+    //-----------------------------------------------------------------------------
+    //! Retrieve the distance to the start of the road.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetDistanceToStartOfRoad() const
     {
-        return 0;   //dummy
+        return 0.0;   //dummy
     }
+
+    /// \brief  Get distance w.r.t. the specified measurement point
+    /// \return distance
+    virtual double GetDistanceToStartOfRoad(MeasurementPoint mp) const
+    {
+        return 0.0;   //dummy
+    }
+
+
+    virtual double GetDistanceReferencePointToLeadingEdge() const
+    {
+        return 0.0;   //dummy
+    }
+
+    virtual double GetEngineSpeed() const
+    {
+        return engineSpeed;
+    }
+
+    //-----------------------------------------------------------------------------
+    //! Gets current position of acceleration pedal in percent
+    //!
+    //! @return     accelPedal    current percentage
+    //-----------------------------------------------------------------------------
+    virtual double GetEffAccelPedal() const
+    {
+        return accelPedal;
+    }
+
+    //-----------------------------------------------------------------------------
+    //! Gets current position of brake pedal in percent
+    //!
+    //! @return     brakePedal    current percentage
+    //-----------------------------------------------------------------------------
+    virtual double GetEffBrakePedal() const
+    {
+        return brakePedal;
+    }
+
+    virtual double GetMaxAcceleration() const
+    {
+        return maxAcceleration;
+    }
+    virtual double GetMaxDeceleration() const
+    {
+        return maxDeceleration;
+    }
+
     Position GetPositionByDistance(double distance) const
     {
         Q_UNUSED(distance);    //dummy
@@ -979,6 +1093,22 @@ public:
 
         return INFINITY;
     }//dummy
+
+     //-----------------------------------------------------------------------------
+     //! Retrieve the visibility to an agent in a specific range about a viewing direction
+     //! angle in radiant.
+     //!
+     //! @return
+     //-----------------------------------------------------------------------------
+    virtual double GetVisibilityToNearestAgentInViewRange(double mainViewDirection,
+        double range) const
+    {
+        Q_UNUSED(mainViewDirection);
+        Q_UNUSED(range);
+
+        return INFINITY;
+    }//dummy
+
     double GetYawVelocity()
     {
         return 0;   //dummy
@@ -1050,6 +1180,17 @@ public:
     double GetAccelerationAbsolute() const{
         return 0;//dummy
     }
+    virtual RoadPosition GetRoadPosition() const
+    {
+        RoadPosition r;
+        r.s = 0.0; r.t = 0.0; r.hdg = 0.0;
+        return(r);
+    }
+
+    virtual double GetLaneRemainder(Side) const
+    {
+        return INFINITY;
+    }
 
 protected:
     //-----------------------------------------------------------------------------
@@ -1092,6 +1233,12 @@ private:
     double momentInertiaYaw = 0.0;
     double frictionCoeff = 0.0;
     double trackWidth = 0.0;
+    int gear = 0;
+    double engineSpeed = 0.0;
+    double accelPedal = 0.0;
+    double brakePedal = 0.0;
+    double maxAcceleration = 0.0;
+    double maxDeceleration = 0.0;
     double distanceCOGtoLeadingEdge = 0.0;
     double accelerationX = 0.0;
     double accelerationY = 0.0;

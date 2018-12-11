@@ -19,12 +19,13 @@
 #define PCM_GLOBALDATA_H
 
 #include "QString"
+#include "opExport.h"
 
 /*!
  * \brief The PCM_GlobalData class
  * This class is responsible to manage global data.
  */
-class PCM_GlobalData
+class OPENPASSCOMMONPCMEXPORT PCM_GlobalData
 {
 public:
     //-----------------------------------------------------------------------------

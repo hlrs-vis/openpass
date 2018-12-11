@@ -441,7 +441,7 @@ public:
                       std::vector<double> &Velocity, std::vector<double> &Time);
 
 private:
-    int numWayPoints_;                              //!< size of the waypoint-vector
+    size_t numWayPoints_;                           //!< size of the waypoint-vector
     std::vector<WaypointData> waypoints_;           //!< waypoints that should be targeted at
 
     CarStatistics &CarStats_;                       //!< struct with all information on the vehicle

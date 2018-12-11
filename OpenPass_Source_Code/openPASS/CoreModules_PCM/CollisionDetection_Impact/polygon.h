@@ -49,7 +49,7 @@ public:
      * \brief get number of vertices of the polygon
      * \return number of vertices of the polygon
      */
-    double GetNumberOfVertices();
+    size_t GetNumberOfVertices();
 
     /*!
      * \brief get vertices of the polygon

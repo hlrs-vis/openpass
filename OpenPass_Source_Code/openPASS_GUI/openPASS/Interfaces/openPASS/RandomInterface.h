@@ -19,6 +19,7 @@
 
 #include <QtGlobal>
 #include <QDateTime>
+#include <opExport.h>
 
 class RandomInterface
 {

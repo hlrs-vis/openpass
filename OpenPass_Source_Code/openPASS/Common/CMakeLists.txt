@@ -1,5 +1,5 @@
-SET (SOURCES vector2d.cpp)
-SET (HEADERS vector2d.h carInfo.h commonTools.h globalDefinitions.h primitiveSignals.h opExport.h)
+SET (SOURCES vector2d.cpp vector3d.cpp utilities.cpp)
+SET (HEADERS vector2d.h vector3d.h utilities.h carInfo.h commonTools.h globalDefinitions.h primitiveSignals.h opExport.h)
 
 add_library(Common SHARED ${SOURCES} ${HEADERS})
 

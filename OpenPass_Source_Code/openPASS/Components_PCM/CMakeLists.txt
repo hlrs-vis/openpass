@@ -1,6 +1,7 @@
 ADD_SUBDIRECTORY(Dynamics_CopyTrajectory)
 ADD_SUBDIRECTORY(Init_Agent)
 #ADD_SUBDIRECTORY(Action_ScopeLogger)
+ADD_SUBDIRECTORY(Algorithm_Selector)
 ADD_SUBDIRECTORY(Algorithm_TrajectoryFollower)
 ADD_SUBDIRECTORY(Dynamics_Collision)
 ADD_SUBDIRECTORY(Dynamics_TwoTrack)

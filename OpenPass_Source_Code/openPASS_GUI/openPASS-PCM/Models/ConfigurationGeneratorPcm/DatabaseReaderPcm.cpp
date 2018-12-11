@@ -51,7 +51,7 @@ bool DatabaseReader::OpenDataBase()
     }
 
     db = QSqlDatabase::addDatabase("QODBC");
-    QString dbString = "Driver={Microsoft Access Driver (*.mdb)};DSN='';DBQ="
+    QString dbString = "Driver={Microsoft Access Driver (*.mdb, *.accdb)};FIL={Access};DBQ="
                        + databaseName;
     db.setDatabaseName(dbString);
     connection = db.connectionName();
@@ -410,7 +410,7 @@ bool DatabaseReader::ReadIntendedCourseData(const QString &pcmCase,
 
         if (!intendedCources.IsCoursePresent(betNr))
         {
-            intendedCources.AddPCM_Course(PCM_Course(betNr));
+            intendedCources.AddPCM_Course(new PCM_Course(betNr));
         }
         PCM_Course *course = intendedCources.GetCourseByBetNr(betNr);
 

@@ -39,7 +39,7 @@ bool Polygon::CalculateCentroid( Common::Vector2d &cog)
     return true;
 }
 
-double Polygon::GetNumberOfVertices()
+size_t Polygon::GetNumberOfVertices()
 {
     return vertices.size();
 }

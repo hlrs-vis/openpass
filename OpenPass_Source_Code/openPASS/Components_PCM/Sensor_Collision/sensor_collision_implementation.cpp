@@ -95,7 +95,7 @@ void Sensor_Collision_Implementation::UpdateOutput(int localLinkId,
 void Sensor_Collision_Implementation::Trigger(int time)
 {
     std::vector<int> collisionPartners = GetAgent()->GetCollisionPartners();
-    int numberOfCollisionData = 0;
+    size_t numberOfCollisionData = 0;
     for (size_t i = 0; i < collisionPartners.size(); i++)
     {
         std::vector<void *> collisionData = GetAgent()->GetCollisionData(collisionPartners.at(i),

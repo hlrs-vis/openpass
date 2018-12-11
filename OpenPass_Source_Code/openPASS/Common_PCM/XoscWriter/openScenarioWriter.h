@@ -14,8 +14,9 @@
 #include <iostream>
 #include <QDir>
 #include "DataStructuresXosc/XoscScenario.h"
+#include "opExport.h"
 
-class OpenScenarioWriter
+class OPENPASSCOMMONPCMEXPORT OpenScenarioWriter
 {
 public:
     OpenScenarioWriter() = default;

@@ -347,6 +347,7 @@ osi3::LaneBoundary::Classification::Type GeometryConverter::ConvertRoadLaneRoadM
         case RoadLaneRoadMarkType::Undefined:
             return osi3::LaneBoundary_Classification_Type_TYPE_NO_LINE;
     }
+    return osi3::LaneBoundary_Classification_Type_TYPE_UNKNOWN;
 }
 
 osi3::LaneBoundary::Classification::Color GeometryConverter::ConvertRoadLaneRoadMarkColorToOsiLaneBoundaryColor(RoadLaneRoadMarkColor color)
@@ -372,6 +373,7 @@ osi3::LaneBoundary::Classification::Color GeometryConverter::ConvertRoadLaneRoad
         case RoadLaneRoadMarkColor::Yellow:
             return osi3::LaneBoundary_Classification_Color_COLOR_YELLOW;
     }
+    return osi3::LaneBoundary_Classification_Color_COLOR_NONE;
 }
 
 double GeometryConverter::CalculateWidthAtSectionPosition(const RoadLaneWidth* width, double position)

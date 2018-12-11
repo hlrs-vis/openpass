@@ -20,13 +20,14 @@
 #define PCM_AGENT_H
 
 #include "pcm_lineContainer.h"
+#include "opExport.h"
 
 /*!
  * \brief The PCM_Agent class
  * This class is responsible to manage data of pcm agents which consists of
  * pcm lines.
  */
-class PCM_Agent : public PCM_LineContainer
+class OPENPASSCOMMONPCMEXPORT PCM_Agent : public PCM_LineContainer
 {
 public:
     //-----------------------------------------------------------------------------

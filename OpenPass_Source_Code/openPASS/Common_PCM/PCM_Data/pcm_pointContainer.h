@@ -22,12 +22,13 @@
 #include <map>
 #include "pcm_point.h"
 #include "pcm_lineSegment.h"
+#include "opExport.h"
 
 /*!
  * \brief The PCM_PointContainer class
  * This class is responsible to manage data of a pcm points.
  */
-class PCM_PointContainer
+class OPENPASSCOMMONPCMEXPORT PCM_PointContainer
 {
 public:
     //-----------------------------------------------------------------------------

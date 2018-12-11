@@ -314,7 +314,7 @@ std::vector<WaypointData> *Algorithm_TrajectoryFollower_Implementation::ReadWayP
     {
         return nullptr;
     }
-    unsigned int n = X->size();
+    size_t n = X->size();
     if ( n == 0 || n != Y->size() || n != Velocity->size() || n != Time->size() )
     {
         return nullptr;

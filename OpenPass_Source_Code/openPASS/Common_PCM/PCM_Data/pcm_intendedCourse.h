@@ -14,8 +14,9 @@
 #include <vector>
 
 #include "pcm_course.h"
+#include "opExport.h"
 
-class PCM_IntendedCourses
+class OPENPASSCOMMONPCMEXPORT PCM_IntendedCourses
 {
 public:
 
@@ -23,16 +24,16 @@ public:
 
     virtual ~PCM_IntendedCourses() = default;
 
-    bool AddPCM_Course(PCM_Course course);
+    bool AddPCM_Course(PCM_Course *course);
 
-    std::vector<PCM_Course> GetCourseVec();
+    std::vector<PCM_Course *> GetCourseVec();
 
     bool IsCoursePresent(int betNr);
 
     PCM_Course *GetCourseByBetNr(int betNr);
 
 private:
-    std::vector<PCM_Course> courseVec;      //!< vector of courses
+    std::vector < PCM_Course *> courseVec;      //!< vector of courses
 };
 
 

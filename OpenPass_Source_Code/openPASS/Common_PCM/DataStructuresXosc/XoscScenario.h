@@ -12,8 +12,9 @@
 #define XMLSCENARIO_H
 
 #include "XoscTrajectory.h"
+#include "opExport.h"
 
-class XoscScenario : public XmlBaseClass
+class OPENPASSCOMMONPCMEXPORT XoscScenario : public XmlBaseClass
 {
 public:
     XoscScenario() = default;

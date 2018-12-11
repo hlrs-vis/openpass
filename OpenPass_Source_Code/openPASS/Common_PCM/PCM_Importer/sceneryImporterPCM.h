@@ -23,12 +23,13 @@
 #include "pcm_trajectory.h"
 #include "globalDefinitions.h"
 #include "pcm_helper.h"
+#include "opExport.h"
 
 /*!
  * \brief The SceneryImporterPCM class
  * This class is responsible to import pcm data from a given scnenery configuration file.
  */
-class SceneryImporterPCM
+class OPENPASSCOMMONPCMEXPORT SceneryImporterPCM
 {
 public:
     SceneryImporterPCM() = default;

@@ -22,13 +22,14 @@
 #include <QString>
 #include "pcm_lineContainer.h"
 #include "globalDefinitions.h"
+#include "opExport.h"
 
 /*!
  * \brief The PCM_Marks class
  * This class is responsible to manage data of pcm marks which consists of pcm
  * lines.
  */
-class PCM_Marks : public PCM_LineContainer
+class OPENPASSCOMMONPCMEXPORT PCM_Marks : public PCM_LineContainer
 {
 public:
     //-----------------------------------------------------------------------------

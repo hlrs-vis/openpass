@@ -35,7 +35,7 @@ public:
     //! @param[in]     initialValues      The vector of the initial values, its length sets the filter length
     LowPassFilter(std::vector<double> &initialValues):
         values(initialValues),
-        numValues(initialValues.size()), k(0)
+        numValues((int)initialValues.size()), k(0)
     {}
 
     //! Constructor with filter length, no initial values are set

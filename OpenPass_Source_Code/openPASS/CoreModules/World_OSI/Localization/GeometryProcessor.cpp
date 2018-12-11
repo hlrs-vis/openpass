@@ -8,9 +8,11 @@
 * SPDX-License-Identifier: EPL-2.0
 ******************************************************************************/
 
-#include "GeometryProcessor.h"
-
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
 #include <cmath>
+#include "GeometryProcessor.h"
 
 bool OWL::GeometryProcessor::Match(const Common::Vector2d &point) const
 {

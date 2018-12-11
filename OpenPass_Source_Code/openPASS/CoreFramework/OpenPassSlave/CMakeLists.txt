@@ -12,8 +12,11 @@ importer/agentTypeImporter.cpp
 importer/road.cpp
 importer/runConfig.cpp
 importer/runConfigImporter.cpp
+importer/scenarioImporter.cpp
 importer/scenery.cpp
 importer/sceneryImporter.cpp
+importer/road/roadObject.cpp
+importer/road/roadSignal.cpp
 modelElements/agent.cpp
 modelElements/agentType.cpp
 modelElements/channel.cpp
@@ -54,8 +57,11 @@ importer/agentTypeImporter.h
 importer/road.h
 importer/runConfig.h
 importer/runConfigImporter.h
+importer/scenarioImporter.h
 importer/scenery.h
 importer/sceneryImporter.h
+importer/road/roadObject.h
+importer/road/roadSignal.h
 modelElements/agent.h
 modelElements/agentType.h
 modelElements/channel.h
@@ -91,7 +97,7 @@ include_directories(../../Common ../../Interfaces ../../Interfaces/roadInterface
 
 add_executable(OpenPassSlave ${SOURCES} ${HEADERS})
 
-target_link_libraries(OpenPassSlave CoreShare Common)
+target_link_libraries(OpenPassSlave CoreShare Common Common_PCM)
 
 qt5_use_modules(OpenPassSlave Widgets Xml)
 

@@ -6,6 +6,7 @@ add_definitions(-DINIT_AGENT_LIBRARY)
 include_directories(../../Common_PCM ../../Common_PCM/PCM_Data ../../Common_PCM/PCM_Importer ../../Common ../../Interfaces)
 
 add_library(Init_Agent SHARED ${SOURCES} ${HEADERS})
+target_link_libraries(Init_Agent Common_PCM)
 
 qt5_use_modules(Init_Agent Xml)
 

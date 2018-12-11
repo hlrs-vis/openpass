@@ -12,8 +12,9 @@
 #define PCM_INITIALVALUES_H
 
 #include <QString>
+#include "opExport.h"
 
-class PCM_InitialValues
+class OPENPASSCOMMONPCMEXPORT PCM_InitialValues
 {
 public:
     //-----------------------------------------------------------------------------

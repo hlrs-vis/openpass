@@ -19,11 +19,12 @@
 #include <vector>
 #include <sstream>
 #include <QString>
+#include "opExport.h"
 
 //-----------------------------------------------------------------------------
 //! Class for a trajectory that might be exchanged between modules
 //-----------------------------------------------------------------------------
-class PCM_Trajectory
+class OPENPASSCOMMONPCMEXPORT PCM_Trajectory
 {
 public:
     PCM_Trajectory() = default;

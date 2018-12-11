@@ -21,11 +21,12 @@
 #include <QDir>
 #include <QObject>
 #include <QString>
+#include <opExport.h>
 
 static ServiceManagerInterface::ID const PluginManagerInterfaceID =
         ServiceManagerInterfaceID("openPASS.PluginManagerInterface");
 
-class PluginManagerInterface : public QObject,
+class OPENPASSINTERFACESEXPORT PluginManagerInterface : public QObject,
         public ServiceInterface<PluginManagerInterface, PluginManagerInterfaceID>
 {
     Q_OBJECT

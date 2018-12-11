@@ -19,8 +19,9 @@
 
 #include <QList>
 #include <QObject>
+#include <opExport.h>
 
-class ServiceManagerInterface
+class OPENPASSINTERFACESEXPORT ServiceManagerInterface
 {
 public:
     using ID = unsigned int;

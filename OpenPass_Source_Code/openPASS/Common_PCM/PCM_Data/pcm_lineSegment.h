@@ -13,12 +13,13 @@
 
 #include "pcm_point.h"
 #include "pcm_helper.h"
+#include "opExport.h"
 
 /*!
  * \brief The PCM_LineSegment class
  * This class is responsible to manage a line segment which consists of exactly two points.
  */
-class PCM_LineSegment
+class OPENPASSCOMMONPCMEXPORT PCM_LineSegment
 {
 public:
     //-----------------------------------------------------------------------------

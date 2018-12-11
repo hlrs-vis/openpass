@@ -160,6 +160,7 @@ void WorldImplementation::SetTimeOfDay(int timeOfDay)
 Weekday WorldImplementation::GetWeekday() const
 {
     // TODO: stub
+    return Weekday::Undefined;
 }
 
 void WorldImplementation::SetWeekday(Weekday weekday)

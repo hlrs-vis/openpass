@@ -19,6 +19,7 @@
 
 #include "openPASS/ServiceManagerInterface.h"
 #include <QtPlugin>
+#include <opExport.h>
 
 class PluginInterface
 {

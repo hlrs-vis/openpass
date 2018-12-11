@@ -45,7 +45,7 @@ void ModelPcm::SetSelectionModelPcm(QItemSelectionModel *selectionModel)
 void ModelPcm::StartSimulationTrigger()
 {
     simulationStop = false;
-    QtConcurrent::run(this, StartSimulation);
+    QtConcurrent::run(this, &ModelPcm::StartSimulation);
 }
 
 void ModelPcm::SimulationStop()
@@ -66,6 +66,7 @@ bool ModelPcm::Clear()
 bool ModelPcm::LoadPcmFile(const QString &pcmFilePath)
 {
     Clear();
+
 
     currentPcmFilePath = pcmFilePath;
     dbReader.SetDatabase(currentPcmFilePath);

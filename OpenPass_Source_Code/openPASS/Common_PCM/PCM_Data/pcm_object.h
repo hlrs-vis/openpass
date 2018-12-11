@@ -20,13 +20,14 @@
 #define PCM_OBJECT_H
 
 #include "pcm_lineContainer.h"
+#include "opExport.h"
 
 /*!
  * \brief The PCM_Object class
  * This class is responsible to manage data of pcm objects which consists of
  * pcm lines.
  */
-class PCM_Object : public PCM_LineContainer
+class OPENPASSCOMMONPCMEXPORT PCM_Object : public PCM_LineContainer
 {
 public:
     //-----------------------------------------------------------------------------

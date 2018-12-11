@@ -1236,6 +1236,18 @@ public:
         return 0.0;     //dummy
     }
 
+    //-----------------------------------------------------------------------------
+    //! Retrieve the visibility to an agent in a specific range about a viewing direction
+    //! angle in radiant.
+    //!
+    //! @return
+    //-----------------------------------------------------------------------------
+    virtual double GetVisibilityToNearestAgentInViewRange(double mainViewDirection,
+        double range) const
+    {
+        return 0.0; //dummy
+    }
+
     const std::vector<int>* GetTrajectoryTime() const override
     {
         return nullptr;     //dummy

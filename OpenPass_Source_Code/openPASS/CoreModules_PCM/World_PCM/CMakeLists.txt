@@ -16,7 +16,7 @@ add_definitions(-DEVALUATION_PCM_LIBRARY)
 include_directories(../../Common ../../Common_PCM ../../Common_PCM/PCM_Data ../../Common_PCM/PCM_Importer ../../Interfaces)
 
 add_library(World_PCM SHARED ${SOURCES} ${HEADERS})
-target_link_libraries(World_PCM Common)
+target_link_libraries(World_PCM Common_PCM)
 
 qt5_use_modules(World_PCM Xml)
 

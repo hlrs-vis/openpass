@@ -28,6 +28,8 @@ ENDIF()
 cmake_policy(SET CMP0043 NEW)
 cmake_policy(SET CMP0054 NEW)
 
+# this is used to override some of cmake's original find-modules
+SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -35,8 +37,14 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251")
 endif()
 
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(CMAKE_PREFIX_PATH $ENV{EXTERNLIBS}/osi ${CMAKE_PREFIX_PATH})
+find_package(OSI)
 set(CMAKE_PREFIX_PATH $ENV{EXTERNLIBS}/qt5 ${CMAKE_PREFIX_PATH})
 find_package(Qt5Core)
 find_package(Qt5Network)

@@ -12,6 +12,7 @@
 #define XMLBASECLASS_H
 
 #include <QXmlStreamWriter>
+#include "opExport.h"
 
 //-----------------------------------------------------------------------------
 //! Enumeration class for the parameter types
@@ -51,7 +52,7 @@ enum class XML_AGENT_TYPE
 };
 
 
-class XmlBaseClass
+class OPENPASSCOMMONPCMEXPORT XmlBaseClass
 {
 public:
     XmlBaseClass() = default;

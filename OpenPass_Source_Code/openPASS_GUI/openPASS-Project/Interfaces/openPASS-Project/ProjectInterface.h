@@ -22,11 +22,12 @@
 #include <QDir>
 #include <QObject>
 #include <QString>
+#include <opExport.h>
 
 static ServiceManagerInterface::ID const ProjectInterfaceID =
         ServiceManagerInterfaceID("openPASS.Project.ProjectInterface");
 
-class ProjectInterface : public QObject,
+class OPENPASSPROJECTEXPORT ProjectInterface : public QObject,
         public ServiceInterface<ProjectInterface, ProjectInterfaceID>
 {
     Q_OBJECT

@@ -20,12 +20,13 @@
 
 #include <QString>
 #include <cmath>
+#include "opExport.h"
 
 /*!
  * \brief The PCM_Point class
  * This class is responsible to manage data of a pcm point.
  */
-class PCM_Point
+class OPENPASSCOMMONPCMEXPORT PCM_Point
 {
 public:
     //-----------------------------------------------------------------------------

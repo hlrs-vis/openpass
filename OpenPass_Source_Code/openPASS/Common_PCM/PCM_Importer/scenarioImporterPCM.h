@@ -22,13 +22,14 @@
 #include "pcm_trajectory.h"
 #include "globalDefinitions.h"
 #include "pcm_helper.h"
+#include "opExport.h"
 
 /*!
 * \brief The ScenarioImporterPCM class
 * This class is responsible to import pcm data from a given scenario configuration file.
 */
 
-class ScenarioImporterPCM
+class OPENPASSCOMMONPCMEXPORT ScenarioImporterPCM
 {
 public:
     ScenarioImporterPCM() = default;

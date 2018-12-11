@@ -3,9 +3,10 @@ SET (HEADERS algorithm_trajectoryFollower_global.h algorithm_trajectoryFollower.
 
 
 add_definitions(-DALGORITHM_TRAJECTORYFOLLOWER_LIBRARY)
-include_directories(../../Common_PCM ../../Common ../../Interfaces)
+include_directories(../../Common_PCM ../../Common_PCM/PCM_Data ../../Common_PCM/PCM_Importer ../../Common ../../Interfaces)
 
 add_library(Algorithm_TrajectoryFollower SHARED ${SOURCES} ${HEADERS})
+target_link_libraries(Algorithm_TrajectoryFollower Common Common_PCM)
 
 qt5_use_modules(Algorithm_TrajectoryFollower Xml)
 

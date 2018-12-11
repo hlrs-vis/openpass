@@ -168,8 +168,8 @@ bool CollisionDetection_Impact_Implementation::CalculatePlaneOfContact(Polygon i
         return false;
     }
 
-    std::vector<double> i2; // indices of vertices with vertexType = 2
-    std::vector<double> i3; // indices of vertices with vertexType = 3
+    std::vector<size_t> i2; // indices of vertices with vertexType = 2
+    std::vector<size_t> i3; // indices of vertices with vertexType = 3
 
     for ( int iV = 0; iV < intersection.GetNumberOfVertices(); iV++ ) {
         if ( vertexTypes[iV] == 2 ) {
@@ -467,7 +467,7 @@ std::vector<int> CollisionDetection_Impact_Implementation::GetVertexTypes(
         return vertexTypes;
     }
 
-    int numberOfType2 = verticesIntersection.size();
+    size_t numberOfType2 = verticesIntersection.size();
     for (unsigned int iIntersection = 0; iIntersection < verticesIntersection.size(); ++iIntersection) {
         vertexTypes.push_back(2);
 

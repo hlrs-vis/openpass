@@ -79,6 +79,11 @@ public:
         return nullptr;   //dummy
     }
 
+    virtual void *GetWorldData()
+    {
+        return nullptr;   //dummy
+    }
+
     bool AddAgent(int id, AgentInterface *agent);
     const AgentInterface *GetAgent(int id) const;
     const std::map<int, const AgentInterface *> &GetAgents() const;

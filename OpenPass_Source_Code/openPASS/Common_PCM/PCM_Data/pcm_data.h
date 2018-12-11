@@ -26,8 +26,9 @@
 #include "pcm_globalData.h"
 #include "pcm_agent.h"
 #include "../../Interfaces/callbackInterface.h"
+#include "opExport.h"
 
-struct AgentDetection
+struct OPENPASSCOMMONPCMEXPORT AgentDetection
 {
     int egoId = -1;
     const PCM_Point *egoPoint = nullptr;
@@ -41,7 +42,7 @@ struct AgentDetection
     double distance = INFINITY;
 };
 
-class PCM_Data
+class OPENPASSCOMMONPCMEXPORT PCM_Data
 {
 public:
     //-----------------------------------------------------------------------------

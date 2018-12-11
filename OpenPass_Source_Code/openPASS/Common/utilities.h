@@ -13,11 +13,12 @@
 #pragma once
 
 #include <vector>
+#include "opExport.h"
 //#include <boost/range/irange.hpp>
 
 namespace Common
 {
-class LinearInterpolation
+class OPENPASSCOMMONEXPORT LinearInterpolation
 {
 public:
     //-----------------------------------------------------------------------------
@@ -43,7 +44,7 @@ public:
 //!
 //! @return                     Rounded value.
 //-----------------------------------------------------------------------------
-double roundDoubleWithDecimals(double value, int decimals);
+double OPENPASSCOMMONEXPORT roundDoubleWithDecimals(double value, int decimals);
 
 } // namespace Common
 

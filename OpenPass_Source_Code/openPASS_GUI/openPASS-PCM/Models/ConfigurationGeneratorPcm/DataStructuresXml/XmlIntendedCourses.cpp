@@ -21,13 +21,13 @@ bool XmlIntendedCourses::WriteToXml(QXmlStreamWriter *xmlWriter)
 
     if (intendedCourses != nullptr)
     {
-        std::vector<PCM_Course> courseVec = intendedCourses->GetCourseVec();
-        for (PCM_Course course : courseVec)
+        std::vector<PCM_Course *> courseVec = intendedCourses->GetCourseVec();
+        for (PCM_Course *course : courseVec)
         {
             xmlWriter->writeStartElement("course");
-            xmlWriter->writeAttribute("betNr", QString::number(course.GetBetNr()));
+            xmlWriter->writeAttribute("betNr", QString::number(course->GetBetNr()));
 
-            const std::map<int, const PCM_Point *> *pointMap = course.GetPointMap();
+            const std::map<int, const PCM_Point *> *pointMap = course->GetPointMap();
             for (const std::pair<const int, const PCM_Point *> pointPair : *pointMap)
             {
                 const PCM_Point *point = pointPair.second;

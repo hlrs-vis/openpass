@@ -20,12 +20,13 @@
 
 #include <QString>
 #include "pcm_line.h"
+#include "opExport.h"
 
 /*!
  * \brief The PCM_LineContainer class
  * This class is responsible to manage data of a pcm lines.
  */
-class PCM_LineContainer
+class OPENPASSCOMMONPCMEXPORT PCM_LineContainer
 {
 public:
     //-----------------------------------------------------------------------------

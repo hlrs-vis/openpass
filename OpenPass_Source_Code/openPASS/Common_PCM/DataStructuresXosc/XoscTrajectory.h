@@ -13,8 +13,9 @@
 
 #include "PCM_Data/pcm_trajectory.h"
 #include "DataStructuresBase/XmlBaseClass.h"
+#include "opExport.h"
 
-class XoscTrajectory: public XmlBaseClass
+class OPENPASSCOMMONPCMEXPORT XoscTrajectory: public XmlBaseClass
 {
 public:
 

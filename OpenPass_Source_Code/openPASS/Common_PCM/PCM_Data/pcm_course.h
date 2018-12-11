@@ -20,12 +20,13 @@
 
 #include <map>
 #include "pcm_pointContainer.h"
+#include "opExport.h"
 
 /*!
  * \brief The PCM_Line class
  * This class is responsible to manage data of a pcm course.
  */
-class PCM_Course : public PCM_PointContainer
+class OPENPASSCOMMONPCMEXPORT PCM_Course : public PCM_PointContainer
 {
 public:
     //-----------------------------------------------------------------------------

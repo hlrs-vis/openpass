@@ -20,13 +20,14 @@
 #define PCM_VIEWOBJECT_H
 
 #include "pcm_lineContainer.h"
+#include "opExport.h"
 
 /*!
  * \brief The PCM_ViewObject class
  * This class is responsible to manage data of pcm viewObjects which consists
  * of pcm lines.
  */
-class PCM_ViewObject : public PCM_LineContainer
+class OPENPASSCOMMONPCMEXPORT PCM_ViewObject : public PCM_LineContainer
 {
 public:
     //-----------------------------------------------------------------------------

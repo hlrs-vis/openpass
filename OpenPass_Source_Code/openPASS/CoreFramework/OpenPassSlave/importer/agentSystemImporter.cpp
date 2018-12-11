@@ -220,7 +220,7 @@ bool AgentSystemImporter::Import(const std::string &filename,
 
                     if (channelIterator == channelMap.end())
                     {
-                        channelId = channelMap.size();
+                        channelId = (int)channelMap.size();
                         channelMap.emplace(std::make_pair(componentPair, channelId));
                         agent->AddChannel(channelId);
 

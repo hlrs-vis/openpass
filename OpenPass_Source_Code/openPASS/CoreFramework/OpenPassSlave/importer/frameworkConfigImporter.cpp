@@ -35,7 +35,7 @@ namespace SimulationSlave {
 
 FrameworkConfig *FrameworkConfigImporter::Import(int argc, char *argv[])
 {
-    QString libraryPath = QCoreApplication::applicationDirPath() + SUBDIR_LIB_SIM;
+    QString libraryPath = QCoreApplication::applicationDirPath() + "/lib"; // SUBDIR_LIB_SIM;
     QString resultPath = QCoreApplication::applicationDirPath();
     QString agentConfigFile = QCoreApplication::applicationDirPath() + "/systemConfiguration.xml";
     QString sceneryConfigFile = QCoreApplication::applicationDirPath() + "/sceneryConfiguration.xml";

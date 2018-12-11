@@ -18,6 +18,7 @@
 #define SERVICEINTERFACE_H
 
 #include "openPASS/ServiceManagerInterface.h"
+#include <opExport.h>
 
 constexpr ServiceManagerInterface::ID ServiceManagerInterfaceID(
         char const * string, unsigned int value = 0)
