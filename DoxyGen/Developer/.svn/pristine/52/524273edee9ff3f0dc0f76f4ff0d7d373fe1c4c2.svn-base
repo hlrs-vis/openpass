@@ -1,0 +1,11 @@
+rmdir /s /q html
+
+IF EXIST ../../Source (
+set SourceDir=../../Source
+) ELSE (
+set SourceDir=../../OpenPass_Source_Code
+)
+
+doxygen Developer.doxy -d markdown
+move /y html\openPASS_PCM_Delevoper.chm openPASS_PCM_Delevoper.chm
+rmdir /s /q html

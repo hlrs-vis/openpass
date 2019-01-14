@@ -1,0 +1,50 @@
+/*! 
+
+\mainpage openPASS PCM Developer Documentation (PCM)
+
+\tableofcontents
+
+\section secIntroduction Introduction
+
+The openPASS tool is intended for the simulation of interaction between traffic participants to evaluate 
+active safety systems. A simulation is based on a specific situation configuration and can contain 
+several simulation runs (=situations) which differ due to random parameters. \n
+This documentation is focused on simulating PCM cases and the neccessary components and modules.
+
+\image html AgentEquipment_PCM.png Configuration of a PCM Simulation
+
+\section secAbbreviations  Glossary and Abbreviations
+
+|Abbreviation | Description |
+|-----|---------|
+|openPASS 	| Framework for the Simulative Evaluation of Active Safety Systems in Vehicles. |
+|ADAS       | Advanced Driver Assistance System |
+|Agent		| An arbitrary static or dynamic object in the simulation of a traffic situation. Therefore, it might (but does not have to) be a traffic participant. | 
+|Component  | A module that is part of an agent´s equipment. |
+|Equipment  | A set of models determining an agent´s behavior. |
+|Model		| An abstract representation of a real object which might omit details e.g. ADAS, driving dynamics, pedestrian, environmental conditions. In the openPASS framework, a model consists of one or more modules as well as channels connecting them. |
+|Module     | A dynamic library that is loaded and whose interface functions are called by the framework. Modules contain models or other individual functionality necessary for the simulation. Modules are exchangeable and can be fitted to various purposes ensuring ahigh flexibility of the framework. |
+|PCM		| Post Crash Matrix
+|Scenario   | A set of similar traffic situations. |
+|Situation  | A unique variation of a traffic scenario that is described unambiguously by its spatial (e.g. road network), temporal (time, date, duration) as well as participant (e.g. starting points and intended trajectories, behaviour of people and ADAS) set up. |
+
+\section secLegalNotes Legal Notes
+Please note that the descriptions used in this document, as well as brand and product name are the 
+property of their respective owners and are protected by patent, trademark rights and copyrights.
+
+All information herein has been carefully controlled. ITK Engineering GmbH cannot be held liable 
+for damages resulting from the use of this document and does not guarantee accuracy, correctness, 
+completeness and currentness of the information.
+
+\copyright
+&copy; Copyright 2018 ITK Engineering GmbH Germany. All rights reserved.
+Texts, images and graphics are protected by copyright and other laws for the protection of 
+intellectual property. A use of the content, in parts or in total, is not permitted without 
+written consent. This concerns especially diffusing, copying, translation or use in electronic 
+systems.
+
+
+*/
+
+
+

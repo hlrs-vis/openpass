@@ -1,0 +1,79 @@
+/*********************************************************************
+* This Example Content is intended to demonstrate usage of
+* Eclipse technology. It is provided to you under the terms
+* and conditions of the Eclipse Distribution License v1.0
+* which is available at http://www.eclipse.org/org/documents/edl-v10.php
+**********************************************************************/
+
+/** \addtogroup [...]
+* @{
+* [...]
+*
+* \section inputs Inputs
+* name | meaning
+* -----|---------
+* [...] | [...]
+* none
+*
+* \section outputs Outputs
+* name | meaning
+* -----|---------
+* [...] | [...]
+* none
+*
+* \section configParameters Parameters to be specified in agentConfiguration.xml
+* type | id | meaning | corresponding external paramter
+* -----|----|---------|----------------------------------
+* none
+*
+* @} */
+
+/**
+* \addtogroup [...]
+* @{
+*    @name Inputs
+*       @{*/
+	
+//! [input_description]
+[input definition]
+	
+/** @} @} */
+
+//-----------------------
+
+/**
+* \addtogroup [...]
+* @{
+*    @name Outputs
+*       @{*/
+
+//! [output_description]
+[output definition]
+	
+/** @} @} */
+
+//-----------------------
+	
+/**
+* \addtogroup [...]
+* @{
+*    @name External Parameters
+*       @{*/
+	
+	//! [param_description]
+	[param definition]
+	
+/** @} @} */
+
+//-----------------------
+
+/**
+* \addtogroup [...]
+* @{
+*    @name Internal Parameters
+*       @{*/
+	
+	//! [param_description]
+	[param definition]
+	
+/** @} @} */
