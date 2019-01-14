@@ -33,7 +33,8 @@ public:
                                          std::vector<PCM_Trajectory *> &trajectories,
                                          const QString &supposedCollisionTime,
                                          const QString &resultFolderName,
-                                         const QString &pcmCase);
+                                         const QString &pcmCase,
+                                         const int randomSeed);
 
     const QString CreateSystemConfiguration(const QString &configPath,
                                             const QString &otherSystemFile,
@@ -50,8 +51,8 @@ public:
                                              PCM_IntendedCourses &intendedCourses,
                                              PCM_GlobalData &globalData);
 
-    const QString CreateFrameworkConfiguration(QString frameworkConfigPath,
-                                               QList<QMap<QString, QString> > configList);
+    const QString CreateFrameworkConfiguration(const QString frameworkConfigPath,
+                                               QList<QMap<QString, QString> > configList, const int logLevel);
 
 private:
     const QString WriteRunConfiguration(XmlRunConfig &runConfig,
@@ -61,7 +62,6 @@ private:
 
     QString baseFolder = ".";
     QDir baseDirectory;
-
 };
 
 #endif // CONFIGWRITER_H

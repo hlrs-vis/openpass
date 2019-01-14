@@ -22,10 +22,16 @@ PresenterPcm::PresenterPcm(ModelPcm *modelPcm, ViewPcm *viewPcm,
     modelPcm->SetSelectionModelPcm(viewPcm->GetSelectionModelPcm());
 
     connect(viewPcm, &ViewPcm::PcmSourceFileChanged,
-            modelPcm, &ModelPcm::LoadPcmFile);
+            modelPcm, &ModelPcm::LoadCasesFromPcmFile);
+
+    connect(viewPcm, &ViewPcm::PrevResultFolderChanged,
+            modelPcm, &ModelPcm::LoadCasesFromPrevResult);
 
     connect(viewPcm, &ViewPcm::ResultFolderChanged,
             modelPcm, &ModelPcm::SetResultFolder);
+
+    connect(viewPcm, &ViewPcm::LogLevelChanged,
+            modelPcm, &ModelPcm::SetLogLevel);
 
     connect(viewPcm, &ViewPcm::OtherFileChanged,
             modelPcm, &ModelPcm::SetOtherSystemFile);
@@ -35,6 +41,24 @@ PresenterPcm::PresenterPcm(ModelPcm *modelPcm, ViewPcm *viewPcm,
 
     connect(viewPcm, &ViewPcm::Car2FileChanged,
             modelPcm, &ModelPcm::SetCar2SystemFile);
+
+    connect(viewPcm, &ViewPcm::RandomSeedChanged,
+            modelPcm, &ModelPcm::SetInitRandomSeed);
+
+    connect(viewPcm, &ViewPcm::VariationCountChanged,
+            modelPcm, &ModelPcm::SetVariationCount);
+
+    connect(viewPcm, &ViewPcm::ShiftRadius1Changed,
+            modelPcm, &ModelPcm::SetShiftRadius1);
+
+    connect(viewPcm, &ViewPcm::ShiftRadius2Changed,
+            modelPcm, &ModelPcm::SetShiftRadius2);
+
+    connect(viewPcm, &ViewPcm::VelocityScale1Changed,
+            modelPcm, &ModelPcm::SetVelocityScale1);
+
+    connect(viewPcm, &ViewPcm::VelocityScale2Changed,
+            modelPcm, &ModelPcm::SetVelocityScale2);
 
     connect(viewPcm, &ViewPcm::StartSimulation,
             modelPcm, &ModelPcm::StartSimulationTrigger);

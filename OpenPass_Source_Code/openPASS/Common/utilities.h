@@ -13,6 +13,7 @@
 #pragma once
 
 #include <vector>
+#include "vector2d.h"
 //#include <boost/range/irange.hpp>
 
 namespace Common

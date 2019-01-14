@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component>
+<!--
+/*********************************************************************
+* This Example Content is intended to demonstrate usage of
+* Eclipse technology. It is provided to you under the terms
+* and conditions of the Eclipse Distribution License v1.0
+* which is available at http://www.eclipse.org/org/documents/edl-v10.php
+**********************************************************************/
+-->
   <type>Action</type>
   <title>Dynamics_TwoTrack</title>
   <schedule>
@@ -11,43 +19,43 @@
     <parameter>
       <id>0</id>
       <type>double</type>
-      <title>radiusTire</title>
-      <unit></unit>
+      <title>Radius of the tires</title>
+      <unit>m</unit>
       <value>0.3</value>
     </parameter>
     <parameter>
       <id>1</id>
       <type>double</type>
-      <title>forceTireMaxStatic</title>
-      <unit></unit>
-      <value>10000</value>
+      <title>Tire's max. force</title>
+      <unit>N</unit>
+      <value>5000</value>
     </parameter>
     <parameter>
       <id>2</id>
       <type>double</type>
-      <title>forceTireSlideStatic</title>
-      <unit></unit>
-      <value>8000</value>
+      <title>Tire's slide force</title>
+      <unit>N</unit>
+      <value>4000</value>
     </parameter>
 	<parameter>
       <id>3</id>
       <type>double</type>
-      <title>slipTireMax</title>
+      <title>Tire's slip at max. force</title>
       <unit></unit>
       <value>0.1</value>
     </parameter>
 	<parameter>
       <id>4</id>
       <type>double</type>
-      <title>powerEngineMax</title>
-      <unit></unit>
+      <title>Engine power</title>
+      <unit>W</unit>
       <value>100000</value>
     </parameter>
 	<parameter>
       <id>5</id>
       <type>double</type>
-      <title>torqueBrakeMin</title>
-      <unit></unit>
+      <title>Max. brake torque</title>
+      <unit>Nm</unit>
       <value>-10000</value>
     </parameter>
   </parameters>
@@ -55,35 +63,35 @@
     <input>
       <id>0</id>
       <type>double</type>
-      <title>GasPedal</title>
+      <title>Throttle</title>
       <unit></unit>
       <cardinality>1</cardinality>
     </input>
     <input>
       <id>1</id>
       <type>double</type>
-      <title>BrakePedal</title>
+      <title>Brake</title>
       <unit></unit>
       <cardinality>1</cardinality>
     </input>
 	<input>
       <id>2</id>
       <type>double</type>
-      <title>FrontWheelAngle</title>
+      <title>Av. front wheel angle</title>
       <unit></unit>
       <cardinality>1</cardinality>
     </input>
 	<input>
       <id>3</id>
       <type>VectorDouble</type>
-      <title>BrakeSuperpose</title>
+      <title>Superposed brake</title>
       <unit></unit>
       <cardinality>1</cardinality>
     </input>
 	<input>
       <id>4</id>
       <type>VectorDouble</type>
-      <title>VerticalForce</title>
+      <title>Vertical force on tires</title>
       <unit></unit>
       <cardinality>1</cardinality>
     </input>
@@ -92,7 +100,7 @@
     <output>
       <id>0</id>
       <type>VectorDouble</type>
-      <title>InertiaForce</title>
+      <title>Inertia force vector</title>
       <unit></unit>
     </output>
   </outputs>

@@ -8,13 +8,13 @@
 * SPDX-License-Identifier: EPL-2.0
 **********************************************************************/
 
-#include "Models/ModelPcm_Eval.h"
+#include "ModelPcm_Eval.h"
+#include "GUI_Definitions.h"
 
 ModelPcm_Eval::ModelPcm_Eval(QObject *parent)
     : QObject(parent)
 {
-    listModelPcm = new QStringListModel(this);
-    listModelPcm->setStringList(resultList);
+    treeModelPcm = new ResultDirItemModel(parent);
 }
 
 ModelPcm_Eval::~ModelPcm_Eval()
@@ -24,9 +24,9 @@ ModelPcm_Eval::~ModelPcm_Eval()
         delete tableModel;
     }
 
-    if (listModelPcm != nullptr)
+    if (treeModelPcm != nullptr)
     {
-        delete listModelPcm;
+        delete treeModelPcm;
     }
 }
 
@@ -37,9 +37,8 @@ void ModelPcm_Eval::LoadPathData(const QString &pathName)
     Q_EMIT Clear();
     selectedIndexList.clear();
 
-    QDir pathDir(pathName);
-    resultList = pathDir.entryList(QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot);
-    listModelPcm->setStringList(resultList);
+    qDebug("LoadPathData %s", qPrintable(rootPath));
+    treeModelPcm->setRootResultDir(rootPath);
 }
 
 void ModelPcm_Eval::OnSelectionChanged(const QItemSelection &selected,
@@ -60,24 +59,31 @@ void ModelPcm_Eval::OnSelectionChanged(const QItemSelection &selected,
 
     for (QModelIndex index : selectedIndexList)
     {
-        QString pcmCase = index.data().toString();
-        QString resultFolder = rootPath + "/" + pcmCase + "/Results";
-        QDir resultDir(resultFolder);
-        QStringList resultsFileList = resultDir.entryList(QDir::Files | QDir::NoSymLinks);
-        for (QString file : resultsFileList)
+        if(!index.child(0, 0).isValid()) // check if the selected index is a leaf item in the tree
         {
-            QString resultFile = resultFolder + "/" + file;
-            LoadFileData(resultFile);
-        }
+            QString varName = index.data().toString();
+            QString systemName = index.parent().data().toString();
+            QString pcmCase = index.parent().parent().data().toString();
 
-        QString sceneryFile = rootPath + "/" + pcmCase + "/sceneryConfiguration.xml";
-        LoadSceneryData(sceneryFile);
+            QString caseSystemVarFolder = rootPath + "/" + pcmCase + "/" + systemName + "/" + varName;
+            QString resultFolder = caseSystemVarFolder + "/" + DIRNAME_CASE_RESULTS;
+            QDir resultDir(resultFolder);
+            QStringList resultsFileList = resultDir.entryList(QDir::Files | QDir::NoSymLinks);
+            for (QString file : resultsFileList)
+            {
+                QString resultFile = resultFolder + "/" + file;
+                LoadFileData(resultFile);
+            }
+
+            QString sceneryFile = caseSystemVarFolder + "/" + FILENAME_SCENERY_CONIG;
+            LoadSceneryData(sceneryFile);
+        }
     }
 }
 
 QAbstractItemModel *ModelPcm_Eval::GetItemModelPcm() const
 {
-    return listModelPcm;
+    return treeModelPcm;
 }
 
 void ModelPcm_Eval::SetSelectionModelPcm(QItemSelectionModel *selectionModel)

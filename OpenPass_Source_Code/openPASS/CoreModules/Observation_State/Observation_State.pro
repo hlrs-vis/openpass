@@ -28,9 +28,6 @@ QMAKE_CXXFLAGS += -std=c++11 -Dunix
 TARGET = Observation_State
 TEMPLATE = lib
 
-Release:DESTDIR = $${DIR_RELEASE}$${SUBDIR_LIB_SIMS}
-Debug:DESTDIR = $$DIR_DEBUG$${SUBDIR_LIB_SIMS}
-
 OBJECTS_DIR = .obj
 MOC_DIR = .moc
 RCC_DIR = .rcc

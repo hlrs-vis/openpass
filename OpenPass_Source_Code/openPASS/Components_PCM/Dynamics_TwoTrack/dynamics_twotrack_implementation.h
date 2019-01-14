@@ -179,7 +179,8 @@ private:
      *  @}
     */
 
-    /**
+    /** \addtogroup Dynamics_TwoTrack
+     *  @{
      *    \name Internal objects
      *    @{
     */
@@ -187,9 +188,10 @@ private:
     VehicleSimpleTT *vehicle;
     /**
      *    @}
+     *  @}
     */
 
-    //! Update data on agent's actual position, velocity and accelaration
+    //! Update data on agent's actual position, velocity and acceleration
     void ReadPreviousState();
 
     //! Calculate next position, translation velocity and translation acceleration of the agent

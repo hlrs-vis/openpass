@@ -13,6 +13,7 @@ HEADERS += \
     $$PWD/ConfigurationGeneratorPcm/ConfigGeneratorPcm.h \
     $$PWD/ConfigurationGeneratorPcm/DatabaseReaderPcm.h \
     $$PWD/ConfigurationGeneratorPcm/ConfigWriter.h \
+    $$PWD/ConfigurationGeneratorPcm/stochasticsPCM.h \
     $$PWD/ConfigurationGeneratorPcm/DataStructuresXml/XmlComponentSignal.h \
     $$PWD/ConfigurationGeneratorPcm/DataStructuresXml/XmlParameter.h \
     $$PWD/ConfigurationGeneratorPcm/DataStructuresXml/XmlComponentObservation.h \
@@ -39,6 +40,7 @@ SOURCES += \
     $$PWD/ConfigurationGeneratorPcm/ConfigGeneratorPcm.cpp \
     $$PWD/ConfigurationGeneratorPcm/DatabaseReaderPcm.cpp \
     $$PWD/ConfigurationGeneratorPcm/ConfigWriter.cpp \
+    $$PWD/ConfigurationGeneratorPcm/stochasticsPCM.cpp \
     $$PWD/ConfigurationGeneratorPcm/DataStructuresXml/XmlComponentSignal.cpp \
     $$PWD/ConfigurationGeneratorPcm/DataStructuresXml/XmlParameter.cpp \
     $$PWD/ConfigurationGeneratorPcm/DataStructuresXml/XmlComponentObservation.cpp \

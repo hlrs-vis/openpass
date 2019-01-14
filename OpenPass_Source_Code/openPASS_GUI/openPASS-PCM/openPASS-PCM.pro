@@ -49,13 +49,16 @@ SUBDIRS +=  . \
             ../../openPASS/Common_PCM/XoscWriter \
             ../../openPASS/Common_PCM/DataStructuresBase \
             ../../openPASS/Common_PCM/DataStructuresXosc \
+            ../../openPASS/Common_PCM\PCM_Importer \
+            ../../openPASS/CoreFramework/CoreShare \
+            ../../openPASS/Interfaces \
 
 INCLUDEPATH += $$SUBDIRS \
-    ..
+               ..
 
 HEADERS += \
     $$getFiles(SUBDIRS, hpp) \
-    $$getFiles(SUBDIRS, h)
+    $$getFiles(SUBDIRS, h) \
 
 SOURCES += \
     $$getFiles(SUBDIRS, cpp) \

@@ -37,11 +37,10 @@ FrameworkConfig *FrameworkConfigImporter::Import(int argc, char *argv[])
 {
     QString libraryPath = QCoreApplication::applicationDirPath() + SUBDIR_LIB_SIM;
     QString resultPath = QCoreApplication::applicationDirPath();
+    QString runConfigFile = QCoreApplication::applicationDirPath() + "/runConfiguration.xml";
     QString agentConfigFile = QCoreApplication::applicationDirPath() + "/systemConfiguration.xml";
     QString sceneryConfigFile = QCoreApplication::applicationDirPath() + "/sceneryConfiguration.xml";
-    QString openScenarioConfigFile = QCoreApplication::applicationDirPath() +
-                                     "/scenarioConfiguration.xosc";
-    QString runConfigFile = QCoreApplication::applicationDirPath() + "/runConfiguration.xml";
+    QString openScenarioConfigFile = QCoreApplication::applicationDirPath() + "/scenarioConfiguration.xosc";
     QString logFile = QCoreApplication::applicationDirPath() + "/OpenPassSlave.log";
     int logLevel = 5;
 

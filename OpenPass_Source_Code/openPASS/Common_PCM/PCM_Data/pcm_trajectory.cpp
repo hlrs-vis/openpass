@@ -80,12 +80,27 @@ QString PCM_Trajectory::VecIntToCsv(const std::vector<int> *inVec) const
 {
     QString outString = "";
 
-    for (uint index = 0; index < inVec->size() - 1; index++)
+//    for (uint index = 0; index < inVec->size() - 1; index++)
+//    {
+//        outString += (QString::number(inVec->at(index), 'g', 10) + ", ");
+//    }
+
+//    outString += QString::number(inVec->at(inVec->size() - 1), 'g', 10);
+
+
+
+    if (!inVec->empty())
     {
-        outString += (QString::number(inVec->at(index), 'g', 10) + ", ");
+        std::ostringstream oss;
+
+        // Convert all but the last element to avoid a trailing ","
+        std::copy(inVec->begin(), inVec->end()-1, std::ostream_iterator<int>(oss, ", "));
+
+        // Now add the last element with no delimiter
+        oss << inVec->back();
+        outString = QString::fromStdString(oss.str());
     }
 
-    outString += QString::number(inVec->at(inVec->size() - 1), 'g', 10);
 
     return outString;
 }
@@ -96,10 +111,23 @@ QString PCM_Trajectory::VecDoubleToCsv(const std::vector<double> *inVec) const
 
     for (uint index = 0; index < inVec->size() - 1; index++)
     {
-        outString += (QString::number(inVec->at(index), 'g', 10) + ", ");
+        outString += (QString::number(inVec->at(index), 'g', 7) + ", ");  // output precision up to 10 digits
     }
 
-    outString += QString::number(inVec->at(inVec->size() - 1), 'g', 10);
+    outString += QString::number(inVec->at(inVec->size() - 1), 'g', 7);
+
+
+//    if (!inVec->empty())
+//    {
+//        std::ostringstream oss;
+
+//        // Convert all but the last element to avoid a trailing ","
+//        std::copy(inVec->begin(), inVec->end()-1, std::ostream_iterator<double>(oss, ", "));
+
+//        // Now add the last element with no delimiter
+//        oss << inVec->back();
+//        outString = QString::fromStdString(oss.str());
+//    }
 
     return outString;
 }

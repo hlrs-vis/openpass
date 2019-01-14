@@ -37,7 +37,7 @@ public:
     //! @param[in]     inHeight         the height of the participant
     //! @param[in]     inCgfront        the distance of the COG to the front of the participant
     //-----------------------------------------------------------------------------
-    PCM_ParticipantData(QString inTypepcm,
+    PCM_ParticipantData(QString inTypeCode,
                         QString inWidth,
                         QString inLength,
                         QString inDistcgfa,
@@ -51,6 +51,8 @@ public:
                         QString inTrackwidth,
                         QString inHeight,
                         QString inCgfront);
+
+    PCM_ParticipantData(QString typeName);
 
     virtual ~PCM_ParticipantData() = default;
 

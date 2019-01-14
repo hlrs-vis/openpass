@@ -13,6 +13,7 @@
 
 #include "globalDefinitions.h"
 #include "math.h"
+#include "vector2d.h"
 
 //-----------------------------------------------------------------------------
 //! @brief defines common helper functions like conversion from and to enums.
@@ -110,6 +111,45 @@ public:
       {
           return ((angel >= angleRight) || (angel <= angleLeft));
       }
+    }
+
+    static bool CheckPointValid(const Common::Vector2d *point)
+    {
+        return ((point != nullptr) && (point->x != INFINITY) && (point->y != INFINITY));
+    }
+
+    //! Calculate the absolute angle between two pcm points.
+    //!
+    //! @param[in]    firstPoint     firstPoint
+    //! @param[in]    secondPoint    secondPoint
+    //! @return       distance between two pcm points
+    //-----------------------------------------------------------------------------
+    static double CalcAngleBetweenPoints(const Common::Vector2d& firstPoint, const Common::Vector2d& secondPoint)
+    {
+        if ((!CheckPointValid(&firstPoint)) || (!CheckPointValid(&secondPoint)))
+        {
+            return INFINITY;
+        }
+
+        double angle = (secondPoint - firstPoint).Angle();
+
+        return angle;
+    }
+
+    //! Transform a pcm point to a vector in the coordination system of a
+    //! source point in a direction.
+    //!
+    //! @param[in]    point     point
+    //! @return                 vector
+    static Common::Vector2d TransformPointToSourcePointCoord(const Common::Vector2d *point,
+                                                             const Common::Vector2d *sourcePoint,
+                                                             double direction)
+    {
+        Common::Vector2d newPoint = *point; //(point->x, point->y);
+        newPoint.Translate((*sourcePoint) * (-1));
+        newPoint.Rotate(direction * (-1));
+
+        return newPoint;
     }
 };
 

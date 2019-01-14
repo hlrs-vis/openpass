@@ -14,6 +14,7 @@
 #include "DatabaseReaderPcm.h"
 #include "ConfigWriter.h"
 #include "openScenarioWriter.h"
+#include "StochasticsPCM.h"
 
 class ConfigGenerator
 {
@@ -22,15 +23,26 @@ public:
     ConfigGenerator(const QString &baseFolder);
     virtual ~ConfigGenerator();
 
-    bool GenerateConfigs(DatabaseReader &dbReader,
+    bool GenerateConfigFromDB(DatabaseReader &dbReader,
                          const QString &pcmCase,
-                         const QString &configPath,
+                         const QString &caseOutputFolder,
                          const QString &otherSystemFile,
                          const QString &car1SystemFile,
                          const QString &car2SystemFile,
-                         const QString &resultFolderName);
+                         const int randomSeed,
+                         const std::vector<double> &shiftRadiusVec,
+                         const std::vector<double> &velMaxScaleVec);
 
-    const QString GenerateFrameworkConfig(QString frameworkConfigPath);
+    bool GenerateConfigFromPrevResult(const QString &prevCaseResultFolder,
+                         const QString &caseOutputFolder,
+                         const QString &otherSystemFile,
+                         const QString &car1SystemFile,
+                         const QString &car2SystemFile,
+                         const int randomSeed,
+                         const std::vector<double> &shiftRadiusVec,
+                         const std::vector<double> &velMaxScaleVec);
+
+    const QString GenerateFrameworkConfig(const QString frameworkConfigPath, const int logLevel);
 
     void AddConfigSet(QString resultFolderName,
                       QString systemConfig,
@@ -45,6 +57,15 @@ private:
     QString baseFolder = ".";
 
     QList<QMap<QString, QString>> configSetList;
+
+    void CalculateShiftPosition(const double shiftRadius, StochasticsPCM &stochastics, double &deltaX, double &deltaY);
+    void CalculateVelocityScale(const double velocityMaxScale, StochasticsPCM &stochastics, double &velocityScale);
+
+    void ShiftTrajectory(const double deltaX, const double deltaY, PCM_InitialValues &initValues, PCM_Trajectory * &trajectory);
+    void ScaleVelocity(const double velScale, PCM_InitialValues &initValues, PCM_Trajectory * &trajectory);
+
+    void ApplyVariation(const int randomSeed, const std::vector<double> &shiftRadiusVec, const std::vector<double> &velMaxScaleVec,
+                       std::vector<PCM_InitialValues> &initials, std::vector<PCM_Trajectory *> &trajectories);
 };
 
 #endif // CONFIGGENERATOR_H

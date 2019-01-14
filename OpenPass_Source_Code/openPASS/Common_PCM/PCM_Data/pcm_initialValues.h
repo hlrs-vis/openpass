@@ -45,6 +45,11 @@ public:
     QString GetAy() const;
     QString GetPsi() const;
 
+    void SetXpos(const QString xpos);
+    void SetYpos(const QString ypos);
+    void SetVx(const QString vx);
+    void SetVy(const QString vy);
+
 private:
     QString xpos;   //!< initial x-coordinate
     QString ypos;   //!< initial y-coordinate

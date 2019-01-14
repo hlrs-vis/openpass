@@ -10,8 +10,10 @@
 
 HEADERS += \
     $$PWD/ModelPcm_Eval.h \
-    $$PWD/TableModelCsv.h
+    $$PWD/TableModelCsv.h \
+    $$PWD/ResultDirItemModel.h
 
 SOURCES += \
     $$PWD/ModelPcm_Eval.cpp \
-    $$PWD/TableModelCsv.cpp
+    $$PWD/TableModelCsv.cpp \
+    $$PWD/ResultDirItemModel.cpp

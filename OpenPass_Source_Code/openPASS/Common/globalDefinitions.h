@@ -20,6 +20,8 @@
 #include <string>
 #include <tuple>
 
+
+
 //-----------------------------------------------------------------------------
 //! @brief Containing the three possible states regarding lane change
 //-----------------------------------------------------------------------------
@@ -61,14 +63,61 @@ enum class AgentCategory
 //-----------------------------------------------------------------------------
 enum class AgentVehicleType
 {
-    NONE = -1,
-    Undefined = 0,
-    Car,
+    NONE = -2,
+    Undefined = -1,
+    Car = 0,
     Pedestrian,
     Motorbike,
     Bicycle,
     Truck
 };
+
+// convert a vehicle type name to VehicleType enum
+inline AgentVehicleType GetAgentVehicleType(const std::string &strVehicleType)
+{
+    if (0 == strVehicleType.compare("Car"))
+    {
+        return AgentVehicleType::Car;
+    }
+    else if (0 == strVehicleType.compare("Pedestrian"))
+    {
+        return AgentVehicleType::Pedestrian;
+    }
+    else if (0 == strVehicleType.compare("Motorbike"))
+    {
+        return AgentVehicleType::Motorbike;
+    }
+    else if (0 == strVehicleType.compare("Bicycle"))
+    {
+        return AgentVehicleType::Bicycle;
+    }
+    else if (0 == strVehicleType.compare("Truck"))
+    {
+        return AgentVehicleType::Truck;
+    }
+    return AgentVehicleType::Undefined;
+}
+
+// convert a AgentVehicleType to VehicleType string
+inline std::string GetAgentVehicleTypeStr(const AgentVehicleType &vehicleType)
+{
+    return (vehicleType == AgentVehicleType::Car) ? "Car" :
+            (vehicleType == AgentVehicleType::Pedestrian) ? "Pedestrian" :
+            (vehicleType == AgentVehicleType::Motorbike) ? "Motorbike" :
+            (vehicleType == AgentVehicleType::Bicycle) ? "Bicycle" :
+            (vehicleType == AgentVehicleType::Truck) ? "Truck" : "unknown type";
+}
+
+// convert a string of type code to VehicleType string
+inline std::string GetAgentVehicleTypeStr(const std::string &vehicleTypeCode)
+{
+    try{
+        AgentVehicleType vehicleType = static_cast<AgentVehicleType>(std::stoi(vehicleTypeCode));
+        return GetAgentVehicleTypeStr(vehicleType);
+    } catch(...) {
+        return "unknown type";
+    }
+}
 
 //! State of indicator lever
 enum class IndicatorLever
