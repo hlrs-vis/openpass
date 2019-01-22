@@ -75,7 +75,8 @@ SUBDIRS += \
     framework \
     importer \
     ../CoreShare \
-    ../../Interfaces
+    ../../Interfaces \
+    ../../Common
 
 INCLUDEPATH += $$SUBDIRS \
 

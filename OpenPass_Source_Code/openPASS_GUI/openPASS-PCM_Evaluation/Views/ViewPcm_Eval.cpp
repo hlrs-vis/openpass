@@ -81,12 +81,12 @@ void ViewPcm_Eval::AddTableModel(QAbstractTableModel *tableModel, const QString 
 
 void ViewPcm_Eval::SetModelPcm(QAbstractItemModel *model)
 {
-    ui->listViewResults->setModel(model);
+    ui->treeViewResults->setModel(model);
 }
 
 QItemSelectionModel *ViewPcm_Eval::GetSelectionModelPcm()
 {
-    return ui->listViewResults->selectionModel();
+    return ui->treeViewResults->selectionModel();
 }
 
 void ViewPcm_Eval::AddTrajectory(QVector<QPointF> *trajectoryData)
@@ -128,6 +128,8 @@ void ViewPcm_Eval::ActionBrowse()
     {
         Q_EMIT ResultPathChanged(resultPath);
     }
+
+    ui->treeViewResults->expandAll();
 }
 
 void ViewPcm_Eval::OnTabClose(int index)

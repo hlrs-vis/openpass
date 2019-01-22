@@ -37,6 +37,8 @@ public:
     void SetModelPcm(QAbstractItemModel *model);
     QItemSelectionModel *GetSelectionModelPcm();
 
+    static QString resultParentFolder;
+
 public Q_SLOTS:
     void AddTableModel(QAbstractTableModel *tableModel, const QString &tableName);
     void AddTrajectory(QVector<QPointF> *trajectoryData);

@@ -51,7 +51,8 @@ SUBDIRS +=  . \
             ../../Common_PCM/PCM_Data \
             ../../Common_PCM/PCM_Importer \
             ../../Interfaces \
-            ../../Interfaces/roadInterface
+            ../../Interfaces/roadInterface \
+            ../../CoreFramework/CoreShare
 
 INCLUDEPATH += $$SUBDIRS \
     ..

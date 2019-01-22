@@ -9,6 +9,7 @@
 **********************************************************************/
 
 #include "ConfigWriter.h"
+#include "GUI_Definitions.h"
 
 ConfigWriter::ConfigWriter():
     ConfigWriter(baseFolder)
@@ -29,9 +30,10 @@ const QString ConfigWriter::CreateRunConfiguration(const QString &configPath,
                                                    std::vector<PCM_Trajectory *> &trajectories,
                                                    const QString &supposedCollisionTime,
                                                    const QString &resultFolderName,
-                                                   const QString &pcmCase)
+                                                   const QString &pcmCase,
+                                                   const int randomSeed)
 {
-    XmlRunConfig runConfig(0, endTime, 1, "undefined", -1, 0);
+    XmlRunConfig runConfig(0, endTime, 1, "undefined", -1, randomSeed);
 
     for (size_t iParticipant = 0; iParticipant < participants.size(); iParticipant++)
     {
@@ -59,19 +61,19 @@ const QString ConfigWriter::CreateRunConfiguration(const QString &configPath,
     {
         if (i == 0)
         {
-            observation->AddParameter(idCounter++, XML_PARAMETER_TYPE::intVector, "WayPoints_Time",
-                                      trajectories[0]->GetTimeVecString());
+            observation->AddParameter(idCounter++, XML_PARAMETER_TYPE::intVector, "WayPoints_Time", trajectories.at(i)->GetTimeVecString());
         }
+
         observation->AddParameter(idCounter++, XML_PARAMETER_TYPE::doubleVector,
-                                  "WayPoints_X" + QString::number(i), trajectories[i]->GetXPosVecString());
+                                  "WayPoints_X" + QString::number(i), trajectories.at(i)->GetXPosVecString());
         observation->AddParameter(idCounter++, XML_PARAMETER_TYPE::doubleVector,
-                                  "WayPoints_Y" + QString::number(i), trajectories[i]->GetYPosVecString());
+                                  "WayPoints_Y" + QString::number(i), trajectories.at(i)->GetYPosVecString());
         observation->AddParameter(idCounter++, XML_PARAMETER_TYPE::doubleVector,
-                                  "WayPoints_uVel" + QString::number(i), trajectories[i]->GetUVelVecString());
+                                  "WayPoints_uVel" + QString::number(i), trajectories.at(i)->GetUVelVecString());
         observation->AddParameter(idCounter++, XML_PARAMETER_TYPE::doubleVector,
-                                  "WayPoints_vVel" + QString::number(i), trajectories[i]->GetVVelVecString());
+                                  "WayPoints_vVel" + QString::number(i), trajectories.at(i)->GetVVelVecString());
         observation->AddParameter(idCounter++, XML_PARAMETER_TYPE::doubleVector,
-                                  "WayPoints_YawAngle" + QString::number(i), trajectories[i]->GetPsiVecString());
+                                  "WayPoints_YawAngle" + QString::number(i), trajectories.at(i)->GetPsiVecString());
     }
 
     observation->AddParameter(idCounter++, XML_PARAMETER_TYPE::string_, "resultFolderName",
@@ -94,13 +96,13 @@ const QString ConfigWriter::CreateRunConfiguration(const QString &configPath,
     return WriteRunConfiguration(runConfig, configPath);
 }
 
-const QString ConfigWriter::CreateSystemConfiguration(const QString &configPath,
+const QString ConfigWriter::CreateSystemConfiguration(const QString &caseOutputFolder,
                                                       const QString &otherSystemFile,
                                                       const QString &car1SystemFile,
                                                       const QString &car2SystemFile,
                                                       std::vector<PCM_ParticipantData> &participants)
 {
-    QString systemConfigFile = configPath + "/systemConfiguration.xml";
+    QString systemConfigFile = caseOutputFolder + "/" + FILENAME_SYSTEM_CONIG;
 
     QString agent_OtherSystemFile = "Systems/agent_NoDynamic.xml";
     if (otherSystemFile != "")
@@ -135,10 +137,9 @@ const QString ConfigWriter::CreateSystemConfiguration(const QString &configPath,
     }
 
     QString firstAgentFile;
-    bool firstAgentFileIsSet =
-        false; //only the first agent which is a car will get agent_Car1SystemFile
-    if ((participants.at(0).GetType() == "Car")
-            || (participants.at(0).GetType() == "Truck"))
+    bool firstAgentFileIsSet = false; //only the first agent which is a car will get agent_Car1SystemFile
+
+    if ((participants.at(0).GetType() == "Car") || (participants.at(0).GetType() == "Truck"))
     {
         firstAgentFile = agent_Car1SystemFile;
         firstAgentFileIsSet = true;
@@ -160,8 +161,7 @@ const QString ConfigWriter::CreateSystemConfiguration(const QString &configPath,
     for (size_t i = 1; i < participants.size(); i++)
     {
         QString agentFile;
-        if ((participants.at(i).GetType() == "Car")
-                || (participants.at(i).GetType() == "Truck"))
+        if ((participants.at(i).GetType() == "Car") || (participants.at(i).GetType() == "Truck"))
         {
             if (firstAgentFileIsSet)
             {
@@ -261,10 +261,11 @@ const QString ConfigWriter::CreateSceneryConfiguration(const QString &configPath
     return WriteSceneryConfiguration(sceneryConfig, configPath);
 }
 
-const QString ConfigWriter::CreateFrameworkConfiguration(QString frameworkConfigPath,
-                                                         QList<QMap<QString, QString> > configList)
+const QString ConfigWriter::CreateFrameworkConfiguration(const QString frameworkConfigPath,
+                                                         QList<QMap<QString, QString> > configList,
+                                                         const int logLevel)
 {
-    QString frameworkConfigFile = frameworkConfigPath + "/frameworkConfiguration.xml";
+    QString frameworkConfigFile = frameworkConfigPath + "/" + FILENAME_FRAMEWORK_CONIG;
     QFile file(frameworkConfigFile);
 
     // open file
@@ -286,12 +287,9 @@ const QString ConfigWriter::CreateFrameworkConfiguration(QString frameworkConfig
     xmlWriter.writeStartElement("frameworkConfigurations");
     xmlWriter.writeTextElement("SlavePath", "OpenPassSlave");
     xmlWriter.writeTextElement("LogFileMaster",
-                               baseDirectory.relativeFilePath(frameworkConfigPath + "/openPassMaster.log"));
-#ifdef QT_DEBUG
-    xmlWriter.writeTextElement("LogLevel", "2"); // print Error/Warning/Info messages
-#else
-    xmlWriter.writeTextElement("LogLevel", "0"); // print Error messages
-#endif
+                               baseDirectory.relativeFilePath(frameworkConfigPath + "/" + FILENAME_OPENPASSMASTER_LOG));
+
+    xmlWriter.writeTextElement("LogLevel", QString::number(logLevel));
 
     for (QMap<QString, QString> configSet : configList)
     {
@@ -320,15 +318,15 @@ const QString ConfigWriter::WriteRunConfiguration(XmlRunConfig &runConfig,
                                                   const QString &configPath)
 {
     // Create the xml with the chosen cases
-    QString runConfigFile = configPath + "/runConfiguration.xml";
+    QString runConfigFile = configPath + "/" + FILENAME_RUN_CONIG;
     QFile file(runConfigFile);
 
     // open file
     if (!file.open(QIODevice::WriteOnly))
     {
         // show error message if not able to open file
-        std::cout << "Error (ConfigGenerator): "
-                  "could not open runConfiguration.xml" << std::endl;
+        std::cout << "Error (ConfigGenerator): could not open "
+                  << FILENAME_RUN_CONIG << std::endl;
         return "";
     }
 
@@ -364,15 +362,15 @@ const QString ConfigWriter::WriteSceneryConfiguration(XmlScenery &sceneryConfig,
                                                       const QString &configPath)
 {
     // write the xml agent file
-    QString sceneryConfigFile = configPath + "/sceneryConfiguration.xml";
+    QString sceneryConfigFile = configPath + "/" + FILENAME_SCENERY_CONIG;
     QFile file(sceneryConfigFile);
 
     //open file
     if (!file.open(QIODevice::WriteOnly))
     {
         // show error message if not able to open file
-        std::cout << "Error (ConfigGenerator): "
-                  "could not open sceneryConfiguration.xml" << std::endl;
+        std::cout << "Error (ConfigGenerator): could not open "
+                  << FILENAME_SCENERY_CONIG << std::endl;
         return "";
     }
 

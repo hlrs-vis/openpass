@@ -47,6 +47,8 @@ SUBDIRS +=  . \
             ../../openPASS/Common_PCM \
             ../../openPASS/Common_PCM/PCM_Data \
             ../../openPASS/Common_PCM/PCM_Importer \
+            ../../openPASS/CoreFramework/CoreShare \
+            ../../openPASS/Interfaces \
 
 INCLUDEPATH += $$SUBDIRS \
     ..

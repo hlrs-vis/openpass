@@ -21,6 +21,7 @@
 #include "frameworkConfig.h"
 #include "frameworkConfigImporter.h"
 #include "xmlParser.h"
+#include "globalDefinitions.h"
 
 // local helper macros
 #define CHECKFALSE(element) \
@@ -89,9 +90,8 @@ FrameworkConfig *FrameworkConfigImporter::Import(const std::string &filename)
     if (!SimulationCommon::ParseString(documentRoot, "LogFileMaster", logFileMaster)
             || logFileMaster.empty())
     {
-        ss.str(std::string());
-        ss << QCoreApplication::applicationDirPath().toStdString() << "/OpenPassMaster.log";
-        logFileMaster = ss.str();
+        LOG_INTERN(LogLevel::Error) << "Error: no LogFileMaster found in framework config file";
+        return nullptr;
     }
 
     // parse log level
@@ -144,7 +144,7 @@ FrameworkConfig *FrameworkConfigImporter::Import(const std::string &filename)
         if (!SimulationCommon::ParseString(slaveConfigElement, "LibraryPath", libraryPath)
                 || libraryPath.empty())
         {
-            libraryPath = QCoreApplication::applicationDirPath().toStdString();
+            libraryPath = QCoreApplication::applicationDirPath().toStdString() + SUBDIR_LIB_SIM;
         }
 
         // parse result path
@@ -160,9 +160,8 @@ FrameworkConfig *FrameworkConfigImporter::Import(const std::string &filename)
         if (!SimulationCommon::ParseString(slaveConfigElement, "AgentConfigFile", agentConfigFile)
                 || agentConfigFile.empty())
         {
-            ss.str(std::string());
-            ss << QCoreApplication::applicationDirPath().toStdString() << "/agentConfiguration.xml";
-            agentConfigFile = ss.str();
+            LOG_INTERN(LogLevel::Error) << "Error: no system configuration found in framework config file";
+            return nullptr;
         }
 
         // parse run configuration file
@@ -170,9 +169,8 @@ FrameworkConfig *FrameworkConfigImporter::Import(const std::string &filename)
         if (!SimulationCommon::ParseString(slaveConfigElement, "RunConfigFile", runConfigFile)
                 || runConfigFile.empty())
         {
-            ss.str(std::string());
-            ss << QCoreApplication::applicationDirPath().toStdString() << "/runConfiguration.xml";
-            runConfigFile = ss.str();
+            LOG_INTERN(LogLevel::Error) << "Error: no run configuration found in framework config file";
+            return nullptr;
         }
 
         // parse scenery configuration file
@@ -180,9 +178,8 @@ FrameworkConfig *FrameworkConfigImporter::Import(const std::string &filename)
         if (!SimulationCommon::ParseString(slaveConfigElement, "SceneryConfigFile", sceneryConfigFile)
                 || sceneryConfigFile.empty())
         {
-            ss.str(std::string());
-            ss << QCoreApplication::applicationDirPath().toStdString() << "/sceneryConfiguration.xml";
-            sceneryConfigFile = ss.str();
+            LOG_INTERN(LogLevel::Error) << "Error: no scenery configuration found in framework config file";
+            return nullptr;
         }
 
         // parse openScenario configuration file
@@ -191,9 +188,8 @@ FrameworkConfig *FrameworkConfigImporter::Import(const std::string &filename)
                                            openScenarioConfigFile)
                 || openScenarioConfigFile.empty())
         {
-            ss.str(std::string());
-            ss << QCoreApplication::applicationDirPath().toStdString() << "/scenarioConfiguration.xosc";
-            openScenarioConfigFile = ss.str();
+            LOG_INTERN(LogLevel::Error) << "Error: no scenario configuration found in framework config file";
+            return nullptr;
         }
 
         // parse log file Slave
@@ -201,9 +197,8 @@ FrameworkConfig *FrameworkConfigImporter::Import(const std::string &filename)
         if (!SimulationCommon::ParseString(slaveConfigElement, "LogFileSlave", logFileSlave)
                 || logFileSlave.empty())
         {
-            ss.str(std::string());
-            ss << QCoreApplication::applicationDirPath().toStdString() << "/OpenPassSlave.log";
-            logFileSlave = ss.str();
+            LOG_INTERN(LogLevel::Error) << "Error: no LogFileSlave found in framework config file";
+            return nullptr;
         }
 
         slaveConfigList.push_back(SlaveConfig(libraryPath,

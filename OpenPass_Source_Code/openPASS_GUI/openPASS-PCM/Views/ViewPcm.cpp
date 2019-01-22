@@ -10,6 +10,7 @@
 
 #include "ViewPcm.h"
 #include "ui_ViewPcm.h"
+#include "GUI_Definitions.h"
 
 const WindowInterface::ID ViewPcm::ViewID = QStringLiteral("openPASS.PCM");
 
@@ -38,6 +39,13 @@ ViewPcm::ViewPcm(WindowInterface *const window,
     actionMenuLoadExperiment->setEnabled(true);
 
     // Customize the view
+#ifdef QT_DEBUG
+    ui->comboBox_LogLevel->setCurrentIndex(2); // print Error/Warning/Info messages
+#else
+    ui->comboBox_LogLevel->setCurrentIndex(0); // print Error messages only
+#endif
+
+    ui->spinBox_VarCount->setValue(VARIATION_COUNT_DEFAULT);
 
     // Update the view
 
@@ -52,6 +60,17 @@ ViewPcm::ViewPcm(WindowInterface *const window,
       * allowing connecting with the correspondant widget
       * allowing creating menu ({} -> empty in this case)
       */
+
+    // initialize parent folders of settings in the GUI
+    QString appRootFolder = QCoreApplication::applicationDirPath();
+    expConfigParentFolder = appRootFolder;
+    pcmFileParentFolder = appRootFolder;
+    prevResultParentFolder = appRootFolder;
+    prevResultParentFolder = appRootFolder;
+    resultParentFolder = appRootFolder;
+    car1ParentFolder = appRootFolder;
+    car2ParentFolder = appRootFolder;
+    otherParentFolder = appRootFolder;
 }
 
 ViewPcm::~ViewPcm()
@@ -83,6 +102,31 @@ void ViewPcm::SetProgressBarValue(int value)
     ui->progressBar->setValue(value);
 }
 
+// freeze or unfreeze the input and output GUI
+void ViewPcm::enableIOGUI(bool enabled)
+{
+    ui->radioButtonPCMDB->setEnabled(enabled);
+    ui->radioButtonSimResult->setEnabled(enabled);
+    ui->lineEditPcmFile->setEnabled(enabled);
+    ui->lineEditPrevResultFolder->setEnabled(enabled);
+    ui->lineEditResultFolder->setEnabled(enabled);
+    ui->comboBox_LogLevel->setEnabled(enabled);
+
+    ui->lineEditCar1->setEnabled(enabled);
+    ui->lineEditCar2->setEnabled(enabled);
+    ui->lineEditOther->setEnabled(enabled);
+    ui->buttonBrowsePcmFile->setEnabled(enabled);
+    ui->buttonBrowsePrevResultFolder->setEnabled(enabled);
+    ui->buttonBrowseResultFolder->setEnabled(enabled);
+    ui->buttonBrowseCar1->setEnabled(enabled);
+    ui->buttonBrowseCar2->setEnabled(enabled);
+    ui->buttonBrowseOther->setEnabled(enabled);
+
+    ui->groupBoxVariation->setEnabled(enabled);
+
+    ui->listViewPcmCase->setEnabled(enabled);
+}
+
 void ViewPcm::OnSimulationStarted()
 {
     actionMenuStartSimulation->setEnabled(false);
@@ -90,9 +134,8 @@ void ViewPcm::OnSimulationStarted()
     actionMenuSaveExperiment->setEnabled(false);
     actionMenuLoadExperiment->setEnabled(false);
 
-    ui->buttonBrowsePcmFile->setEnabled(false);
-    ui->buttonBrowseResultFolder->setEnabled(false);
-    ui->listViewPcmCase->setEnabled(false);
+    // freeze the input and output GUI
+    enableIOGUI(false);
 }
 
 void ViewPcm::OnSimulationFinished()
@@ -102,9 +145,9 @@ void ViewPcm::OnSimulationFinished()
     actionMenuSaveExperiment->setEnabled(true);
     actionMenuLoadExperiment->setEnabled(true);
 
-    ui->buttonBrowsePcmFile->setEnabled(true);
-    ui->buttonBrowseResultFolder->setEnabled(true);
-    ui->listViewPcmCase->setEnabled(true);
+    // unfreeze the input and output GUI
+    enableIOGUI(true);
+
     ui->progressBar->reset();
 }
 
@@ -150,7 +193,7 @@ void ViewPcm::ActionSaveExperiment()
 {
     QDir const root = QDir(QCoreApplication::applicationDirPath());
     QString const configFile = QFileDialog::getSaveFileName(
-                                   this, tr("openPASS / Save Configuration"), root.canonicalPath(),
+                                   this, tr("openPASS / Save Configuration"), expConfigParentFolder,
                                    QStringLiteral("Config File (*.cfg);;All files (*)"));
 
     if (configFile.isEmpty())
@@ -158,9 +201,20 @@ void ViewPcm::ActionSaveExperiment()
         return;
     }
 
+    expConfigParentFolder = QFileInfo(configFile).dir().canonicalPath();
+
+    // save experiment settings as a .cfg file
     QSettings settings(configFile, QSettings::IniFormat);
     settings.clear();
-    settings.setValue(configStringEnvPcmFile, ui->lineEditPcmFile->text());
+
+    if(ui->radioButtonPCMDB->isChecked())
+    {
+        settings.setValue(configStringEnvPcmFile, ui->lineEditPcmFile->text());
+    }
+    else {
+        settings.setValue(configStringEnvInputFolder, ui->lineEditPrevResultFolder->text());
+    }
+
     settings.setValue(configStringEnvResultFolder, ui->lineEditResultFolder->text());
     settings.setValue(configStringSysCar1, ui->lineEditCar1->text());
     settings.setValue(configStringSysCar2, ui->lineEditCar2->text());
@@ -168,21 +222,54 @@ void ViewPcm::ActionSaveExperiment()
 
     QModelIndexList selectionList =
         ui->listViewPcmCase->selectionModel()->selectedIndexes();
-    int count = 0;
     settings.beginGroup(configStringSelection);
+    QString selectionKey;
     for (QModelIndex selectedIndex : selectionList)
     {
-        settings.setValue("id_" +  QString::number(count++), selectedIndex.row());
+        selectionKey = selectedIndex.data().toString();
+        settings.setValue(selectionKey, true);
     }
     settings.endGroup();
 
+    // variation settings
+    if(ui->radioButton_RSCase->isChecked())
+    {
+        settings.setValue(configStringVarRandomSeed, configRandomSeedUsingCase);
+    }
+    else
+    {
+        settings.setValue(configStringVarRandomSeed, ui->spinBox_RSValue->text());
+    }
+    settings.setValue(configStringVarCount, ui->spinBox_VarCount->text());
+
+    if(ui->groupBoxVarPos->isChecked())
+    {
+        settings.setValue(configStringVarTrajectoryShifting, true);
+        settings.setValue(configStringVarShiftRadius1, ui->doubleSpinBox_Radius_1->value());
+        settings.setValue(configStringVarShiftRadius2, ui->doubleSpinBox_Radius_2->value());
+    }
+    else
+    {
+        settings.setValue(configStringVarTrajectoryShifting, false);
+    }
+
+    if(ui->groupBoxVarVelocity->isChecked())
+    {
+        settings.setValue(configStringVarVelocityScaling, true);
+        settings.setValue(configStringVarMaxVelScale1, ui->doubleSpinBox_VelScale_1->value());
+        settings.setValue(configStringVarMaxVelScale2, ui->doubleSpinBox_VelScale_2->value());
+    }
+    else
+    {
+        settings.setValue(configStringVarVelocityScaling, false);
+    }
 }
 
 void ViewPcm::ActionLoadExperiment()
 {
     QDir const root = QDir(QCoreApplication::applicationDirPath());
     QString const configFile = QFileDialog::getOpenFileName(
-                                   this, tr("openPASS / Load Configuration"), root.canonicalPath(),
+                                   this, tr("openPASS / Load Configuration"), expConfigParentFolder,
                                    QStringLiteral("Config File (*.cfg);;All files (*)"));
 
     if (configFile.isEmpty())
@@ -190,51 +277,125 @@ void ViewPcm::ActionLoadExperiment()
         return;
     }
 
+    expConfigParentFolder = QFileInfo(configFile).dir().canonicalPath();
+
+    // load experiment settings from a .cfg file
     QSettings settings(configFile, QSettings::IniFormat);
-    ui->lineEditPcmFile->setText(settings.value(configStringEnvPcmFile).toString());
+    if(settings.contains(configStringEnvPcmFile))
+    {
+        ui->radioButtonPCMDB->toggle();
+        ui->lineEditPcmFile->setText(settings.value(configStringEnvPcmFile).toString());
+    }
+    else if(settings.contains(configStringEnvInputFolder))
+    {
+        ui->radioButtonSimResult->toggle();
+        ui->lineEditPrevResultFolder->setText(settings.value(configStringEnvInputFolder).toString());
+    }
+
     ui->lineEditResultFolder->setText(settings.value(configStringEnvResultFolder).toString());
     ui->lineEditCar1->setText(settings.value(configStringSysCar1).toString());
     ui->lineEditCar2->setText(settings.value(configStringSysCar2).toString());
     ui->lineEditOther->setText(settings.value(configStringSysOther).toString());
 
+    // clear existing selection
+    ui->listViewPcmCase->clearSelection();
+    int rowCount = ui->listViewPcmCase->model()->rowCount();
+
     settings.beginGroup(configStringSelection);
     QStringList selectionKeyList = settings.childKeys();
     for (QString selectionKey : selectionKeyList)
     {
-        int row = settings.value(selectionKey).toInt();
-        QModelIndex index = ui->listViewPcmCase->model()->index(row, 0);
-        if (index.isValid())
+        for(int row=0; row < rowCount; row++)
         {
-            ui->listViewPcmCase->selectionModel()->select(index, QItemSelectionModel::Select);
-            on_listViewPcmCase_clicked(index);
+            QString CaseNumber = ui->listViewPcmCase->model()->index(row, 0).data().toString();
+            if (selectionKey.compare(CaseNumber) == 0)  // found the row number of the selected case
+            {
+                QModelIndex index = ui->listViewPcmCase->model()->index(row, 0);
+                ui->listViewPcmCase->selectionModel()->select(index, QItemSelectionModel::Select);
+                on_listViewPcmCase_clicked(index);
+                break;
+            }
         }
     }
+    settings.endGroup();
 
+    // load variation settings
+    QVariant randomSeed = settings.value(configStringVarRandomSeed);
+    if(randomSeed.toString().compare(configRandomSeedUsingCase) == 0)
+    {
+        ui->radioButton_RSCase->setChecked(true);
+        ui->radioButton_RSValue->setChecked(false);
+    }
+    else
+    {
+        ui->spinBox_RSValue->setValue(randomSeed.toInt());
+        ui->radioButton_RSCase->setChecked(false);
+        ui->radioButton_RSValue->setChecked(true);
+    }
+
+    ui->spinBox_VarCount->setValue(settings.value(configStringVarCount).toInt());
+
+    if(settings.value(configStringVarTrajectoryShifting).toBool())
+    {
+        ui->groupBoxVarPos->setChecked(true);
+        ui->doubleSpinBox_Radius_1->setValue(settings.value(configStringVarShiftRadius1).toDouble());
+        ui->doubleSpinBox_Radius_2->setValue(settings.value(configStringVarShiftRadius2).toDouble());
+    }
+    else
+    {
+        ui->groupBoxVarPos->setChecked(false);
+    }
+
+    if(settings.value(configStringVarVelocityScaling).toBool())
+    {
+        ui->groupBoxVarVelocity->setChecked(true);
+        ui->doubleSpinBox_VelScale_1->setValue(settings.value(configStringVarMaxVelScale1).toDouble());
+        ui->doubleSpinBox_VelScale_2->setValue(settings.value(configStringVarMaxVelScale2).toDouble());
+    }
+    else
+    {
+        ui->groupBoxVarVelocity->setChecked(false);
+    }
 }
 
 void ViewPcm::on_buttonBrowsePcmFile_clicked()
 {
     QDir const root = QDir(QCoreApplication::applicationDirPath());
     QString const filepath = QFileDialog::getOpenFileName(
-                                 this, tr("openPASS / Load PCM file"), root.canonicalPath(),
+                                 this, tr("openPASS / Read input data from a PCM file"), pcmFileParentFolder,
                                  QStringLiteral("PCM File (*.mdb);;All files (*)"));
 
     if (!filepath.isNull())
     {
         ui->lineEditPcmFile->setText(root.relativeFilePath(filepath));
+        pcmFileParentFolder = QFileInfo(filepath).dir().canonicalPath();
+    }
+}
+
+void ViewPcm::on_buttonBrowsePrevResultFolder_clicked()
+{
+    QDir const root = QDir(QCoreApplication::applicationDirPath());
+    QString const dirpath = QFileDialog::getExistingDirectory(
+                                 this, tr("openPASS / Read input data from a result folder"), prevResultParentFolder,
+                                 QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    if (!dirpath.isNull())
+    {
+        ui->lineEditPrevResultFolder->setText(root.relativeFilePath(dirpath));
+        prevResultParentFolder = QFileInfo(dirpath).dir().canonicalPath();
     }
 }
 
 void ViewPcm::on_buttonBrowseResultFolder_clicked()
 {
     QDir const root = QDir(QCoreApplication::applicationDirPath());
-    QString const filepath = QFileDialog::getExistingDirectory(
-                                 this, tr("Open Result Folder"), root.canonicalPath(),
+    QString const dirpath = QFileDialog::getExistingDirectory(
+                                 this, tr("openPASS / Output result Folder"), resultParentFolder,
                                  QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 
-    if (!filepath.isNull())
+    if (!dirpath.isNull())
     {
-        ui->lineEditResultFolder->setText(root.relativeFilePath(filepath));
+        ui->lineEditResultFolder->setText(root.relativeFilePath(dirpath));
+        resultParentFolder = QFileInfo(dirpath).dir().canonicalPath();
     }
 }
 
@@ -242,7 +403,7 @@ void ViewPcm::on_buttonBrowseOther_clicked()
 {
     QDir const root = QDir(QCoreApplication::applicationDirPath());
     QStringList fileNames = QFileDialog::getOpenFileNames(
-                                this, tr("openPASS / SystemConfig for other participants"), root.canonicalPath(),
+                                this, tr("openPASS / SystemConfig for other participants"), otherParentFolder,
                                 QStringLiteral("SystemConfig File (*.xml);;All files (*)"));
 
     QString listString;
@@ -255,13 +416,18 @@ void ViewPcm::on_buttonBrowseOther_clicked()
         listString.append(root.relativeFilePath(fileName));
     }
     ui->lineEditOther->setText(listString);
+
+    if(fileNames.count() > 0)
+    {
+        otherParentFolder = QFileInfo(fileNames.back()).dir().canonicalPath();
+    }
 }
 
 void ViewPcm::on_buttonBrowseCar1_clicked()
 {
     QDir const root = QDir(QCoreApplication::applicationDirPath());
     QStringList fileNames = QFileDialog::getOpenFileNames(
-                                this, tr("openPASS / SystemConfig for cars"), root.canonicalPath(),
+                                this, tr("openPASS / SystemConfig for cars"), car1ParentFolder,
                                 QStringLiteral("SystemConfig File (*.xml);;All files (*)"));
 
     QString listString;
@@ -274,13 +440,18 @@ void ViewPcm::on_buttonBrowseCar1_clicked()
         listString.append(root.relativeFilePath(fileName));
     }
     ui->lineEditCar1->setText(listString);
+
+    if(fileNames.count() > 0)
+    {
+        car1ParentFolder = QFileInfo(fileNames.back()).dir().canonicalPath();
+    }
 }
 
 void ViewPcm::on_buttonBrowseCar2_clicked()
 {
     QDir const root = QDir(QCoreApplication::applicationDirPath());
     QStringList fileNames = QFileDialog::getOpenFileNames(
-                                this, tr("openPASS / SystemConfig for cars"), root.canonicalPath(),
+                                this, tr("openPASS / SystemConfig for cars"), car2ParentFolder,
                                 QStringLiteral("SystemConfig File (*.xml);;All files (*)"));
 
     QString listString;
@@ -293,11 +464,22 @@ void ViewPcm::on_buttonBrowseCar2_clicked()
         listString.append(root.relativeFilePath(fileName));
     }
     ui->lineEditCar2->setText(listString);
+
+    if(fileNames.count() > 0)
+    {
+        car2ParentFolder = QFileInfo(fileNames.back()).dir().canonicalPath();
+    }
 }
 
 void ViewPcm::on_lineEditPcmFile_textChanged(const QString &arg1)
 {
     Q_EMIT PcmSourceFileChanged(arg1);
+}
+
+
+void ViewPcm::on_lineEditPrevResultFolder_textChanged(const QString &arg1)
+{
+    Q_EMIT PrevResultFolderChanged(arg1);
 }
 
 void ViewPcm::on_lineEditResultFolder_textChanged(const QString &arg1)
@@ -334,3 +516,90 @@ void ViewPcm::on_listViewPcmCase_clicked(const QModelIndex &index)
         actionMenuStartSimulation->setEnabled(false);
     }
 }
+
+void ViewPcm::on_radioButtonPCMDB_toggled(bool checked)
+{
+    if(checked)
+    {
+        ui->stackPCMData->setCurrentIndex(0);
+
+        Q_EMIT PcmSourceFileChanged(ui->lineEditPcmFile->text());
+    }
+}
+
+void ViewPcm::on_radioButtonSimResult_toggled(bool checked)
+{
+    if(checked)
+    {
+        ui->stackPCMData->setCurrentIndex(1);
+
+        Q_EMIT PrevResultFolderChanged(ui->lineEditPrevResultFolder->text());
+    }
+}
+
+void ViewPcm::on_comboBox_LogLevel_currentIndexChanged(int index)
+{
+    Q_EMIT LogLevelChanged(index);
+}
+
+void ViewPcm::on_radioButton_RSCase_toggled(bool checked)
+{
+    if(checked)
+    {
+        Q_EMIT RandomSeedChanged(-1);
+    }
+}
+
+void ViewPcm::on_radioButton_RSValue_toggled(bool checked)
+{
+    if(checked)
+    {
+        Q_EMIT RandomSeedChanged(ui->spinBox_RSValue->value());
+    }
+}
+
+void ViewPcm::on_spinBox_VarCount_valueChanged(int value)
+{
+    Q_EMIT VariationCountChanged(value);
+}
+
+void ViewPcm::on_spinBox_RSValue_valueChanged(int value)
+{
+    Q_EMIT RandomSeedChanged(value);
+}
+
+void ViewPcm::on_doubleSpinBox_Radius_1_valueChanged(double radius)
+{
+    Q_EMIT ShiftRadius1Changed(radius);
+}
+
+void ViewPcm::on_doubleSpinBox_Radius_2_valueChanged(double radius)
+{
+    Q_EMIT ShiftRadius2Changed(radius);
+}
+
+void ViewPcm::on_groupBoxVarPos_toggled(bool checked)
+{
+    Q_EMIT ShiftRadius1Changed((checked ? ui->doubleSpinBox_Radius_1->value() : -1));
+    Q_EMIT ShiftRadius2Changed((checked ? ui->doubleSpinBox_Radius_2->value() : -1));
+}
+
+void ViewPcm::on_doubleSpinBox_VelScale_1_valueChanged(double maxScale)
+{
+    Q_EMIT VelocityScale1Changed(maxScale);
+}
+
+void ViewPcm::on_doubleSpinBox_VelScale_2_valueChanged(double maxScale)
+{
+    Q_EMIT VelocityScale2Changed(maxScale);
+}
+
+void ViewPcm::on_groupBoxVarVelocity_toggled(bool checked)
+{
+    Q_EMIT VelocityScale1Changed((checked ? (ui->doubleSpinBox_VelScale_1->value()) : INFINITY));
+    Q_EMIT VelocityScale2Changed((checked ? (ui->doubleSpinBox_VelScale_2->value()) : INFINITY));
+}
+
+
+
+

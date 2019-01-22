@@ -320,31 +320,7 @@ RunConfig *RunConfigImporter::Import(const std::string &filename)
             std::string vehicleTypeStr;
             CHECKFALSE(ParseString(agentElement, "Type", vehicleTypeStr));
 
-            AgentVehicleType vehicleType = AgentVehicleType::Undefined;
-            if (0 == vehicleTypeStr.compare("Car"))
-            {
-                vehicleType = AgentVehicleType::Car;
-            }
-            else if (0 == vehicleTypeStr.compare("Pedestrian"))
-            {
-                vehicleType = AgentVehicleType::Pedestrian;
-            }
-            else if (0 == vehicleTypeStr.compare("Motorbike"))
-            {
-                vehicleType = AgentVehicleType::Motorbike;
-            }
-            else if (0 == vehicleTypeStr.compare("Bicycle"))
-            {
-                vehicleType = AgentVehicleType::Bicycle;
-            }
-            else if (0 == vehicleTypeStr.compare("Truck"))
-            {
-                vehicleType = AgentVehicleType::Truck;
-            }
-            else
-            {
-                vehicleTypeStr = "Undefined";
-            }
+            AgentVehicleType vehicleType = GetAgentVehicleType(vehicleTypeStr);
 
             double width;
             CHECKFALSE(ParseDouble(agentElement, "Width", width));
@@ -382,8 +358,7 @@ RunConfig *RunConfigImporter::Import(const std::string &filename)
             double distanceCOGtoLeadingEdge;
             CHECKFALSE(ParseDouble(agentElement, "DistanceCOGtoLeadingEdge", distanceCOGtoLeadingEdge));
 
-            LOG_INTERN(LogLevel::DebugCore) << "import agent library " << agentRef << ", vehicle type " <<
-                                            vehicleTypeStr;
+            LOG_INTERN(LogLevel::DebugCore) << "import agent library " << agentRef << ", vehicle type " << GetAgentVehicleTypeStr(vehicleType);
 
             AgentSpawnItem *agentSpawnItem = new (std::nothrow) AgentSpawnItem(agentId, agentRef);
             CHECKFALSE(agentSpawnItem);

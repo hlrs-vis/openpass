@@ -60,3 +60,23 @@ QString PCM_InitialValues::GetPsi() const
 {
     return psi;
 }
+
+void PCM_InitialValues::SetXpos(const QString xpos)
+{
+    this->xpos = xpos;
+}
+
+void PCM_InitialValues::SetYpos(const QString ypos)
+{
+    this->ypos = ypos;
+}
+
+void PCM_InitialValues::SetVx(const QString vx)
+{
+    this->vx = vx;
+}
+
+void PCM_InitialValues::SetVy(const QString vy)
+{
+    this->vy = vy;
+}

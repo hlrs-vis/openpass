@@ -15,10 +15,10 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QMap>
-#include <QStringListModel>
 #include <QItemSelectionModel>
 #include "TableModelCsv.h"
 #include "sceneryImporterPCM.h"
+#include "ResultDirItemModel.h"
 
 class ModelPcm_Eval : public QObject
 {
@@ -52,11 +52,11 @@ private:
     QVector<QPointF> ConvertPcmLine(const PCM_Line *pcmLine, QVector<QPointF> &line);
     QMap<QString, TableModelCsv *> tableMap;
 
-    QStringListModel *listModelPcm = nullptr;
+    ResultDirItemModel *treeModelPcm = nullptr;
     QItemSelectionModel *selectionModelPcm = nullptr;
     QModelIndexList selectedIndexList;
 
-    QStringList resultList;
+//    QStringList resultList;
     QString rootPath = "";
 };
 

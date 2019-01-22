@@ -16,6 +16,7 @@
 #include <QtConcurrent>
 #include "ConfigurationGeneratorPcm/ConfigGeneratorPcm.h"
 #include "FileHelper.h"
+#include "GUI_Definitions.h"
 
 class ModelPcm : public QObject
 {
@@ -25,17 +26,28 @@ public:
     explicit ModelPcm(QObject *parent = nullptr);
     virtual ~ModelPcm();
 
-    bool Clear();
+    bool ClearCaseList();
 
     QAbstractItemModel *GetItemModelPcm() const;
     void SetSelectionModelPcm(QItemSelectionModel *selectionModel);
 
 public Q_SLOTS:
-    bool LoadPcmFile(const QString &filepath);
+    bool LoadCasesFromPcmFile(const QString &pcmFilePath);
+    bool LoadCasesFromPrevResult(const QString &resDirPath);
     void SetResultFolder(const QString &resultFolder);
+    void SetLogLevel(const int level);
     void SetOtherSystemFile(const QString &otherSystemFile);
     void SetCar1SystemFile(const QString &car1SystemFile);
     void SetCar2SystemFile(const QString &car2SystemFile);
+
+    void SetInitRandomSeed(const int seed);
+    void SetVariationCount(const int varCount);
+
+    void SetShiftRadius1(const double radius);
+    void SetShiftRadius2(const double radius);
+    void SetVelocityScale1(const double maxScale);
+    void SetVelocityScale2(const double maxScale);
+
     void StartSimulationTrigger();
     void SimulationStop();
 
@@ -57,10 +69,26 @@ private:
     QStringList pcmCaseList;
     QString currentPcmFilePath = "";
     QString baseFolder = "";
+    QString prevResultFolder = "";
     QString resultFolder = "";
+
+#ifdef QT_DEBUG
+    int logLevel = 2;
+#else
+    int logLevel = 0;
+#endif
+
     QString otherSystemFile = "";
     QString car1SystemFile = "";
     QString car2SystemFile = "";
+
+    int initRandomSeed = INIT_RANDOM_SEED; // if the seed=-1, then the random seed is actually the case number
+    int variationCount = VARIATION_COUNT_DEFAULT;
+
+    double shiftRadius1 = SHIFT_RADIUS_CAR1;
+    double shiftRadius2 = SHIFT_RADIUS_CAR2;
+    double velocityMaxScale1 = VELOCITY_SCALE_CAR1;
+    double velocityMaxScale2 = VELOCITY_SCALE_CAR2;
 
     QSqlDatabase db;
     QString connection = "";
@@ -69,6 +97,7 @@ private:
     DatabaseReader dbReader;
 
     bool simulationStop = false;
+    bool inputFromPCMDB = true;
 };
 
 #endif // MODELPCM_H

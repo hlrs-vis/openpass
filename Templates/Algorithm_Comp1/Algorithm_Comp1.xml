@@ -1,0 +1,57 @@
+<component>
+<!--
+/*********************************************************************
+* This Example Content is intended to demonstrate usage of
+* Eclipse technology. It is provided to you under the terms
+* and conditions of the Eclipse Distribution License v1.0
+* which is available at http://www.eclipse.org/org/documents/edl-v10.php
+**********************************************************************/
+-->
+  <type>Algorithm</type>
+  <title>Algorithm_Comp1</title>
+  <schedule>
+    <offset>0</offset>
+    <cycle>10</cycle>
+    <response>0</response>
+  </schedule>
+  <parameters>
+    <parameter>
+      <id>0</id>
+      <type>bool</type>
+      <title>param1</title>
+      <unit></unit>
+      <value>1</value>
+    </parameter>
+    <parameter>
+      <id>1</id>
+      <type>double</type>
+      <title>param2</title>
+      <unit></unit>
+      <value>1.0</value>
+    </parameter>
+  </parameters>
+  <inputs>
+    <input>
+      <id>0</id>
+      <type>double</type>
+      <title>input1</title>
+      <unit>m/s</unit>
+      <cardinality>1</cardinality>
+    </input>
+    <input>
+      <id>1</id>
+      <type>VectorDouble</type>
+      <title>input2</title>
+      <unit>N</unit>
+      <cardinality>1</cardinality>
+    </input>
+  </inputs>
+  <outputs>
+    <output>
+      <id>0</id>
+      <type>double</type>
+      <title>output1</title>
+      <unit>s</unit>
+    </output>
+  </outputs>
+</component>

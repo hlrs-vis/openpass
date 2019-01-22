@@ -104,7 +104,7 @@ Dynamics_TwoTrack_Implementation::Dynamics_TwoTrack_Implementation(
 
     /** @addtogroup init_tt
      * Define vehicle's tire properties:
-     *  - set initial velicity
+     *  - set initial velocity
      *  - set peak tire force
      *  - set force at full slide
      *  - set the slip corresponding to peak tire force

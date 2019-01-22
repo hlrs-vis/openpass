@@ -27,9 +27,6 @@ QMAKE_CXXFLAGS += -std=c++11 -Dunix
 TARGET = Action_BrakeLight_Basic
 TEMPLATE = lib
 
-Release:DESTDIR = $$DIR_RELEASE
-Debug:DESTDIR = $$DIR_DEBUG
-
 OBJECTS_DIR = .obj
 MOC_DIR = .moc
 RCC_DIR = .rcc

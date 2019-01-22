@@ -45,8 +45,7 @@ int run(int argc, char *argv[])
 extern "C" Q_DECL_EXPORT int run(int argc, char *argv[])
 #endif //OPENPASSMASTERLIBRARY
 {
-    QString frameworkConfigFile = QCoreApplication::applicationDirPath() +
-                                  "/frameworkConfiguration.xml";
+    QString frameworkConfigFile = QCoreApplication::applicationDirPath() + "/frameworkConfiguration.xml";
     for (int i = 1; i < argc; i++)
     {
         QString arg = argv[i];

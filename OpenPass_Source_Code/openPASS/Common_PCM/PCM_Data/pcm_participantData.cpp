@@ -9,8 +9,9 @@
 **********************************************************************/
 
 #include "pcm_participantData.h"
+#include "globalDefinitions.h"
 
-PCM_ParticipantData::PCM_ParticipantData(QString inTypepcm,
+PCM_ParticipantData::PCM_ParticipantData(QString inTypeCode,
                                          QString inWidth,
                                          QString inLength,
                                          QString inDistcgfa,
@@ -38,12 +39,10 @@ PCM_ParticipantData::PCM_ParticipantData(QString inTypepcm,
     height(inHeight),
     cgfront(inCgfront)
 {
-    type = (inTypepcm == "0") ? "Car" :
-           (inTypepcm == "1") ? "Pedestrian" :
-           (inTypepcm == "2") ? "Motorbike" :
-           (inTypepcm == "3") ? "Bicycle" :
-           (inTypepcm == "4") ? "Truck" : "unknown type";
+    type = QString::fromStdString(GetAgentVehicleTypeStr(inTypeCode.toStdString()));
 }
+
+PCM_ParticipantData::PCM_ParticipantData(QString typeName) : type(typeName) {}
 
 QString PCM_ParticipantData::GetType() const
 {

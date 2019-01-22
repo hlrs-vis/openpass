@@ -22,11 +22,8 @@ bool XmlMergeHelper::loadDomDocument(QString filename, QDomDocument &document)
         return false;
     }
 
-    if (!document.setContent(&xmlFile))
-    {
-        std::cout << "Error (XmlGenerator): failed to parse file into dom tree" << std::endl;
-        return false;
-    }
+    document.setContent(&xmlFile);
+
     xmlFile.close();
 
     return true;
