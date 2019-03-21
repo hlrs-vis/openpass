@@ -69,19 +69,20 @@ Dynamics_TwoTrack_Implementation::Dynamics_TwoTrack_Implementation(
         callbacks,
         agent)
 {
-    std::map<int, double> doubleParamMap = GetParameters()->GetParametersDouble();
+    std::map<int, double> parameterMapDoubleExternal =
+        GetParameters()->GetParametersDouble();
+    foreach (auto &iterator, parameterMapDouble)
+    {
+        int id = iterator.first;
+        parameterMapDouble.at(id)->SetValue(parameterMapDoubleExternal.at(id));
+    }
+    int id_torque = torqueBrakeMin.GetId();
+    parameterMapDouble.at(id_torque)->SetValue(-std::fabs(parameterMapDoubleExternal.at(id_torque)));
+
     timeStep = (double)GetCycleTime() / 1000.0;
 
     yawVelocity = 0.0;
     yawAcceleration = 0.0;
-
-    radiusTire = doubleParamMap[0]; //0.3
-    forceTireMaxStatic = doubleParamMap[1]; //5000;
-    forceTireSlideStatic = doubleParamMap[2]; //3000;
-    slipTireMax = doubleParamMap[3]; //0.1;
-    powerEngineMax = doubleParamMap[4]; //100000; // DIESEL POWER
-    torqueBrakeMin = - std::fabs(doubleParamMap[5]); //-10000;
-
     vehicle = new VehicleSimpleTT();
 
     /** @addtogroup init_tt
@@ -90,7 +91,7 @@ Dynamics_TwoTrack_Implementation::Dynamics_TwoTrack_Implementation(
      *  - power
      *  - maximum brake torque
     */
-    vehicle->InitSetEngine(agent->GetWeight(), powerEngineMax, torqueBrakeMin);
+    vehicle->InitSetEngine(agent->GetWeight(), powerEngineMax.GetValue(), torqueBrakeMin.GetValue());
 
     /** @addtogroup init_tt
      * Define vehicle's geometry:
@@ -112,8 +113,8 @@ Dynamics_TwoTrack_Implementation::Dynamics_TwoTrack_Implementation(
      *  - set the road/tire friction coefficient
     */
     vehicle->InitSetTire(agent->GetVelocityX(),
-                         forceTireMaxStatic, forceTireSlideStatic,
-                         slipTireMax, radiusTire, agent->GetFrictionCoeff());
+                         forceTireMaxStatic.GetValue(), forceTireSlideStatic.GetValue(),
+                         slipTireMax.GetValue(), radiusTire.GetValue(), agent->GetFrictionCoeff());
 
     std::vector<double> defaultBrake = {0.0, 0.0, 0.0, 0.0};
     if (!brakeSuperpose.SetDefaultValue(defaultBrake))
@@ -135,12 +136,30 @@ Dynamics_TwoTrack_Implementation::Dynamics_TwoTrack_Implementation(
         LOG(CbkLogLevel::Error, log.str());
     }
 
+    throttlePedal.SetDefaultValue(1.0);
+    brakePedal.SetDefaultValue(0.0);
+    angleTireFront.SetDefaultValue(0.0);
+
     LOGINFO("Constructing Dynamics_TwoTrack successful");
+#ifdef QT_DEBUG
+    logFile.setFileName(QString().sprintf("dataLog_TT_%d.csv", agent->GetAgentId()));
+    if(logFile.exists())
+    {
+        logFile.remove();
+    }
+    logFile.open(QIODevice::WriteOnly | QIODevice::Append);
+    logStream = new QTextStream(&logFile);
+    *logStream << QString().sprintf("time;agent;position_X;position_Y;velocity_X;velocity_Y\n");
+    clockCount = 0;
+#endif
 }
 
 Dynamics_TwoTrack_Implementation::~Dynamics_TwoTrack_Implementation()
 {
     delete (vehicle);
+#ifdef QT_DEBUG
+    logFile.close();
+#endif
 }
 
 void Dynamics_TwoTrack_Implementation::UpdateInput(int localLinkId,
@@ -277,6 +296,12 @@ void Dynamics_TwoTrack_Implementation::Trigger(int time)
     */
     NextStateSet();
 
+#ifdef QT_DEBUG
+    *logStream << QString().sprintf("%d;%d;%.4f;%.2f;%.4f;%.2f\n", clockCount, GetAgent()->GetAgentId(),
+                                    positionCar.x, positionCar.y, velocityCar.x, velocityCar.y);
+    clockCount += timeStep_ms;
+#endif
+
 }
 
 void Dynamics_TwoTrack_Implementation::ReadPreviousState()
@@ -337,6 +362,10 @@ void Dynamics_TwoTrack_Implementation::NextStateTranslation()
 void Dynamics_TwoTrack_Implementation::NextStateRotation()
 {
 
+    // preserve directions of velocity and acceleration
+    velocityCar.Rotate(yawAngle);
+    accelerationCar.Rotate(yawAngle);
+
     // update yaw angle
     yawAngle = yawAngle + timeStep * yawVelocity;
 
@@ -357,6 +386,9 @@ void Dynamics_TwoTrack_Implementation::NextStateRotation()
         yawVelocity = yawVelocityNew;
     }
 
+    // reassign directions of velocity and acceleration
+    velocityCar.Rotate(-yawAngle);
+    accelerationCar.Rotate(-yawAngle);
 
 }
 

@@ -19,6 +19,11 @@
 #include "componentPorts.h"
 #include "dynamics_twotrack_vehicle.h"
 
+#ifdef QT_DEBUG
+#include <QFile>
+#include <QTextStream>
+#endif
+
 using namespace Common;
 
 /**
@@ -103,27 +108,24 @@ public:
 
 private:
 
-    /** \addtogroup Dynamics_TwoTrack
+    std::map<int, externalParameter<double>*> parameterMapDouble;
+    /** \addtogroup Dynamics_Two_Track
      *  @{
-     *    \name Parameters
-     *    @{
-    */
-    //! Radius of the tires [m]
-    double radiusTire;
-    //! Peak tire force [N]
-    double forceTireMaxStatic;
-    //! Slide tire force [N]
-    double forceTireSlideStatic;
-    //! Peak tire slip []
-    double slipTireMax;
-    //! Maximal engine power [W]
-    double powerEngineMax;
-    //! Minimal brake force [N]
-    double torqueBrakeMin;
+     *      \name External Parameter
+     *      Parameter which are set externally in agentConfiguration file.
+     *      @{
+     */
+    externalParameter<double> radiusTire {0, &parameterMapDouble }; //!<
+    externalParameter<double> forceTireMaxStatic {1, &parameterMapDouble }; //!<
+    externalParameter<double> forceTireSlideStatic {2, &parameterMapDouble }; //!<
+    externalParameter<double> slipTireMax {3, &parameterMapDouble }; //!<
+    externalParameter<double> powerEngineMax {4, &parameterMapDouble }; //!<
+    externalParameter<double> torqueBrakeMin {5, &parameterMapDouble }; //!<
     /**
-     *    @}
+     *      @}
      *  @}
-    */
+     */
+
 
     std::map<int, ComponentPort *> inputPorts; //!< map for all InputPort
     /** \addtogroup Dynamics_TwoTrack
@@ -202,6 +204,13 @@ private:
 
     //! Write next position, velocity and acceleration of the agent
     void NextStateSet();
+
+#ifdef QT_DEBUG
+    const int timeStep_ms = 10; // default time step [ms]
+    int clockCount;
+    QFile logFile;
+    QTextStream* logStream;
+#endif
 
 };
 
