@@ -1,0 +1,77 @@
+/*!
+  \example Create_Plugin_with_View
+  
+  Once a basic plugin is created (see Example <a href="_create__basic__plugin-example.html">Create_Basic_Plugin</a>), there is just few changes to do in the plugin project and  additional files to include in order to create a plugin with a View.
+  
+  \htmlonly
+  <a name="pro_introduction" id="pro_introduction"></a><h3 class="groupheader">I. Changes in the project file <em>openPASS-Introduction.pro</em></h3>
+  \endhtmlonly
+  
+  To add a View to this plugin, it needs to include the @link WindowInterface.h Window Interface@endlink which manages the Views in the main window application. This include is done in the Project Include file \c Interfaces.pri.
+  
+  \image html view_Interfaces.png
+  
+  The architecture of the plugin have to change also. It needs to be set to a Model/View structure in order to gather the files related to the view design in the new created Project Include file \c Views.pri located in the created folder \e Views 
+  (see how to create a Project Include file in Example <a href="_create__basic__plugin-example.html">Create_Basic_Plugin</a>).
+  
+  \image html view_tree.png
+  
+  \htmlonly
+  <br><a name="view_design" id="view_design"></a><h3 class="groupheader">II. Create files for designing the view</h3>
+  \endhtmlonly
+  
+  In the Project Include file \c Views.pri, create a C++ class file with a class name IntroductionView and a ui file (xml containing qraphic object designing the view) through File > New File or Project > Files and Classes > Qt > Qt Designer Form Class.
+  
+  \image html view_treeComplete.png
+  
+  Qt Creator 4.2.1. provides tools to design the widget view and automatically update the file ui.
+  
+  \image html view_introduction.png
+  
+  \warning The size of the widget must be set to 1200x600. It is the standard size chosen for the main window application.
+  
+  In the header file \c IntroductionView.h, the @link WindowInterface.h Window Interface@endlink must be included and a variable \c ViewID needs to be declared.
+  
+  \image html view_header.png
+  
+  Concerning the source file \c IntroductionView.cpp, a line is added creating an identifier \e ViewID for the widget in order to register the view in a map provided by the @link WindowInterface.h Window Interface@endlink.
+  
+  \image html viewID.png
+  
+  In the constructor (initialization), the window innterface is passed as an argument in order to register the view after the creation of the view (ui). The registering function has as arguments the ViewID, a button for the side bar of the main window, the object in itself and an empty menu bar.
+  
+  \image html view_constructor.png
+  
+  In the destructor (deinitialization), the View is deregistred from the map and then destroyed.
+  
+  \image html view_destructor.png
+  
+  \htmlonly
+  <br><a name="view_plugin" id="view_plugin"></a><h3 class="groupheader">III. Changes in the plugin main files</h3>
+  \endhtmlonly
+  
+  Since the architecture of the plugin have changed to a Model/View structure, the header and source files \c IntroductionPlugin.h and \c IntroductionPlugin.cpp have to be updated.
+  
+  In the header file, there is only a need of declaring a variable of type IntroductionView.
+  
+  \image html V_Introduction-header.png
+  
+  Concerning the cpp source file, it first needs to include the \ref windowInterface and the created files structuring the plugin into a Modle/View architecture.
+  
+  \image html Introduction_includes.png
+  
+  The variable declared in the header file should be initialized in the constructor \c IntroductionPlugin().
+  
+  \image html Introduction_constuctor.png
+  
+  It is not in the constructor but in the function \c initialize() where it creates the instances of needed object classes. The requested interfaces (in this case the \ref windowInterface) must be firstly instantiated. After verification of the first step, an instance of the object representing the Model is created followed by the one for the View. 
+  Such order is in most of the cases important (not for this example) because of the dependency of the View on the Model. As a reminder, the Model should always be independent from the UI and manages the data. However, the View is just displaying the data within the UI and transmits the user requests (events) to the Model.
+  
+  \image html Introduction_initialize.png
+  
+  For deinitialization, the corresponding function is destroying reversely the created instances starting with the View then the Model.
+  
+  \image html Introduction_deinitialize.png
+  
+  
+*/

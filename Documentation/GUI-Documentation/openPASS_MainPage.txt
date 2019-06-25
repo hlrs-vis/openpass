@@ -1,0 +1,70 @@
+/*!
+  \mainpage notitle
+  
+  The name openPASS is a short form of "Open Platorm for Assessment of Safety Systems". Accordingly, the software openPASS is a simulation tool devoted for emulating traffic situations to estimate the effectiveness of advanced driver assistance systems 
+  or automated driving functions. This software is developed within a project part of the <a href="https://www.eclipse.org/org/workinggroups/openpasswg_charter.php">Eclipse Working Group openPASS</a>.
+  
+  The global scope of openPASS is to provide a modular tool easy to extend according to the constant need of further development to cope with the constant innovation in vehicle systems. The requirements for the software architecture is to have a framework with an easy concept of handling modules integration and defining standardized interfaces. 
+  With this compliance, it allows any user to develop new methods in a new module and implement it into the platform.
+  
+  The openPASS platform can be splitted in two blocs: a GUI and a Simulation Core (see image below provided from the main page of the openPASS project in Eclipse website). These two blocs are interacting with different modules devoted for specific functionality (e.g. module related to system definition).
+  
+  \image html openPASS_struct.png "openPASS top-level architecture"
+  
+  The current document is focusing on the openPASS GUI version 0.5. It includes a description of the software architecture and the developed features.
+  
+  
+  \htmlonly
+  <a name="op_architecture" id="op_architecture"></a><h2 class="groupheader">Architecture of openPASS GUI</h2>
+  \endhtmlonly
+  The framework of the openPASS GUI is based on a plugin architecture and provides a service interface to enable interaction between plugins. It uses the libraries from Qt 5.6 (QPluginLoader, QLibrary) to load at run-time the plugins.
+  
+  Each plugin may have one or several interfaces which can depend on other plugin interfaces. Such dependencies must be taken into account when the plugins are initially loaded.
+  All these requirements are handled through the following interfaces:
+  
+  \htmlonly
+  <table class="directory" width="75%" align="center">
+  <tr id="row_0_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="_plugin_interface_8h.html" target="_self">Plugin Interface</a></td><td class="desc">The Plugin Interface (PI) contains predefined methods for plugins (initialization and deinitialization) and fills (populates) plugins with services (interfaces)</td></tr>
+  <tr id="row_1_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="_plugin_manager_interface_8h.html" target="_self">Plugin Manager Interface</a></td><td class="desc">The Plugin Manager Interface (PMI) contains the functions managing the loading process of the openPASS plugins</td></tr>
+  <tr id="row_2_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="_service_interface_8h.html" target="_self">Service Interface</a></td><td class="desc">The Service Interface (SI) contains the functions to register, deregister sevices and to access to their instance</td></tr>
+  <tr id="row_3_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="_service_manager_interface_8h.html" target="_self">Service Manager Interface</a></td><td class="desc">The Service Manager Interface (SMI) contains the functions managing a map of services</td></tr>
+  </table>
+  \endhtmlonly
+  
+  Every new plugin have to inherit the @link PluginInterface.h Plugin Interface@endlink.
+  
+  \image html NewPlugin.png
+  
+  And, if there is an interface defined in the plugin, this must inherit the  registered @link ServiceInterface.h Service Interface@endlink.
+  
+  \image html NewInterface.png
+  
+  To see in details all the steps to create a plugin and an interface, go to Example <a href="_create__basic__plugin-example.html">Create a Basic Plugin</a>.
+  
+  \note The main application of openPASS GUI is only containing methods related to Plugins and Services management. It is not defining the main window View. This is in fact implemented through a plugin named <a href="group__window_plugin.html">Window Plugin (WP)</a>.
+  The idea behind this concept is that the main window can be modified without affecting the main framework of the application.
+  
+  \htmlonly
+  <a name="features" id="features"></a><h2 class="groupheader">Features in openPASS 0.5</h2>
+  \endhtmlonly
+  
+  The features in openPASS GUI are gathered into Plugins according to their common fonctionality; i.e. every Plugin have a main task like the System Plugin which is modelling ADAS systems.
+  The Plugins available in the current openPASS 0.5 are:
+  
+  \htmlonly
+  <table class="directory" width="75%" align="center">
+  <tr id="row_0_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="group__component_plugin.html" target="_self">Component Plugin</a></td><td class="desc">The Component Plugin (CP) is dedicated for modelling components</td></tr>
+  <tr id="row_1_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="group__system_plugin.html" target="_self">System Plugin</a></td><td class="desc">The System Plugin (SP) is dedicated for modelling systems</td></tr>
+  <tr id="row_2_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="group__window_plugin.html" target="_self">Window Plugin</a></td><td class="desc">The Window Plugin (WP) is dedicated for managing the View of the application</td></tr>
+  </table>
+  \endhtmlonly
+  
+  The Plugins are structured according to their specification. Generally, they have a Model/View structure with:
+  - the View: including event handeling methods;
+  - the Model: including data process such as getters and setters functions.
+  
+  This type of structure is easier to implement with the signal/slot feature of Qt in order to establish communication between objects. This strucutre is illustrated through Example2.\n
+  
+  \note If a Plugin does not require a window View (UI), the structure is minimalized to a Model.
+  
+*/

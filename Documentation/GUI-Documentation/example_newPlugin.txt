@@ -1,0 +1,70 @@
+/*!
+  \example Create_Basic_Plugin
+  
+  To create a new Plugin in openPASS GUI, the user needs to use Qt Creator 4.2.1 (32 bit) with MinGW 4.9 in order to compile it to a dynamic C++ library for windows (.dll file).
+  This example shows how to create a basic Plugin with a Model structure. The name of this plugin is \e Introduction.
+  
+  I. Create a project \c openPASS-Introduction.pro
+  
+  In the menu of Qt Creator, the user have to go to File > New File or Project > Other Project > Empty qmake Project. The project should be named under the name of the Plugin and must be created in the folder containing the project \c openPASS.pro.
+  
+  \image html dir_example.png
+  
+  The user have to add the new Plugin project \c openPASS-Introduction.pro in the list of subdirectories of the the main project file \c demo_openPASS-GUI.pro
+  
+  \image html mainpro_Plugin.png
+  
+  The Project file should always start with a brief description of the Plugin.
+  
+  \image html Description_Plugin.png
+  
+  It has to include the name of the Plugin and to specify that the project is to build a dynamic-link library.
+  
+  \image html Config_Plugin1.png
+  
+  It has also to include the QT libraries used for this Plugin. It is advised to indicate in which directory the plugin will be build.
+  
+  \image html Config_Plugin2.png
+  
+  II. Include Project Include files (.pri) in the project
+  
+  A plugin should systematically inherit at least the interfaces from the openPASS GUI framework \c openPASS.pri (which handle the plugins and services for the application). The Project Include file (.pri) is just gathering these interfaces.
+  To create such file, the user needs to do the following two steps:
+  \n
+  a. go to File > New File or Project > Other Project > Empty File and create a file \c Interfaces.pri in the folder \e openPASS-Introduction. Then, drag this file in a new created folder \e Interfaces located in the local directory.
+  
+  \image html dir_example_Interface.png
+  
+  b. remove the auto-generated line in the project file \c openPASS-Introduction.pro and replace it with the following line:
+  
+  \image html Config_Plugin3.png
+  c. include in the file \c Interfaces.pri the dependencies of the Plugin with interfaces from other plugins of the project.
+  
+  \image html decl_interfaces.png
+  
+  \note The two steps (a) and (b) are repeated for any additional Project Include file added to the project. It could be files organised according to the architecture of the Plugin (the example have just a Model stucture and will require creating one project include file \c Models.pri).
+  
+  III. Include C++ files in the project
+  
+  The last step in creating this project file is to list all the C++ class files (headers and sources) needed to build the Plugin.
+  There will be systematically files created in the Plugin project with , as a convention, a class name including the name of the Plugin and the word \c Plugin (IntroductionPlugin).
+  In this example, there will be also files created for the Project include \c Models.pri and defining a QObject base class (to benefit from the signal/slot structure). This last class is named IntroductionModel (the convention here is to name the classes starting with the name of the plugin and ending with the object name such as View or Model).
+  
+  \image html dir_example_complete.png
+  
+  The created files \c IntroductionPlugin.h and \c IntroductionPlugin.cpp are needed to be filled. The remaining files are irrelevent for this example. 
+  The header file of the plugin must include the @link PluginInterface.h Plugin Interface@endlink. The plugin have to inherit this interface and to declare its identifier using a string defined by the project name and the plugin names (openPASS.Introduction).
+  
+  \image html register_Plugin.png
+  
+  The class definition in the header must declare the macro \c Q_INTERFACES(PluginInterface) since it uses its own services (\c initialize() and \c deinitialize()).
+  
+  \image html Introduction-header.png
+  
+  Concerning the source file \c IntroductionPlugin.cpp, it just builds the objects requested at the initialization and the destruction of these objects at the deinitialization.
+  
+  \image html Introduction-source.png
+  
+  \note This example is showing how to create a basic Plugin. If it includes a View, it will have a Model/View structure as illustrated in Example <a href="_create__plugin_with__view-example.html">Create_Plugin_with_View</a>. 
+  
+*/

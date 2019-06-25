@@ -1,0 +1,8 @@
+.captionRE { 
+  background-image: url("./html/tab_b.png");
+  background-repeat: repeat-x;
+  font-family: 'Lucida Grande',Geneva,Helvetica,Arial,Sans-Serif;
+  font-size: 10px;
+  font-weight: bold;
+  z-index: 101;
+}
