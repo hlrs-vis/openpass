@@ -1,30 +1,31 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  scenery.h
+//! @file  Scenery.h
 //! @brief This file contains the representation of the static objects of the
 //!        scenery.
 //-----------------------------------------------------------------------------
 
-#ifndef SCENERY_H
-#define SCENERY_H
+#pragma once
 
 #include <cassert>
 #include <map>
-#include "worldInterface.h"
-#include "sceneryInterface.h"
-#include "vector2d.h"
+#include "Interfaces/worldInterface.h"
+#include "Interfaces/sceneryInterface.h"
 #include "road.h"
+#include "Interfaces/roadInterface/junctionInterface.h"
+#include "junction.h"
 
-namespace SimulationSlave
+namespace Configuration
 {
 
 //-----------------------------------------------------------------------------
@@ -54,6 +55,15 @@ public:
     //-----------------------------------------------------------------------------
     RoadInterface *AddRoad(const std::string &id);
 
+    //-----------------------------------------------------------------------------
+    //! Adds a new junction to a scenery by creating a new Junction object and adding it
+    //! via its ID to a stored mapping of junctions.
+    //!
+    //! @param[in]  id                  ID of the junction to add
+    //! @return                         created junction
+    //-----------------------------------------------------------------------------
+    JunctionInterface *AddJunction(const std::string &id);
+
 
     //-----------------------------------------------------------------------------
     //! Returns the stored list of roads.
@@ -64,6 +74,38 @@ public:
     {
         return roads;
     }
+
+    //-----------------------------------------------------------------------------
+    //! Returns the stored list of junctions.
+    //!
+    //! @return                         list of junctions
+    //-----------------------------------------------------------------------------
+    std::map<std::string, JunctionInterface*> &GetJunctions()
+    {
+        return junctions;
+    }
+
+    //-----------------------------------------------------------------------------
+    //! Returns the junction with the provided ID from the scenery.
+    //!
+    //! @param[in]  id                  ID of the junction
+    //! @return                         junction with the provided ID
+    //-----------------------------------------------------------------------------
+    virtual JunctionInterface *GetJunction(const std::string& id)
+    {
+        JunctionInterface *junction;
+        try
+        {
+            junction = junctions.at(id);
+        }
+        catch(const std::out_of_range&)
+        {
+            junction = nullptr;
+        }
+
+        return junction;
+    }
+
 
     //-----------------------------------------------------------------------------
     //! Returns the road with the provided ID from the scenery.
@@ -86,10 +128,15 @@ public:
         return road;
     }
 
+
+
+
 private:
     std::map<std::string, RoadInterface*> roads;
+
+    std::map<std::string, JunctionInterface*> junctions;
 };
 
 } // namespace SimulationSlave
 
-#endif // SCENERY_H
+

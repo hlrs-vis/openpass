@@ -1,30 +1,30 @@
-/******************************************************************************
-* Copyright (c) 2018 in-tech GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017 ITK Engineering GmbH
 *
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* https://www.eclipse.org/legal/epl-2.0/
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-******************************************************************************/
-
-#include <QFile>
+*******************************************************************************/
 
 #include <algorithm>
-#include <cassert>
-#include <cmath>
-#include <iostream>
-#include <limits>
-#include <memory>
-#include <string>
 #include <utility>
+#include <limits>
+#include <cassert>
+#include <iostream>
+#include <string>
+#include <memory>
+#include <cmath>
+#include <QFile>
 
 #include "GeometryConverter.h"
-#include "vector2d.h"
+#include "Common/vector2d.h"
 #include "WorldData.h"
 
 GeometryConverter::GeometryConverter(SceneryInterface *scenery,
-                                     OWL::WorldData& worldData,
+                                     OWL::Interfaces::WorldData& worldData,
                                      const CallbackInterface *callbacks) :
     scenery(scenery),
     worldData(worldData),
@@ -90,7 +90,7 @@ const RoadElevation* GeometryConverter::GetRelevantRoadElevation(double roadOffs
     }
 }
 
-const RoadLaneWidth* GeometryConverter::GetRelevantRoadLaneWidth(double sectionOffset, RoadLaneInterface *roadLane)
+const RoadLaneWidth* GeometryConverter::GetRelevantRoadLaneWidth(double sectionOffset, const RoadLaneInterface *roadLane)
 {
     auto roadLaneIt = roadLane->GetWidths().begin();
     while(roadLane->GetWidths().end() != roadLaneIt)
@@ -159,7 +159,7 @@ const RoadLaneOffset* GeometryConverter::GetRelevantRoadLaneOffset(double roadOf
     }
 }
 
-const RoadLaneRoadMark* GeometryConverter::GetRelevantRoadLaneRoadMark(double sectionOffset, RoadLaneInterface *roadLane)
+const RoadLaneRoadMark* GeometryConverter::GetRelevantRoadLaneRoadMark(double sectionOffset, const RoadLaneInterface* roadLane)
 {
     auto roadMarkIt = roadLane->getRoadMarks().begin();
 
@@ -188,7 +188,7 @@ const RoadLaneRoadMark* GeometryConverter::GetRelevantRoadLaneRoadMark(double se
     }
 }
 
-double GeometryConverter::CalculateLaneWidth(RoadLaneInterface *roadLane, double sectionOffset)
+double GeometryConverter::CalculateLaneWidth(const RoadLaneInterface *roadLane, double sectionOffset)
 {
     const RoadLaneWidth* roadLaneWidth = GetRelevantRoadLaneWidth(sectionOffset, roadLane);
 
@@ -225,6 +225,9 @@ bool GeometryConverter::CalculateLanes(double side,
                                        double roadSectionStart,
                                        int index)
 {
+    Q_UNUSED(sectionOffsetStart);
+    Q_UNUSED(sectionOffsetEnd);
+    Q_UNUSED(index);
     double previousWidth = 0.0;
     std::list<RoadLaneInterface*> orderedRoadLanes; // ordered from inner lane to outer lane (only one side of road)
 
@@ -319,19 +322,15 @@ osi3::LaneBoundary::Classification::Type GeometryConverter::ConvertRoadLaneRoadM
         case  RoadLaneRoadMarkType::Broken:
             return osi3::LaneBoundary_Classification_Type_TYPE_DASHED_LINE;
 
-        // TODO: OSI Req: additional line types?
         case  RoadLaneRoadMarkType::Solid_Solid:
             return osi3::LaneBoundary_Classification_Type_TYPE_SOLID_LINE;
 
-        // TODO: OSI Req: additional line types
         case  RoadLaneRoadMarkType::Solid_Broken:
             return osi3::LaneBoundary_Classification_Type_TYPE_SOLID_LINE;
 
-        // TODO: OSI Req: additional line types
         case  RoadLaneRoadMarkType::Broken_Solid:
             return osi3::LaneBoundary_Classification_Type_TYPE_DASHED_LINE;
 
-        // TODO: OSI Req: additional line types
         case  RoadLaneRoadMarkType::Broken_Broken:
             return osi3::LaneBoundary_Classification_Type_TYPE_DASHED_LINE;
 
@@ -346,6 +345,9 @@ osi3::LaneBoundary::Classification::Type GeometryConverter::ConvertRoadLaneRoadM
 
         case RoadLaneRoadMarkType::Undefined:
             return osi3::LaneBoundary_Classification_Type_TYPE_NO_LINE;
+
+    default:
+        throw std::invalid_argument("RoadLaneRoadMarkType not supported");
     }
 }
 
@@ -371,6 +373,9 @@ osi3::LaneBoundary::Classification::Color GeometryConverter::ConvertRoadLaneRoad
 
         case RoadLaneRoadMarkColor::Yellow:
             return osi3::LaneBoundary_Classification_Color_COLOR_YELLOW;
+
+    default:
+        throw std::invalid_argument("RoadLaneRoadMarkColor not supported");
     }
 }
 
@@ -415,14 +420,6 @@ bool GeometryConverter::Convert()
 
     //if CalculateRoads failed
     if(!status) return status;
-
-    // TODO: OSI: just flag or real reversal?
-    // reverse geometries if section is opposite to global direction
-    //ReverseGeometries();
-
-    // TODO: needed with OSI?
-    // calculate boundary boxes
-    //CalculateBoundarieBoxes();
 
     return true;
 }
@@ -552,6 +549,16 @@ bool GeometryConverter::CalculatePointsOfAffectedGeometry(double roadSectionStar
     // allocate memory (account for last sample in even/odd cases)
     int numberLaneGeomPoints = static_cast<int>(std::ceil((geometryOffsetEnd - geometryOffsetStart) / SAMPLING_RATE)) + 1;
 
+/*
+    for(auto &roadLaneItem : roadLanes)
+    {
+        AllocateLaneGeometry(roadLaneItem.second,
+                             numberLaneGeomPoints,
+                             sectionOffsetStart,
+                             sectionOffsetEnd);
+    }
+*/
+
     bool status = CalculatePoints(geometryOffsetStart,
                                   geometryOffsetEnd,
                                   numberLaneGeomPoints,
@@ -589,17 +596,6 @@ bool GeometryConverter::CalculateGeometries(double roadSectionStart,
                                    roadGeometryEnd);
 
         if(!status) return status;
-    }
-
-    // OD specifies the right boundary only,
-    // so we copy the boundaries of adjacent lanes
-    // TODO: boundary from OD center lane is missing here
-    //CopyAdjacentBoundaries();
-
-    for(auto &roadLaneItem : roadLanes)
-    {
-        // TODO: OSI
-        //CalculateLaneLength(roadLaneItem.second);
     }
 
     status = true;
@@ -643,8 +639,10 @@ bool GeometryConverter::CalculateRoads()
     {
         RoadInterface *road = roadItem.second;
 
-        std::list<RoadLaneSectionInterface*> roadLaneSections = road->GetLaneSections();
+        std::vector<RoadLaneSectionInterface*> roadLaneSections = road->GetLaneSections();
 
+        //for(size_t i = 0; i < numberOfRoadLaneSections; i++)
+        //for (const auto roadSection : roadLaneSections)
         for (auto roadLaneSectionIt = roadLaneSections.begin();
              roadLaneSectionIt != roadLaneSections.end();
              roadLaneSectionIt++)

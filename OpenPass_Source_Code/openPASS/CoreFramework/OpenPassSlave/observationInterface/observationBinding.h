@@ -1,41 +1,37 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  observationBinding.h
+//! @file  ObservationBinding.h
 //! @brief This file contains the interface to the observation module
 //!        libraries.
 //-----------------------------------------------------------------------------
 
-#ifndef OBSERVATIONBINDING_H
-#define OBSERVATIONBINDING_H
+#pragma once
 
 #include <map>
 #include <string>
-#include "stochasticsInterface.h"
-#include "worldInterface.h"
-#include "runConfig.h"
+#include "Interfaces/eventNetworkInterface.h"
+#include "Interfaces/stochasticsInterface.h"
+#include "Interfaces/worldInterface.h"
 #include "callbacks.h"
 
-namespace SimulationSlave
-{
-
+namespace SimulationSlave {
 class ObservationLibrary;
 class ObservationModule;
-class FrameworkConfig;
 
 class ObservationBinding
 {
 public:
-    ObservationBinding(const FrameworkConfig *frameworkConfig,
-                       SimulationCommon::Callbacks *callbacks);
+    ObservationBinding(CallbackInterface* callbacks);
     ObservationBinding(const ObservationBinding&) = delete;
     ObservationBinding(ObservationBinding&&) = delete;
     ObservationBinding& operator=(const ObservationBinding&) = delete;
@@ -47,26 +43,29 @@ public:
     //! config and the observation library stored in the mapping for the library
     //! name of the observation instance
     //!
-    //! @param[in]     observationInstance  Observation instance from the run config
+    //! @param[in]     libraryPath          Path of the library
+    //! @param[in]     parameters           Observation parameters
     //! @param[in]     stochastics          The stochastics interface
     //! @param[in]     world                The world interface
+    //! @param[in]     eventNetwork         EventNetwork
     //! @return                             Observation module created from the
     //!                                     observation instance
     //-----------------------------------------------------------------------------
-    ObservationModule *Instantiate(SimulationCommon::RunConfig::ObservationInstance *observationInstance,
-                                   StochasticsInterface *stochastics,
-                                   WorldInterface *world);
+    ObservationModule* Instantiate(const std::string libraryPath,
+                                   ParameterInterface* parameters,
+                                   StochasticsInterface* stochastics,
+                                   WorldInterface* world,
+                                   SimulationSlave::EventNetworkInterface* eventNetwork);
     //-----------------------------------------------------------------------------
     //! Deletes the library mapping and all referenced observation library objects
     //-----------------------------------------------------------------------------
     void Unload();
 
 private:
-    const FrameworkConfig *frameworkConfig;
-    std::map<std::string, ObservationLibrary*> libraries;
-    SimulationCommon::Callbacks *callbacks;
+    ObservationLibrary* library {nullptr};
+    CallbackInterface* callbacks {nullptr};
 };
 
 } // namespace SimulationSlave
 
-#endif // OBSERVATIONBINDING_H
+

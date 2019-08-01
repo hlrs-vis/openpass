@@ -1,12 +1,13 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2019 in-tech GmbH
+*               2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 /** \addtogroup OpenPassSlave
 * @{
@@ -34,7 +35,7 @@
 * \section Output files
 * file | description
 * -----|---------
-* logSlave.txt | This file contains all log messages depending on the logLevel. Path and name are specified in frameworkConfig.xml.
+* logSlave.txt | Default name for file containing all log messages (depending on the logLevel). Path and name are specified in slaveConfig.xml.
 * simulationOutput.xml | This file contains the simulation results. Path is specified in frameworkConfig.xml and name in runConfig.xml.
 *
 * @} */

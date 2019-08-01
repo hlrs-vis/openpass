@@ -1,62 +1,44 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 #include <algorithm>
 #include <iostream>
 #include <QDomDocument>
 #include <QFile>
+
 #include "agentType.h"
 #include "componentType.h"
-#include "parameters.h"
-#include "log.h"
+#include "CoreFramework/CoreShare/log.h"
+#include "CoreFramework/CoreShare/parameters.h"
 
 namespace SimulationSlave
 {
 
-AgentType::AgentType(int id, int priority):
-    id(id),
-    priority(priority)
-{}
-
-AgentType::~AgentType()
+bool AgentType::AddComponent(std::shared_ptr<ComponentType> component)
 {
-    LOG_INTERN(LogLevel::DebugCore) << "deleting agent type " << id;
-
-    for(std::pair<const int, ComponentType*> &item : components)
+    if(!components.insert({component->GetName(), component}).second)
     {
-        delete item.second;
-    }
-}
-
-int AgentType::GetId() const
-{
-    return id;
-}
-
-bool AgentType::AddComponent(int id, ComponentType *component)
-{
-    if(!components.insert({id, component}).second)
-    {
-        LOG_INTERN(LogLevel::Warning) << "components must be unique";
-        return false;
+        LOG_INTERN(LogLevel::Warning) << "Componentname does already exist:" << component->GetName();
     }
 
     return true;
 }
+
 
 bool AgentType::AddChannel(int id)
 {
     std::list<int>::iterator findIter = std::find(channels.begin(), channels.end(), id);
     if(channels.end() != findIter)
     {
-        LOG_INTERN(LogLevel::Warning) << "components must be unique";
+        LOG_INTERN(LogLevel::Warning) << "components must be unique (channel id " << std::to_string(*findIter) << ")";
         return false;
     }
 
@@ -64,17 +46,12 @@ bool AgentType::AddChannel(int id)
     return true;
 }
 
-int AgentType::GetAgentPriority() const
-{
-    return priority;
-}
-
 const std::list<int> &AgentType::GetChannels() const
 {
     return channels;
 }
 
-const std::map<int, ComponentType*> &AgentType::GetComponents() const
+const std::map<std::string, std::shared_ptr<ComponentType> > &AgentType::GetComponents() const
 {
     return components;
 }

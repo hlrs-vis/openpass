@@ -1,24 +1,25 @@
-/******************************************************************************
-* Copyright (c) 2018 in-tech GmbH
+/*******************************************************************************
+* Copyright (c) 2018, 2019 in-tech GmbH
 *
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* https://www.eclipse.org/legal/epl-2.0/
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-******************************************************************************/
-
+*******************************************************************************/
 #include <cmath>
 #include "PointQuery.h"
 
-namespace OWL {
+namespace World {
+namespace Localization {
 
 using namespace Common;
 
-bool PointQuery::IsWithin(const Primitive::LaneGeometryElement &element,
-                          const Vector2d &point)
+bool PointQuery::IsWithin(const OWL::Primitive::LaneGeometryElement& element,
+                          const Vector2d& point)
 {
-    if (!element.box.Within(point.x, point.y)) {
+    if (!element.box.Within(point.x, point.y))
+    {
         return false;
     }
 
@@ -29,11 +30,11 @@ bool PointQuery::IsWithin(const Primitive::LaneGeometryElement &element,
                                point);
 }
 
-bool PointQuery::WithinQuadrilateral(const Vector2d &A,
-                                     const Vector2d &B,
-                                     const Vector2d &C,
-                                     const Vector2d &D,
-                                     const Vector2d &P)
+bool PointQuery::WithinQuadrilateral(const Vector2d& A,
+                                     const Vector2d& B,
+                                     const Vector2d& C,
+                                     const Vector2d& D,
+                                     const Vector2d& P)
 {
     // Triangle 1 (A, B, C)
     const auto BA = A - B;
@@ -46,7 +47,8 @@ bool PointQuery::WithinQuadrilateral(const Vector2d &A,
     auto dot11 = BC.Dot(BC);
     auto dot12 = BC.Dot(BP);
 
-    if (WithinBarycentricCoords(dot00, dot02, dot01, dot11, dot12)) {
+    if (WithinBarycentricCoords(dot00, dot02, dot01, dot11, dot12))
+    {
         return true;
     }
 
@@ -59,7 +61,8 @@ bool PointQuery::WithinQuadrilateral(const Vector2d &A,
     dot11 = BD.Dot(BD);
     dot12 = BD.Dot(BP);
 
-    if (WithinBarycentricCoords(dot00, dot02, dot01, dot11, dot12)) {
+    if (WithinBarycentricCoords(dot00, dot02, dot01, dot11, dot12))
+    {
         return true;
     }
 
@@ -72,10 +75,10 @@ bool PointQuery::WithinQuadrilateral(const Vector2d &A,
 }
 
 bool PointQuery::WithinBarycentricCoords(double dot00,
-                                         double dot02,
-                                         double dot01,
-                                         double dot11,
-                                         double dot12)
+        double dot02,
+        double dot01,
+        double dot11,
+        double dot12)
 {
     // Compute barycentric coordinates
     const auto denom = (dot00 * dot11 - dot01 * dot01);
@@ -85,27 +88,29 @@ bool PointQuery::WithinBarycentricCoords(double dot00,
     return (u >= 0) && (v >= 0) && (u + v < 1);
 }
 
-bool PointQuery::OnEdge(const Vector2d &A,
-                        const Vector2d &B,
-                        const Vector2d &P)
+bool PointQuery::OnEdge(const Vector2d& A,
+                        const Vector2d& B,
+                        const Vector2d& P)
 {
     const auto PA = P - A;
     const auto BA = B - A;
 
-    if (std::abs(PA.x * BA.y - PA.y * BA.x) > EDGE_DETECTION_THRESHOLD) {
+    if (std::abs(PA.x * BA.y - PA.y * BA.x) > EDGE_DETECTION_THRESHOLD)
+    {
         return false;
     }
 
-    if(std::abs(BA.y) < EDGE_DETECTION_THRESHOLD)
+    if (std::abs(BA.y) < EDGE_DETECTION_THRESHOLD)
     {
-        return BA.x > 0 ? A.x <= P.x && P.x <= B.x:
-                          B.x <= P.x && P.x <= A.x;
+        return BA.x > 0 ? A.x <= P.x && P.x <= B.x :
+               B.x <= P.x && P.x <= A.x;
     }
     else
     {
-        return BA.y > 0 ? A.y <= P.y && P.y <= B.y:
-                          B.y <= P.y && P.y <= A.y;
+        return BA.y > 0 ? A.y <= P.y && P.y <= B.y :
+               B.y <= P.y && P.y <= A.y;
     }
 }
 
-}
+} // namespace Localization
+} // namespace World

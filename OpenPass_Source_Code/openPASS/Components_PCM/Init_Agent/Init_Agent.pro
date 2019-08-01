@@ -9,8 +9,8 @@
 # **********************************************************************/
 
 #-----------------------------------------------------------------------------
-# /file  Init_Agent.pro
-# /brief This file contains the information for the QtCreator-project of the
+# \file  Init_Agent.pro
+# \brief This file contains the information for the QtCreator-project of the
 #        module Init_Agent
 #-----------------------------------------------------------------------------/
 

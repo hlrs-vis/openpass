@@ -1,12 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2018 in-tech GmbH
+/*******************************************************************************
+* Copyright (c) 2018, 2019 in-tech GmbH
 *
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* https://www.eclipse.org/legal/epl-2.0/
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-******************************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
 //! @file  WorldData.cpp
@@ -16,18 +16,208 @@
 
 #include <exception>
 #include <string>
+#include <qglobal.h>
+
+#include "Interfaces/roadInterface/roadInterface.h"
 
 #include "OWL/DataTypes.h"
 #include "OWL/OpenDriveTypeMapper.h"
-
-#include "roadInterface.h"
-
+#include "Common/vector3d.h"
 #include "WorldData.h"
 #include "WorldDataException.h"
+#include "WorldDataQuery.h"
 
+#include "osi/osi_groundtruth.pb.h"
+#include "osi/osi_sensorviewconfiguration.pb.h"
 #include "osi/osi_worldinterface.pb.h"
 
 namespace OWL {
+
+osi3::SensorView WorldData::GetSensorView(osi3::SensorViewConfiguration& conf, int agentId)
+{
+    const auto host_id = GetOwlId(agentId);
+    osi3::SensorView sv;
+
+    auto currentInterfaceVersion = osi3::InterfaceVersion::descriptor()->file()->options().GetExtension(osi3::current_interface_version);
+    sv.mutable_version()->CopyFrom(currentInterfaceVersion);
+
+    sv.mutable_sensor_id()->CopyFrom(conf.sensor_id());
+    sv.mutable_mounting_position()->CopyFrom(conf.mounting_position());
+    sv.mutable_mounting_position_rmse()->CopyFrom(conf.mounting_position());
+
+    auto filteredGroundTruth = GetFilteredGroundTruth(conf, GetMovingObjectById(host_id));
+    sv.mutable_global_ground_truth()->CopyFrom(filteredGroundTruth);
+    sv.mutable_host_vehicle_id()->set_value(host_id);
+
+    auto zeroVector3d = osi3::Vector3d();
+    zeroVector3d.set_x(0.0);
+    zeroVector3d.set_y(0.0);
+    zeroVector3d.set_z(0.0);
+
+    auto zeroOrientation3d = osi3::Orientation3d();
+    zeroOrientation3d.set_yaw(0.0);
+    zeroOrientation3d.set_pitch(0.0);
+    zeroOrientation3d.set_roll(0.0);
+
+    auto zeroError = osi3::BaseMoving();
+    zeroError.mutable_position()->CopyFrom(zeroVector3d);
+    zeroError.mutable_velocity()->CopyFrom(zeroVector3d);
+    zeroError.mutable_acceleration()->CopyFrom(zeroVector3d);
+    zeroError.mutable_orientation()->CopyFrom(zeroOrientation3d);
+    zeroError.mutable_orientation_rate()->CopyFrom(zeroOrientation3d);
+    zeroError.mutable_orientation_acceleration()->CopyFrom(zeroOrientation3d);
+
+    auto hostData = osi3::HostVehicleData();
+    auto& movingObject = GetMovingObjectById(host_id);
+    hostData.mutable_location_rmse()->CopyFrom(zeroError);
+
+    osi3::GroundTruth tempGroundTruth;
+    movingObject.CopyToGroundTruth(tempGroundTruth);
+    hostData.mutable_location()->CopyFrom(tempGroundTruth.mutable_moving_object(0)->base());
+    sv.mutable_host_vehicle_data()->CopyFrom(hostData);
+
+    return sv;
+}
+
+OWL::Id WorldData::GetOwlId(int agentId)
+{
+    const auto& movingObject = std::find_if(movingObjects.cbegin(),
+                                            movingObjects.cend(),
+                                            [agentId](const std::pair<int, MovingObject*>& mapItem)
+                                            {
+                                                return mapItem.second->GetLink<AgentInterface>()->GetId() == agentId;
+                                            });
+
+    if (movingObject != movingObjects.cend())
+    {
+        return movingObject->second->GetId();
+    }
+    else
+    {
+        return InvalidId;
+    }
+}
+
+osi3::GroundTruth WorldData::GetFilteredGroundTruth(const osi3::SensorViewConfiguration& conf, const OWL::Interfaces::MovingObject& reference)
+{
+    bool referenceObjectAdded = false;
+    osi3::GroundTruth filteredGroundTruth;
+
+    Primitive::AbsPosition relativeSensorPos
+        { conf.mounting_position().position().x(),
+          conf.mounting_position().position().y(),
+          conf.mounting_position().position().z() };
+
+    const auto& orientation = reference.GetAbsOrientation();
+    auto absoluteSensorPos = reference.GetReferencePointPosition() + relativeSensorPos;
+    absoluteSensorPos.RotateYaw(orientation.yaw);
+
+    const double yawMax = orientation.yaw + conf.mounting_position().orientation().yaw() + conf.field_of_view_horizontal() / 2.0;
+    const double yawMin = orientation.yaw + conf.mounting_position().orientation().yaw() - conf.field_of_view_horizontal() / 2.0;
+
+    const double range = conf.range();
+
+    const auto& filteredMovingObjects = GetMovingObjectsInSector(absoluteSensorPos, range, yawMin, yawMax);
+    const auto& filteredStationaryObjects = GetStationaryObjectsInSector(absoluteSensorPos, range, yawMin, yawMax);
+    const auto& filteredTrafficSigns = GetTrafficSigns();
+    const auto& filteredLanes = GetLanes();
+
+    for (const auto& object : filteredMovingObjects)
+    {
+        object->CopyToGroundTruth(filteredGroundTruth);
+
+        if (object->GetId() == reference.GetId())
+        {
+            referenceObjectAdded = true;
+        }
+    }
+
+    if (!referenceObjectAdded)
+    {
+        reference.CopyToGroundTruth(filteredGroundTruth);
+    }
+
+    for (const auto& object : filteredStationaryObjects)
+    {
+        object->CopyToGroundTruth(filteredGroundTruth);
+    }
+
+    for (const auto& object : filteredTrafficSigns)
+    {
+        object.second->CopyToGroundTruth(filteredGroundTruth);
+    }
+
+    for (const auto& lane : filteredLanes)
+    {
+        lane.second->CopyToGroundTruth(filteredGroundTruth);
+    }
+
+    return filteredGroundTruth;
+}
+
+std::vector<const Interfaces::StationaryObject*> WorldData::GetStationaryObjectsInSector(const Primitive::AbsPosition& origin,
+                                                                                         double radius,
+                                                                                         double absYawMin,
+                                                                                         double absYawMax)
+{
+    std::vector<Interfaces::StationaryObject*> objects;
+
+    for (const auto& mapItem: stationaryObjects)
+    {
+        objects.push_back(mapItem.second);
+    }
+
+    return ApplySectorFilter(objects, origin, radius, absYawMax, absYawMin);
+}
+
+std::vector<const Interfaces::MovingObject*> WorldData::GetMovingObjectsInSector(const Primitive::AbsPosition& origin,
+                                                                                 double radius,
+                                                                                 double absYawMin,
+                                                                                 double absYawMax)
+{
+    std::vector<Interfaces::MovingObject*> objects;
+
+    for (const auto& mapItem: movingObjects)
+    {
+        objects.push_back(mapItem.second);
+    }
+
+    return ApplySectorFilter(objects, origin, radius, absYawMax, absYawMin);
+}
+
+/*
+TrafficSigns haven't assigned an absiolute position at the moment
+std::vector<const Interfaces::TrafficSign*> WorldData::GetTrafficSignsInSector(const Primitive::AbsPosition& origin,
+                                                                               double radius,
+                                                                               double absYawMin,
+                                                                               double absYawMax)
+{
+    std::vector<Interfaces::TrafficSign*> objects;
+
+    for (const auto& mapItem : trafficSigns)
+    {
+        objects.push_back(mapItem.second);
+    }
+
+    return ApplySectorFilter(objects, origin, radius, absYawMax, absYawMin);
+}
+*/
+
+double WorldData::NormalizeAngle(double angle)
+{
+    angle = std::fmod(angle, 2.0 * M_PI);
+
+    if (angle > M_PI)
+    {
+        angle -= 2.0 * M_PI;
+    }
+    else if (angle < - M_PI)
+    {
+        angle += 2.0 * M_PI;
+    }
+
+    return angle;
+}
 
 void WorldData::AddLane(RoadLaneSectionInterface& odSection, const RoadLaneInterface& odLane)
 {
@@ -47,14 +237,11 @@ void WorldData::AddLane(RoadLaneSectionInterface& odSection, const RoadLaneInter
 
     Section& section = *(sections.at(osiSection->id().value()));
     osi3::world::RoadLane* osiLane = osiSection->add_lane();
-    osi3::Lane* osiBaseLane = osiLane->mutable_base_lane();
-
-
-
-    Lane& lane = *(new Implementation::Lane(osiLane, &section));
-
+    Lane& lane = *(new Implementation::Lane(osiLane, &section, odSection.GetInDirection()));
     osiLane->mutable_id()->set_value(osiLaneId);
+    lane.UpdateStreamId();
     osiLane->set_reverse_direction(!odLane.GetInDirection());
+
     for (const auto& odLaneMapItem : odSection.GetLanes())
     {
         try
@@ -67,14 +254,15 @@ void WorldData::AddLane(RoadLaneSectionInterface& odSection, const RoadLaneInter
                 lane.SetLeftLane(leftLane);
                 leftLane.SetRightLane(lane);
             }
-            else if (odLaneMapItem.first == odLaneId - 1)
-            {
-                // is right neighbor
-                osi3::world::RoadLane* rightOsiLane = osiLanes.at(odLaneMapItem.second);
-                Lane& rightLane = *(lanes.at(rightOsiLane->id().value()));
-                lane.SetRightLane(rightLane);
-                rightLane.SetLeftLane(lane);
-            }
+            else
+                if (odLaneMapItem.first == odLaneId - 1)
+                {
+                    // is right neighbor
+                    osi3::world::RoadLane* rightOsiLane = osiLanes.at(odLaneMapItem.second);
+                    Lane& rightLane = *(lanes.at(rightOsiLane->id().value()));
+                    lane.SetRightLane(rightLane);
+                    rightLane.SetLeftLane(lane);
+                }
         }
         catch (std::out_of_range&)
         {
@@ -82,9 +270,10 @@ void WorldData::AddLane(RoadLaneSectionInterface& odSection, const RoadLaneInter
         }
     }
 
-
+    lane.SetLaneType(OpenDriveTypeMapper::OdToOwlLaneType(odLane.GetType()));
     osiLanes[&odLane] = osiLane;
     lanes[osiLaneId] = &lane;
+    laneIdMapping[osiLaneId] = static_cast<OWL::OdId>(odLaneId);
 
     section.AddLane(lane);
 }
@@ -97,45 +286,69 @@ void WorldData::AddSection(const RoadInterface& odRoad, const RoadLaneSectionInt
     {
         osiRoad = osiRoads.at(&odRoad);
     }
-    catch(std::out_of_range& e)
+    catch (std::out_of_range& e)
     {
         throw new OWL::NonExistentOsiRef("Road", odRoad.GetId());
     }
 
-    osi3::world::RoadSection* osiSection = osiRoad->add_section();
-    Id secId = CreateUid();
+    auto osiSection = osiRoad->add_section();
+    auto secId = CreateUid();
     osiSection->mutable_id()->set_value(secId);
+    osiSection->set_s_offset(odSection.GetStart());
 
-    Section* section = new Implementation::Section(osiSection);
+    auto section = new Implementation::Section(osiSection, odSection.GetInDirection());
 
     osiSections[&odSection] = osiSection;
     sections[secId] = section;
 
-    Road* road = roads.at(osiRoad->id().value());
+    auto road = roads.at(osiRoad->id().value());
     road->AddSection(*section);
 }
 
-void WorldData::AddRoad(/* const */ RoadInterface& odRoad)
+void WorldData::AddRoad(const RoadInterface& odRoad)
 {
     osi3::world::Road* osiRoad = osiGroundTruth.add_road();
-    Road* road = new Implementation::Road(osiRoad);
+    auto road = new Implementation::Road(osiRoad);
 
     Id roadId = CreateUid();
     osiRoad->mutable_id()->set_value(roadId);
 
-    // TODO: GetRoadType parameter ?!
+    // Note: OpenDrive supports multiple road types across the length of one road but OSI doesn't
     const RoadTypeInformation odRoadType = odRoad.GetRoadType(0.0);
     osiRoad->set_type(OpenDriveTypeMapper::RoadType(odRoadType));
 
     osiRoads[&odRoad] = osiRoad;
     roads[roadId] = road;
+    roadIdMapping[roadId] = odRoad.GetId();
+}
+
+void WorldData::AddJunction(const JunctionInterface *odJunction)
+{
+    auto junction = new Implementation::Junction(odJunction->GetId());
+    junctions[odJunction->GetId()] = junction;
+}
+
+void WorldData::AddJunctionConnection(const JunctionInterface *odJunction, const RoadInterface &odRoad)
+{
+    osi3::world::Road* osiRoad;
+    try
+    {
+        osiRoad = osiRoads.at(&odRoad);
+    }
+    catch (std::out_of_range& e)
+    {
+        throw new OWL::NonExistentOsiRef("Road", odRoad.GetId());
+    }
+    auto road = roads.at(osiRoad->id().value());
+    junctions.at(odJunction->GetId())->AddConnectingRoad(road);
 }
 
 void WorldData::ConnectLanes(/* const */ RoadLaneSectionInterface& firstOdSection,
-                             /* const */ RoadLaneSectionInterface& secondOdSection,
-                             const std::map<int, int>& lanePairs,
-                             bool isPrev)
+        /* const */ RoadLaneSectionInterface& secondOdSection,
+        const std::map<int, int>& lanePairs,
+        bool isPrev)
 {
+    Q_UNUSED(isPrev)
     for (auto pair : lanePairs)
     {
         /* const */ RoadLaneInterface* firstOdLane = firstOdSection.GetLanes().at(pair.first);
@@ -144,13 +357,14 @@ void WorldData::ConnectLanes(/* const */ RoadLaneSectionInterface& firstOdSectio
         osi3::world::RoadLane* firstOsiLane = osiLanes.at(firstOdLane);
         osi3::world::RoadLane* secondOsiLane = osiLanes.at(secondOdLane);
 
-        // TODO: generate and assign lane pairings instead of successor/predecessor
+        Q_UNUSED(firstOsiLane);
+        Q_UNUSED(secondOsiLane);
     }
 }
 
 void WorldData::AddLanePairing(/* const */ RoadLaneInterface& odLane,
-                               /* const */ RoadLaneInterface& predecessorOdLane,
-                               /* const */ RoadLaneInterface& successorOdLane)
+        /* const */ RoadLaneInterface& predecessorOdLane,
+        /* const */ RoadLaneInterface& successorOdLane)
 {
     osi3::world::RoadLane* osiLane = osiLanes.at(&odLane);
     const osi3::world::RoadLane* predecessorOsiLane = osiLanes.at(&predecessorOdLane);
@@ -163,40 +377,37 @@ void WorldData::AddLanePairing(/* const */ RoadLaneInterface& odLane,
 }
 
 void WorldData::AddLaneSuccessor(/* const */ RoadLaneInterface& odLane,
-                                 /* const */ RoadLaneInterface& successorOdLane,
-                                 /* const */ bool connectAtSuccessorEnd)
+        /* const */ RoadLaneInterface& successorOdLane)
 {
     osi3::world::RoadLane* osiLane = osiLanes.at(&odLane);
     const osi3::world::RoadLane* successorOsiLane = osiLanes.at(&successorOdLane);
 
     Lane* lane = lanes.at(osiLane->id().value());
     Lane* nextLane = lanes.at(successorOsiLane->id().value());
-    lane->AddNextLane(*nextLane);
+    lane->AddNext(*nextLane);
 }
 
 void WorldData::AddLanePredecessor(/* const */ RoadLaneInterface& odLane,
-                                   /* const */ RoadLaneInterface& predecessorOdLane,
-                                   /* const */ bool connectAtPredecessorEnd)
+        /* const */ RoadLaneInterface& predecessorOdLane)
 {
     osi3::world::RoadLane* osiLane = osiLanes.at(&odLane);
     const osi3::world::RoadLane* predecessorOsiLane = osiLanes.at(&predecessorOdLane);
 
     Lane* lane = lanes.at(osiLane->id().value());
     Lane* prevLane = lanes.at(predecessorOsiLane->id().value());
-    lane->AddPreviousLane(*prevLane);
+    lane->AddPrevious(*prevLane);
 }
 
-MovingObject* WorldData::AddMovingObject()
+Interfaces::MovingObject& WorldData::AddMovingObject(void* linkedObject)
 {
     Id id = CreateUid();
     osi3::MovingObject* osiMovingObject = osiGroundTruth.mutable_groundtruth()->add_moving_object();
-    MovingObject* movingObject = new MovingObject(osiMovingObject);
+    auto movingObject = new MovingObject(osiMovingObject, linkedObject);
 
     osiMovingObject->mutable_id()->set_value(id);
-
     movingObjects[id] = movingObject;
 
-    return movingObject;
+    return *movingObject;
 }
 
 void WorldData::RemoveMovingObjectById(Id id)
@@ -206,11 +417,11 @@ void WorldData::RemoveMovingObjectById(Id id)
 
     for (int i = 0; i < osiMovingObjects.size(); ++i)
     {
-       if (osiMovingObjects.Get(i).id().value() == id)
-       {
-           osiMovingObjects.SwapElements(i, osiMovingObjects.size() - 1);
-           found = true;
-       }
+        if (osiMovingObjects.Get(i).id().value() == id)
+        {
+            osiMovingObjects.SwapElements(i, osiMovingObjects.size() - 1);
+            found = true;
+        }
     }
 
     if (found)
@@ -221,29 +432,28 @@ void WorldData::RemoveMovingObjectById(Id id)
     }
 }
 
-void WorldData::AddStationaryObject(const RoadObjectInterface& odObject)
+Interfaces::StationaryObject& WorldData::AddStationaryObject(void* linkedObject)
 {
     osi3::StationaryObject* osiStationaryObject = osiGroundTruth.mutable_groundtruth()->add_stationary_object();
-    StationaryObject* stationaryObject = new StationaryObject(osiStationaryObject);
+    auto stationaryObject = new StationaryObject(osiStationaryObject, linkedObject);
     Id id = CreateUid();
 
     osiStationaryObject->mutable_id()->set_value(id);
-
-    Primitive::RoadCoordinate position;
-    position.s = odObject.GetS();
-    position.t = odObject.GetT();
-
     stationaryObjects[id] = stationaryObject;
+
+    return *stationaryObject;
 }
 
-void WorldData::ConnectSections(const RoadLaneSectionInterface& firstOdSection,
-                                const RoadLaneSectionInterface& secondOdSection)
+Interfaces::TrafficSign& WorldData::AddTrafficSign()
 {
-    osi3::world::RoadSection* firstOsiSection = osiSections.at(&firstOdSection);
-    osi3::world::RoadSection* secondOsiSection = osiSections.at(&secondOdSection);
+    osi3::TrafficSign* osiTrafficSign = osiGroundTruth.mutable_groundtruth()->add_traffic_sign();
+    auto trafficSignal = new TrafficSign(osiTrafficSign);
+    Id id = CreateUid();
 
-    firstOsiSection->mutable_successor_section()->set_value(secondOsiSection->id().value());
-    secondOsiSection->mutable_antecessor_section()->set_value(firstOsiSection->id().value());
+    osiTrafficSign->mutable_id()->set_value(id);
+    trafficSigns[id] = trafficSignal;
+
+    return *trafficSignal;
 }
 
 void WorldData::SetRoadPredecessorIntersection(const RoadInterface& road, const RoadInterface& predecessorIntersection)
@@ -252,6 +462,29 @@ void WorldData::SetRoadPredecessorIntersection(const RoadInterface& road, const 
     osi3::world::Road* predecessorOsiIntersection = osiRoads.at(&predecessorIntersection);
 
     osiRoad->mutable_antecessor_road()->mutable_intersection_id()->set_value(predecessorOsiIntersection->id().value());
+}
+
+void WorldData::SetSectionSuccessor(const RoadLaneSectionInterface &section, const RoadLaneSectionInterface &successorSection)
+{
+    osi3::world::RoadSection* firstOsiSection = osiSections.at(&section);
+    const osi3::world::RoadSection* secondOsiSection = osiSections.at(&successorSection);
+
+    firstOsiSection->mutable_successor_section()->set_value(secondOsiSection->id().value());
+
+    Section* currSection = sections.at(firstOsiSection->id().value());
+    Section* succSection = sections.at(secondOsiSection->id().value());
+    currSection->AddNext(*succSection);
+}
+
+void WorldData::SetSectionPredecessor(const RoadLaneSectionInterface &section, const RoadLaneSectionInterface &predecessorSection)
+{
+    osi3::world::RoadSection* firstOsiSection = osiSections.at(&section);
+    osi3::world::RoadSection* secondOsiSection = osiSections.at(&predecessorSection);
+
+    firstOsiSection->mutable_antecessor_section()->set_value(secondOsiSection->id().value());
+    Section* currSection = sections.at(firstOsiSection->id().value());
+    Section* prevSection = sections.at(secondOsiSection->id().value());
+    currSection->AddPrevious(*prevSection);
 }
 
 void WorldData::SetRoadSuccessorIntersection(const RoadInterface& road, const RoadInterface& successorIntersection)
@@ -276,19 +509,6 @@ void WorldData::SetRoadSuccessor(const RoadInterface& road, const RoadInterface&
     osi3::world::Road* successorOsiRoad = osiRoads.at(&successorRoad);
 
     osiRoad->mutable_successor_road()->mutable_road_id()->set_value(successorOsiRoad->id().value());
-}
-
-osi3::world::RoadLane* WorldData::GetOsiLaneIdByOdId(int odLaneId)
-{
-    for (auto lane : osiLanes)
-    {
-        if (lane.first->GetId() == odLaneId)
-        {
-            return lane.second;
-        }
-    }
-
-    return nullptr;
 }
 
 void WorldData::AddLaneGeometryPoint(const RoadLaneInterface& odLane,
@@ -331,12 +551,8 @@ void WorldData::AddLaneGeometryPoint(const RoadLaneInterface& odLane,
     }
     else
     {
-        const osi3::Vector2d& currentOsiPoint = osiGeometry->reference();
-        const osi3::Vector2d& previousOsiPoint = osiLane->geometry(pointCount - 2).reference();
-        double deltaX = currentOsiPoint.x() - previousOsiPoint.x();
-        double deltaY = currentOsiPoint.y() - previousOsiPoint.y();
-        double laneLength = osiLane->length();
-        osiLane->set_length(laneLength + std::hypot(deltaX, deltaY));
+        double sStart = lane->GetLaneGeometryElements().front()->joints.current.projectionAxes.sOffset;
+        osiLane->set_length(sOffset - sStart);
     }
 }
 
@@ -369,19 +585,7 @@ const std::unordered_map<Id, Lane*>& WorldData::GetLanes() const
     return lanes;
 }
 
-CLane& WorldData::GetLaneById(Id id) const
-{
-    try
-    {
-        return *(lanes.at(id));
-    }
-    catch (const std::out_of_range& /* e */)
-    {
-        return invalidLane;
-    }
-}
-
-const std::unordered_map<Id, Section*>& WorldData::GetSections() const
+const std::map<Id, Section*>& WorldData::GetSections() const
 {
     return sections;
 }
@@ -402,6 +606,7 @@ CRoad& WorldData::GetRoadById(Id id) const
     return *(roads.at(id));
 }
 
+
 const std::unordered_map<Id, StationaryObject*>& WorldData::GetStationaryObjects() const
 {
     return stationaryObjects;
@@ -417,9 +622,77 @@ const std::unordered_map<Id, MovingObject*>& WorldData::GetMovingObjects() const
     return movingObjects;
 }
 
+const std::unordered_map<Id, Interfaces::TrafficSign *> &WorldData::GetTrafficSigns() const
+{
+    return trafficSigns;
+}
+
+
 CMovingObject& WorldData::GetMovingObjectById(Id id) const
 {
     return *(movingObjects.at(id));
+}
+
+void WorldData::Reset()
+{
+    for (auto movingObject : movingObjects)
+    {
+        delete movingObject.second;
+    }
+    movingObjects.clear();
+}
+
+void WorldData::Clear()
+{
+    for (auto sign : trafficSigns)
+    {
+        delete sign.second;
+    }
+
+    for (auto movingObject : movingObjects)
+    {
+        delete movingObject.second;
+    }
+
+    for (auto stationaryObject : stationaryObjects)
+    {
+        delete stationaryObject.second;
+    }
+
+    for (auto lane : lanes)
+    {
+        delete lane.second;
+    }
+
+    for (auto section : sections)
+    {
+        delete section.second;
+    }
+
+    for (auto road : roads)
+    {
+        delete road.second;
+    }
+
+    for (auto junction : junctions)
+    {
+        delete junction.second;
+    }
+
+    trafficSigns.clear();
+    movingObjects.clear();
+    stationaryObjects.clear();
+
+    lanes.clear();
+    sections.clear();
+    roads.clear();
+    junctions.clear();
+
+
+    laneIdMapping.clear();
+    roadIdMapping.clear();
+
+    osiGroundTruth.Clear();
 }
 
 }

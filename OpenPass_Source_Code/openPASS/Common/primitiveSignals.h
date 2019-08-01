@@ -1,12 +1,13 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
 //! @file  primitiveSignals.h
@@ -17,7 +18,7 @@
 #ifndef PRIMITIVESIGNALS_H
 #define PRIMITIVESIGNALS_H
 
-#include "modelInterface.h"
+#include "Interfaces/modelInterface.h"
 
 //-----------------------------------------------------------------------------
 //! Primitive signal class for double values
@@ -92,6 +93,31 @@ public:
     }
 
     bool value; //!< signal content
+};
+
+//-----------------------------------------------------------------------------
+//! Primitive signal class for componentState values
+//-----------------------------------------------------------------------------
+class ComponentStateSignal : public ComponentStateSignalInterface
+{
+public:
+    ComponentStateSignal(ComponentState state)
+    {
+        componentState = state;
+    }
+    ComponentStateSignal(const ComponentStateSignal&) = default;
+    ComponentStateSignal(ComponentStateSignal&&) = default;
+    ComponentStateSignal& operator=(const ComponentStateSignal&) = default;
+    ComponentStateSignal& operator=(ComponentStateSignal&&) = default;
+    virtual ~ComponentStateSignal() = default;
+
+    //-----------------------------------------------------------------------------
+    //! Converts signal to string
+    //-----------------------------------------------------------------------------
+    virtual operator std::string() const
+    {
+        return "";
+    }
 };
 
 #endif // PRIMITIVESIGNALS_H

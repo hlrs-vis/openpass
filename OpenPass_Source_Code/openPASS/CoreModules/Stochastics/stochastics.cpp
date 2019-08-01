@@ -1,38 +1,38 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  stochastics.cpp
-//! @brief This file contains the DLL wrapper.
+/** @file  Stochastics.cpp */
 //-----------------------------------------------------------------------------
 
 #include "stochastics.h"
 #include "stochastics_implementation.h"
-#include "stochasticsInterface.h"
+#include "Interfaces/stochasticsInterface.h"
 
 const std::string Version = "0.0.1";
 static const CallbackInterface *Callbacks = nullptr;
 
-extern "C" STOCHASTICSSHARED_EXPORT const std::string &OpenPASS_GetVersion()
+extern "C" STOCHASTICS_SHARED_EXPORT const std::string &OpenPASS_GetVersion()
 {
     return Version;
 }
 
-extern "C" STOCHASTICSSHARED_EXPORT StochasticsInterface *OpenPASS_CreateInstance(
+extern "C" STOCHASTICS_SHARED_EXPORT StochasticsInterface *OpenPASS_CreateInstance(
         CallbackInterface *callbacks)
 {
     Callbacks = callbacks;
 
     try
     {
-        return (StochasticsInterface*)(new (std::nothrow) Stochastics_Implementation(callbacks));
+        return (StochasticsInterface*)(new (std::nothrow) StochasticsImplementation(callbacks));
     }
     catch(const std::runtime_error &ex)
     {
@@ -53,7 +53,7 @@ extern "C" STOCHASTICSSHARED_EXPORT StochasticsInterface *OpenPASS_CreateInstanc
     }
 }
 
-extern "C" STOCHASTICSSHARED_EXPORT void OpenPASS_DestroyInstance(StochasticsInterface *implementation)
+extern "C" STOCHASTICS_SHARED_EXPORT void OpenPASS_DestroyInstance(StochasticsInterface *implementation)
 {
     delete implementation;
 }

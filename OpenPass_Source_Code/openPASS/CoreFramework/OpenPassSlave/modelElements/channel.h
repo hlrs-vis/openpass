@@ -1,32 +1,32 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  channel.h
+//! @file  Channel.h
 //! @brief This file contains the internal representation of a channel instance
 //!        during a simulation run.
 //-----------------------------------------------------------------------------
 
-#ifndef CHANNEL_H
-#define CHANNEL_H
+#pragma once
 
 #include <list>
 #include <string>
 #include <tuple>
 #include <cstddef>
-#include "modelInterface.h"
+#include "Interfaces/modelInterface.h"
+#include "Interfaces/componentInterface.h"
 
 namespace SimulationSlave
 {
 
-class Component;
 class Agent;
 class ChannelBuffer;
 
@@ -49,11 +49,11 @@ public:
 
     void SetAgent(Agent *agent);
     Agent *GetAgent() const;
-    bool SetSource(Component *source, int sourceLinkId);
+    bool SetSource(ComponentInterface *source, int sourceLinkId);
     bool AttachSourceBuffer(ChannelBuffer *buffer);
-    bool AddTarget(Component *target, int targetLinkId);
-    Component *GetSource() const;
-    const std::list<std::tuple<int, Component*>> &GetTargets() const;
+    bool AddTarget(ComponentInterface *target, int targetLinkId);
+    ComponentInterface *GetSource() const;
+    const std::list<std::tuple<int, ComponentInterface*>> &GetTargets() const;
 
 private:
     static const int Undefined = -1;
@@ -61,11 +61,11 @@ private:
     Agent *agent;
     int id;
     int sourceLinkId;
-    Component *source;
-    std::list<std::tuple<int, Component*>> targets;
+    ComponentInterface *source;
+    std::list<std::tuple<int, ComponentInterface*>> targets;
     ChannelBuffer *buffer;
 };
 
 } // namespace SimulationSlave
 
-#endif // CHANNEL_H
+

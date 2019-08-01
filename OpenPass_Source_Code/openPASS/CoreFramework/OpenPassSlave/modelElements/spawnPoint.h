@@ -1,29 +1,29 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  spawnPoint.h
+//! @file  SpawnPoint.h
 //! @brief This file contains the internal representation of the a spawn point.
 //-----------------------------------------------------------------------------
 
-#ifndef SPAWNPOINT_H
-#define SPAWNPOINT_H
+#pragma once
 
 #include <list>
-#include "runConfig.h"
-#include "parameters.h"
-#include "spawnPointInterface.h"
+
+#include "CoreFramework/CoreShare/parameters.h"
+#include "Interfaces/spawnPointInterface.h"
 #include "spawnPointLibrary.h"
-#include "scheduleItem.h"
-#include "worldInterface.h"
-#include "log.h"
+#include "Interfaces/worldInterface.h"
+#include "agentBlueprint.h"
+#include "CoreFramework/CoreShare/log.h"
 
 namespace SimulationSlave
 {
@@ -31,16 +31,12 @@ namespace SimulationSlave
 class SpawnPoint
 {
 public:    
-    SpawnPoint(SimulationCommon::RunConfig::SpawnPointInstance *spawnPointInstance,
-               AgentFactory *agentFactory,
+    SpawnPoint(AgentFactoryInterface *agentFactory,
                SpawnPointInterface *implementation,
-               SpawnPointLibrary *library,
-               WorldInterface *world) :
+               SpawnPointLibrary *library) :
         library(library),
         implementation(implementation),
-        agentFactory(agentFactory),
-        id(spawnPointInstance->GetId()),
-        spawnTask(this, world)
+        agentFactory(agentFactory)
     {
         LOG_INTERN(LogLevel::DebugCore) << "created spawn point " << id;
     }
@@ -69,21 +65,11 @@ public:
     }
 
     //-----------------------------------------------------------------------------
-    //! Returns the stored list of agent spawn items.
-    //!
-    //! @return                         List of agent spawn items
-    //-----------------------------------------------------------------------------
-    std::vector<const AgentSpawnItem*> &GetAgentSpawnItems()
-    {
-        return agentSpawnItems;
-    }
-
-    //-----------------------------------------------------------------------------
     //! Returns the agent factory.
     //!
     //! @return                         Agent factory
     //-----------------------------------------------------------------------------
-    AgentFactory *GetAgentFactory()
+    AgentFactoryInterface *GetAgentFactory()
     {
         return agentFactory;
     }
@@ -99,26 +85,6 @@ public:
     }
 
     //-----------------------------------------------------------------------------
-    //! Adds a new agent spawn item to the stored list.
-    //!
-    //! @param[in]  agentSpawnItem      Agent spawn item to store
-    //-----------------------------------------------------------------------------
-    void AddAgentSpawnItem(const AgentSpawnItem *agentSpawnItem)
-    {
-        agentSpawnItems.push_back(agentSpawnItem);
-    }
-
-    //-----------------------------------------------------------------------------
-    //! Returns the task, i.e. the scheduled spawn item
-    //!
-    //! @return                         Scheduled spawn item
-    //-----------------------------------------------------------------------------
-    ScheduleItem *GetSpawnTask()
-    {
-        return &spawnTask;
-    }
-
-    //-----------------------------------------------------------------------------
     //! Returns the spawn point library.
     //!
     //! @return                         Spawn point library
@@ -128,16 +94,31 @@ public:
         return library;
     }
 
+    Agent* respawnAgent(int time)
+    {
+        AgentBlueprint agentBlueprint;
+
+        try
+        {
+            GetLibrary()->GenerateAgent(GetImplementation(), &agentBlueprint);
+        }
+        catch(...)
+        {
+            return nullptr;
+        }
+
+        Agent *agent = GetAgentFactory()->AddAgent(&agentBlueprint, time);
+
+        return agent;
+    }
+
 private:
     SpawnPointLibrary *library;
     SpawnPointInterface *implementation;
-    AgentFactory *agentFactory;
-    int id;
-    std::vector<const AgentSpawnItem*> agentSpawnItems;
-
-    ScheduleSpawnItem spawnTask;
+    AgentFactoryInterface *agentFactory;
+    int id = 0;
 };
 
 } // namespace SimulationSlave
 
-#endif // SPAWNPOINT_H
+

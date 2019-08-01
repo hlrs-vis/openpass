@@ -1,44 +1,36 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 #include <iostream>
 #include <algorithm>
 #include <QLibrary>
 #include <sstream>
-#include "observationLibrary.h"
-#include "observationInterface.h"
-#include "observationBinding.h"
-#include "runConfig.h"
-#include "observationModule.h"
-#include "log.h"
 
-namespace SimulationSlave
-{
+#include "CoreFramework/CoreShare/log.h"
+#include "observationBinding.h"
+#include "Interfaces/observationInterface.h"
+#include "observationLibrary.h"
+#include "observationModule.h"
+
+namespace SimulationSlave {
 
 bool ObservationLibrary::Init()
 {
-#if defined(unix)
-    QString path = QString(observationLibraryPath.c_str()) + QString("/lib") + QString(libraryName.c_str());
-#elif defined (WIN32)
-    QString path = QString(observationLibraryPath.c_str()) + QString("/") + QString(libraryName.c_str());
-#else
-    error: "undefined target platform"
-#endif
-
-    library = new (std::nothrow) QLibrary(path);
-    if(!library)
+    library = new (std::nothrow) QLibrary(QString::fromStdString(libraryPath));
+    if (!library)
     {
         return false;
     }
 
-    if(!library->load())
+    if (!library->load())
     {
         LOG_INTERN(LogLevel::Error) << library->errorString().toStdString();
         delete library;
@@ -47,69 +39,69 @@ bool ObservationLibrary::Init()
     }
 
     getVersionFunc = (ObservationInterface_GetVersion)library->resolve(DllGetVersionId.c_str());
-    if(!getVersionFunc)
+    if (!getVersionFunc)
     {
         LOG_INTERN(LogLevel::Error) << "could not retrieve version information from DLL";
         return false;
     }
 
     createInstanceFunc = (ObservationInterface_CreateInstanceType)library->resolve(DllCreateInstanceId.c_str());
-    if(!createInstanceFunc)
+    if (!createInstanceFunc)
     {
         return false;
     }
 
     destroyInstanceFunc = (ObservationInterface_DestroyInstanceType)library->resolve(DllDestroyInstanceId.c_str());
-    if(!destroyInstanceFunc)
+    if (!destroyInstanceFunc)
     {
         LOG_INTERN(LogLevel::Warning) << "observation module could not be released";
         return false;
     }
 
     masterPreHookFunc = (ObservationInterface_MasterPreHook)library->resolve(DllMasterPreHookId.c_str());
-    if(!masterPreHookFunc)
+    if (!masterPreHookFunc)
     {
         return false;
     }
 
     masterPostHookFunc = (ObservationInterface_MasterPostHook)library->resolve(DllMasterPostHookId.c_str());
-    if(!masterPostHookFunc)
+    if (!masterPostHookFunc)
     {
         return false;
     }
 
     slavePreHookFunc = (ObservationInterface_SlavePreHook)library->resolve(DllSlavePreHookId.c_str());
-    if(!slavePreHookFunc)
+    if (!slavePreHookFunc)
     {
         return false;
     }
 
     slavePreRunHookFunc = (ObservationInterface_SlavePreRunHook)library->resolve(DllSlavePreRunHookId.c_str());
-    if(!slavePreRunHookFunc)
+    if (!slavePreRunHookFunc)
     {
         return false;
     }
 
     slaveUpdateHookFunc = (ObservationInterface_SlaveUpdateHook)library->resolve(DllSlaveUpdateHookId.c_str());
-    if(!slaveUpdateHookFunc)
+    if (!slavePreRunHookFunc)
     {
         return false;
     }
 
     slavePostRunHookFunc = (ObservationInterface_SlavePostRunHook)library->resolve(DllSlavePostRunHookId.c_str());
-    if(!slavePostRunHookFunc)
+    if (!slavePostRunHookFunc)
     {
         return false;
     }
 
     slavePostHookFunc = (ObservationInterface_SlavePostHook)library->resolve(DllSlavePostHookId.c_str());
-    if(!slavePostHookFunc)
+    if (!slavePostHookFunc)
     {
         return false;
     }
 
     slaveResultFileFunc = (ObservationInterface_SlaveResultFile)library->resolve(DllSlaveResultFileId.c_str());
-    if(!slaveResultFileFunc)
+    if (!slaveResultFileFunc)
     {
         return false;
     }
@@ -119,12 +111,12 @@ bool ObservationLibrary::Init()
         LOG_INTERN(LogLevel::DebugCore) << "loaded observation library " << library->fileName().toStdString()
                                         << ", version " << getVersionFunc();
     }
-    catch(std::runtime_error const &ex)
+    catch (std::runtime_error const& ex)
     {
         LOG_INTERN(LogLevel::Error) << "could not retrieve version information from DLL: " << ex.what();
         return false;
     }
-    catch(...)
+    catch (...)
     {
         LOG_INTERN(LogLevel::Error) << "could not retrieve version information from DLL";
         return false;
@@ -135,16 +127,16 @@ bool ObservationLibrary::Init()
 
 ObservationLibrary::~ObservationLibrary()
 {
-    if(!(observationModules.empty()))
+    if (!(observationModules.empty()))
     {
         LOG_INTERN(LogLevel::Warning) << "unloading library which is still in use";
     }
 
-    if(library)
+    if (library)
     {
-        if(library->isLoaded())
+        if (library->isLoaded())
         {
-            LOG_INTERN(LogLevel::DebugCore) << "unloading library " << libraryName;
+            LOG_INTERN(LogLevel::DebugCore) << "unloading observation library";
             library->unload();
         }
 
@@ -153,15 +145,16 @@ ObservationLibrary::~ObservationLibrary()
     }
 }
 
-bool ObservationLibrary::ReleaseObservationModule(ObservationModule *observationModule)
+bool ObservationLibrary::ReleaseObservationModule(ObservationModule* observationModule)
 {
-    if(!library)
+    if (!library)
     {
         return false;
     }
 
-    std::list<ObservationModule*>::iterator findIter = std::find(observationModules.begin(), observationModules.end(), observationModule);
-    if(observationModules.end() == findIter)
+    std::list<ObservationModule*>::iterator findIter = std::find(observationModules.begin(), observationModules.end(),
+            observationModule);
+    if (observationModules.end() == findIter)
     {
         LOG_INTERN(LogLevel::Warning) << "observation module doesn't belong to library";
         return false;
@@ -171,12 +164,12 @@ bool ObservationLibrary::ReleaseObservationModule(ObservationModule *observation
     {
         destroyInstanceFunc(observationModule->GetImplementation());
     }
-    catch(std::runtime_error const &ex)
+    catch (std::runtime_error const& ex)
     {
         LOG_INTERN(LogLevel::Error) << "observation could not be released: " << ex.what();
         return false;
     }
-    catch(...)
+    catch (...)
     {
         LOG_INTERN(LogLevel::Error) << "observation could not be released";
         return false;
@@ -187,49 +180,51 @@ bool ObservationLibrary::ReleaseObservationModule(ObservationModule *observation
     return true;
 }
 
-ObservationModule *ObservationLibrary::CreateObservationModule(SimulationCommon::RunConfig::ObservationInstance *observationInstance,
-                                                               StochasticsInterface *stochastics,
-                                                               WorldInterface *world)
+ObservationModule* ObservationLibrary::CreateObservationModule(ParameterInterface* parameters,
+        StochasticsInterface* stochastics,
+        WorldInterface* world,
+        EventNetworkInterface* eventNetwork)
 {
-    if(!library)
+    if (!library)
     {
         return nullptr;
     }
 
-    if(!library->isLoaded())
+    if (!library->isLoaded())
     {
-        if(!library->load())
+        if (!library->load())
         {
             return nullptr;
         }
     }
 
-    ObservationInterface *observationInterface = nullptr;
+    ObservationInterface* observationInterface = nullptr;
     try
     {
         observationInterface = createInstanceFunc(stochastics,
-                                                  world,
-                                                  &observationInstance->GetObservationParameters(),
-                                                  callbacks);
+                               world,
+                               eventNetwork,
+                               parameters,
+                               callbacks);
     }
-    catch(std::runtime_error const &ex)
+    catch (std::runtime_error const& ex)
     {
         LOG_INTERN(LogLevel::Error) << "could not create observation instance: " << ex.what();
         return nullptr;
     }
-    catch(...)
+    catch (...)
     {
         LOG_INTERN(LogLevel::Error) << "could not create observation instance";
         return nullptr;
     }
 
-    if(!observationInterface)
+    if (!observationInterface)
     {
         return nullptr;
     }
 
-    ObservationModule *observationModule = new (std::nothrow) ObservationModule(observationInstance, observationInterface, this);
-    if(!observationModule)
+    ObservationModule* observationModule = new (std::nothrow) ObservationModule(observationInterface, this);
+    if (!observationModule)
     {
         return nullptr;
     }

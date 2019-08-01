@@ -1,99 +1,37 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  runResultInterface.h
+//! @file  RunResultInterface.h
 //! @brief This file contains the interface to gain access to the results of a
 //!        run.
 //!
 //! Important for the collision detection library.
 //-----------------------------------------------------------------------------
 
-#ifndef RUNRESULTINTERFACE
-#define RUNRESULTINTERFACE
+#pragma once
 
-#include <math.h>
-#include "vector2d.h"
-#include "agentInterface.h"
+#include <cmath>
+#include "Interfaces/agentInterface.h"
 
 
 //! Provides access to run results
 class RunResultInterface
 {
 public:
-    class OpponentItem
-    {
-    public:
-        OpponentItem(const AgentInterface *agent,
-                     double yawAngle,
-                     Common::Vector2d position,
-                     Common::Vector2d velocity,
-                     double distanceOnBorder):
-            agent(agent),
-            yawAngle(yawAngle),
-            position(position),
-            velocity(velocity),
-            distanceOnBorder(distanceOnBorder)
-        {}
-
-        OpponentItem(const AgentInterface *agent,
-                     Common::Vector2d position,
-                     double distanceOnBorder):
-            agent(agent),
-            yawAngle(agent->GetYawAngle()),
-            position(position),
-            velocity(Common::Vector2d(agent->GetVelocityX(), agent->GetVelocityY())),
-            distanceOnBorder(distanceOnBorder)
-        {}
-
-        const AgentInterface *agent = nullptr;
-        double yawAngle = 0.0;
-        Common::Vector2d position = Common::Vector2d(0.0, 0.0);
-        Common::Vector2d velocity = Common::Vector2d(0.0, 0.0);
-        double distanceOnBorder = 0.0; // distance from upper left corner on agent border to point of impact
-    };
-
-    class Collision
-    {
-    public:
-        Collision(OpponentItem opponent1,
-                  OpponentItem opponent2):
-            opponent1(opponent1),
-            opponent2(opponent2)
-        {
-            Common::Vector2d vVector1(opponent1.velocity);
-            Common::Vector2d vVector2(opponent2.velocity);
-            vVector1.Rotate(opponent1.yawAngle);
-            vVector2.Rotate(opponent2.yawAngle);
-
-            Common::Vector2d diffV = vVector1 - vVector2;
-            relativeVelocity = diffV.Length();
-            double l1 = opponent1.velocity.Length();
-            double l2 = opponent2.velocity.Length();
-
-            relativeAngle = (l1 != 0 && l2 != 0) ? ::acos(vVector1.Dot(vVector2) / l1 / l2) :
-                            ::abs(opponent1.agent->GetYawAngle() - opponent2.agent->GetYawAngle());
-        }
-
-        OpponentItem opponent1;
-        OpponentItem opponent2;
-
-        double relativeVelocity;
-        double relativeAngle;
-    };
-
     RunResultInterface() = default;
-    RunResultInterface(const RunResultInterface &) = delete;
-    RunResultInterface(RunResultInterface &&) = delete;
-    RunResultInterface &operator=(const RunResultInterface &) = delete;
-    RunResultInterface &operator=(RunResultInterface &&) = delete;
+    RunResultInterface(const RunResultInterface&) = delete;
+    RunResultInterface(RunResultInterface&&) = delete;
+    RunResultInterface& operator=(const RunResultInterface&) = delete;
+    RunResultInterface& operator=(RunResultInterface&&) = delete;
     virtual ~RunResultInterface() = default;
 
     //-----------------------------------------------------------------------------
@@ -107,17 +45,17 @@ public:
     //!
     //! @return                List of agents
     //-----------------------------------------------------------------------------
-    virtual const std::vector<Collision> *GetCollisions() const
+    virtual const std::list<int> *GetCollisionIds() const
     {
         return nullptr;
     }
 
     //-----------------------------------------------------------------------------
-    //! Provides the position of the agent COGs at the moment of contact
+    //! Provides the position of the agent reference point at the moment of contact
     //!
     //! @return                Mapping of agents to x-/y-coordinates
     //-----------------------------------------------------------------------------
-    virtual const std::map<const AgentInterface *, std::tuple<double, double>> *GetPositions() const
+    virtual const std::map<const AgentInterface*, std::tuple<double, double>> *GetPositions() const
     {
         return nullptr;
     }
@@ -127,7 +65,7 @@ public:
     //!
     //! @return                Mapping of agents to forward-/sideward-velocities
     //-----------------------------------------------------------------------------
-    virtual const std::map<const AgentInterface *, std::tuple<double, double>> *GetVelocities() const
+    virtual const std::map<const AgentInterface*, std::tuple<double, double>> *GetVelocities() const
     {
         return nullptr;
     }
@@ -137,7 +75,7 @@ public:
     //!
     //! @return                Mapping of agents to yaw angles
     //-----------------------------------------------------------------------------
-    virtual const std::map<const AgentInterface *, double> *GetYawAngles() const
+    virtual const std::map<const AgentInterface*, double> *GetYaws() const
     {
         return nullptr;
     }
@@ -149,7 +87,7 @@ public:
     //!
     //! @return                Mapping of agents to
     //-----------------------------------------------------------------------------
-    virtual const std::map<const AgentInterface *, double> *GetDistances() const
+    virtual const std::map<const AgentInterface*, double> *GetDistances() const
     {
         return nullptr;
     }
@@ -191,17 +129,8 @@ public:
     //!
     //! @return                True if successful
     //-----------------------------------------------------------------------------
-    virtual bool AddCollision(const AgentInterface *agent,
-                              Common::Vector2d &positionAgent,
-                              double distanceOnBorderAgent,
-                              const AgentInterface *other,
-                              Common::Vector2d &positionOther,
-                              double distanceOnBorderOther) = 0;
-
-    //-----------------------------------------------------------------------------
-    //! Sets a collision flag.
-    //-----------------------------------------------------------------------------
-    virtual void SetCollision() = 0;
+    virtual void AddCollisionId(const int agentId) = 0;
 };
 
-#endif // RUNRESULTINTERFACE
+
+

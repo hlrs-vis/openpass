@@ -1,26 +1,24 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
-#include "spawnPointNetwork.h"
-#include "runConfig.h"
-#include "spawnPoint.h"
 #include "agentFactory.h"
+#include "CoreFramework/CoreShare/log.h"
+#include "spawnPoint.h"
+#include "spawnPointNetwork.h"
 #include "spawnPointBinding.h"
-#include "stochastics.h"
-#include "log.h"
 
-namespace SimulationSlave
-{
+namespace SimulationSlave {
 
-SpawnPointNetwork::SpawnPointNetwork(SpawnPointBinding *spawnPointBinding,
-                                     WorldInterface *world) :
+SpawnPointNetwork::SpawnPointNetwork(SpawnPointBinding* spawnPointBinding,
+                                     WorldInterface* world) :
     spawnPointBinding(spawnPointBinding),
     world(world)
 {}
@@ -32,69 +30,33 @@ SpawnPointNetwork::~SpawnPointNetwork()
 
 void SpawnPointNetwork::Clear()
 {
-    for(std::pair<const int, SpawnPoint*> &item : spawnPoints)
+    if (spawnPoint != nullptr)
     {
-        delete item.second;
+        delete spawnPoint;
+        spawnPoint = nullptr;
     }
-
-    spawnPoints.clear();
 }
 
-bool SpawnPointNetwork::Instantiate(const std::list<SimulationCommon::RunConfig::SpawnPointInstance*> &spawnPointInstances,
-                                    const std::list<const AgentSpawnItem*> &agentSpawnItems,
-                                    AgentFactory *agentFactory,
-                                    Stochastics *stochastics)
+bool SpawnPointNetwork::Instantiate(std::string libraryPath,
+                                    AgentFactoryInterface* agentFactory,
+                                    AgentBlueprintProviderInterface* agentBlueprintProvider,
+                                    ParameterInterface* parameters,
+                                    const SamplerInterface& sampler,
+                                    ScenarioInterface* scenario)
 {
-    for(SimulationCommon::RunConfig::SpawnPointInstance *spawnPointInstance : spawnPointInstances)
+    spawnPoint = spawnPointBinding->Instantiate(libraryPath,
+                 agentFactory,
+                 world,
+                 agentBlueprintProvider,
+                 parameters,
+                 sampler,
+                 scenario);
+    if (!spawnPoint)
     {
-        SpawnPoint *spawnPoint = spawnPointBinding->Instantiate(spawnPointInstance,
-                                                                agentFactory,
-                                                                stochastics,
-                                                                world);
-        if(!spawnPoint)
-        {
-            LOG_INTERN(LogLevel::DebugCore) << "could not instantiate spawn point from " << spawnPointInstance->GetLibraryName();
-            return false;
-        }
-
-        if(!spawnPoints.insert({spawnPointInstance->GetId(), spawnPoint}).second)
-        {
-            LOG_INTERN(LogLevel::DebugCore) << "spawn point must be unique";
-            delete spawnPoint;
-            return false;
-        }
-
-        LOG_INTERN(LogLevel::DebugCore) << "link spawn point " << spawnPointInstance->GetId() << " to:";
-        for(int agentRef : spawnPointInstance->GetAgentRefs())
-        {
-            for(const AgentSpawnItem *agentSpawnItem : agentSpawnItems)
-            {
-                if(agentSpawnItem->GetId() == agentRef)
-                {
-                    spawnPoint->AddAgentSpawnItem(agentSpawnItem);
-                    LOG_INTERN(LogLevel::DebugCore) << "- agent " << agentSpawnItem->GetId();
-                }
-            }
-        }
+        LOG_INTERN(LogLevel::DebugCore) << "could not spawn point";
+        return false;
     }
 
     return true;
 }
-
-std::list<const AgentSpawnItem*> *SpawnPointNetwork::GetAgentSpawnItem(int spawnPointId)
-{
-    try
-    {
-        std::list<const AgentSpawnItem*> *result = agentSpawnItemMap.at(spawnPointId);
-
-        return result;
-    }
-    catch(const std::out_of_range&)
-    {
-        // do nothing
-    }
-
-    return nullptr;
-}
-
 } // namespace SimulationSlave

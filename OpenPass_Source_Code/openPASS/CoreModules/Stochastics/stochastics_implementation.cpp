@@ -1,55 +1,70 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2018 AMFD GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
+
+//-----------------------------------------------------------------------------
+/** @file  StochasticsImplementation.cpp */
+//-----------------------------------------------------------------------------
 
 #include <qglobal.h>
+#include <stdexcept>
+#include <cmath>
 #include "stochastics_implementation.h"
 
-Stochastics_Implementation::Stochastics_Implementation(const CallbackInterface *callbacks) :
+StochasticsImplementation::StochasticsImplementation(const CallbackInterface *callbacks) :
     baseGenerator(0),
-    uniformDistribution(0,1),
-    normalDistribution(0,1),
+    uniformDistribution(0, 1),
+    binomialDistribution(1, 0.5),
+    normalDistribution(0, 1),
     exponentialDistribution(1),
     callbacks(callbacks)
 {
-    uniformGenerator = std::bind(uniformDistribution, baseGenerator);
-    normalGenerator = std::bind(normalDistribution, baseGenerator);
-    exponentialGenerator = std::bind(exponentialDistribution, baseGenerator);
 }
 
-double Stochastics_Implementation::GetUniformDistributed(double a, double b)
+int StochasticsImplementation::GetBinomialDistributed(int upperRangeNum, double probSuccess)
 {
-    double draw = uniformGenerator();
-    LOG(CbkLogLevel::Debug, "GetUniformDistributed " + std::to_string(draw));
-    return  draw * (b - a) + a;
+    binomialDistribution.param(BinomialDist::param_type(upperRangeNum,probSuccess));
+    int draw = binomialDistribution(baseGenerator);
+    LOG(CbkLogLevel::Debug, "GetBinomialDistributed " + std::to_string(draw));
+    return draw;
 }
 
-double Stochastics_Implementation::GetNormalDistributed(double mean, double stdDeviation)
+double StochasticsImplementation::GetUniformDistributed(double a, double b)
+{
+    uniformDistribution.param(std::uniform_real_distribution<double>::param_type(a, b));
+    double draw = uniformDistribution(baseGenerator);
+    LOG(CbkLogLevel::Debug, "GetUniformDistributed " + std::to_string(draw));
+    return  draw;
+}
+
+double StochasticsImplementation::GetNormalDistributed(double mean, double stdDeviation)
 {
     if(0 > stdDeviation)
     {
         LOG(CbkLogLevel::Warning, "GetNormalDistributed: stdDeviation negative");
         return mean;
     }
-    double draw = normalGenerator();
+    double draw = normalDistribution(baseGenerator);
     LOG(CbkLogLevel::Debug, "GetNormalDistributed " + std::to_string(draw));
     return stdDeviation * draw + mean;
 }
 
-double Stochastics_Implementation::GetExponentialDistributed(double lambda)
+double StochasticsImplementation::GetExponentialDistributed(double lambda)
 {
-    double draw = exponentialGenerator();
+    double draw = exponentialDistribution(baseGenerator);
     LOG(CbkLogLevel::Debug, "GetExponentialDistributed " + std::to_string(draw));
     return draw / lambda;
 }
 
-double Stochastics_Implementation::GetGammaDistributed(double mean, double stdDeviation)
+double StochasticsImplementation::GetGammaDistributed(double mean, double stdDeviation)
 {
     // b=1/beta; p=alpha;
     // E = alpha * beta; stdDev = sqrt(alpha) * beta;
@@ -65,51 +80,79 @@ double Stochastics_Implementation::GetGammaDistributed(double mean, double stdDe
 
     double draw = gammaGenerator();
     LOG(CbkLogLevel::Debug, "GetGammaDistributed " + std::to_string(draw));
-    baseGenerator.seed(baseGenerator());
     return draw;
 }
 
-double Stochastics_Implementation::GetLogNormalDistributed(double mean, double stdDeviation)
+double StochasticsImplementation::GetLogNormalDistributed(double mean, double stdDeviation)
 {
-    double s2 = log(pow(stdDeviation/mean,2)+1);
+    double s2 = log(pow(stdDeviation/mean, 2)+1);
+
     std::lognormal_distribution<double> lognormalDistribution(log(mean)-s2/2, sqrt(s2));
 
-    auto lognormalGenerator = std::bind(lognormalDistribution, baseGenerator);
-
-    double draw = lognormalGenerator();
+    double draw = lognormalDistribution(baseGenerator);
     LOG(CbkLogLevel::Debug, "GetLogNormalDistributed " + std::to_string(draw));
-
-    baseGenerator.seed(baseGenerator());
 
     return draw;
 }
 
-double Stochastics_Implementation::GetSpecialDistributed(std::string distributionName, std::vector<double> args)
+double StochasticsImplementation::GetSpecialDistributed(std::string distributionName, std::vector<double> args)
 {
     Q_UNUSED(distributionName);
     Q_UNUSED(args);
     return 0;
 }
 
-std::uint32_t Stochastics_Implementation::GetRandomSeed() const
+double StochasticsImplementation::GetPercentileLogNormalDistributed(double mean, double stdDeviation, double probability)
+{
+    double s2 = log(pow(stdDeviation/mean, 2)+1);
+
+    double location = log(mean)-s2/2;
+    double scale = sqrt(s2);
+
+    boost::math::lognormal_distribution<> logNormD(location, scale);
+
+    double draw = boost::math::quantile(logNormD, probability);
+
+    return draw;
+}
+
+double StochasticsImplementation::GetRandomCdfLogNormalDistributed(double mean, double stdDeviation)
+{
+    double draw = GetLogNormalDistributed(mean, stdDeviation);
+
+    // std::cout << "DRAW orig: " << draw << std::endl;
+
+    double s2 = log(pow(stdDeviation/mean, 2)+1);
+    double location = log(mean)-s2/2;
+    double scale = sqrt(s2);
+
+    boost::math::lognormal_distribution<> logNormD(location, scale);
+
+    double probabilityCdf = boost::math::cdf(logNormD, draw);
+
+    // std::cout << "DRAW from boost math distribution LogNorm at cdfProb " << probabilityCdf * 100 << "%: " << GetPercentileNormalDistributed(mean, stdDeviation, probabilityCdf)<< std::endl;
+
+    return probabilityCdf;
+}
+
+std::uint32_t StochasticsImplementation::GetRandomSeed() const
 {
     return randomSeed;
 }
 
-void Stochastics_Implementation::ReInit()
+void StochasticsImplementation::ReInit()
 {
     randomSeed = baseGenerator();
     InitGenerator(randomSeed);
 }
 
-void Stochastics_Implementation::InitGenerator(std::uint32_t seed)
+void StochasticsImplementation::InitGenerator(std::uint32_t seed)
 {
     randomSeed = seed;
     baseGenerator.seed(seed);
+
     uniformDistribution.reset();
+    binomialDistribution.reset();
     normalDistribution.reset();
     exponentialDistribution.reset();
-    uniformGenerator = std::bind(uniformDistribution, baseGenerator);
-    normalGenerator = std::bind(normalDistribution, baseGenerator);
-    exponentialGenerator = std::bind(exponentialDistribution, baseGenerator);
 }

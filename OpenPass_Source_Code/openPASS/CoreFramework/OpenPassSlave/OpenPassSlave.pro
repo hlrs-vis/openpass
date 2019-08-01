@@ -1,5 +1,6 @@
 # /*********************************************************************
-# * Copyright (c) 2017 ITK Engineering GmbH
+# * Copyright (c) 2017, 2018, 2019 in-tech GmbH
+# * Copyright (c) 2016, 2017 ITK Engineering GmbH
 # *
 # * This program and the accompanying materials are made
 # * available under the terms of the Eclipse Public License 2.0
@@ -11,39 +12,16 @@
 #-----------------------------------------------------------------------------
 # \file  OpenPassSlave.pro
 # \brief This file contains the information for the QtCreator-project of the
-#        OpenPass Slave
-#-----------------------------------------------------------------------------/
+#        openPASS Slave
+#-----------------------------------------------------------------------------
 
-include(../../../Global.pri)
-QT       += core xml
-QT       -= gui
+CONFIG += OPENPASS_EXECUTABLE
+include(../../../global.pri)
 
 win32 {
 # -DLOG_TIME_ENABLED: enable logging of time information
-QMAKE_CXXFLAGS += -std=c++11 -DWIN32
 LIBS += -lws2_32
-} else {
-QMAKE_CXXFLAGS += -std=c++11 -Dunix
 }
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-
-TARGET = OpenPassSlave
-
-###############################################################################
-# Use this line in Global.pri to build openPASS-Slave as library
-# CONFIG += USEOPENPASSSLAVEASLIBRARY
-###############################################################################
-
-USEOPENPASSSLAVEASLIBRARY {
-    TEMPLATE = lib
-    DEFINES += OPENPASSSLAVELIBRARY
-} else {
-    TEMPLATE = app
-}
-
-Release:DESTDIR = $$DIR_RELEASE
-Debug:DESTDIR = $$DIR_DEBUG
 
 OBJECTS_DIR = .obj
 MOC_DIR = .moc
@@ -72,15 +50,16 @@ SUBDIRS += \
     scheduler \
     spawnPointInterface \
     stochasticsInterface \
-    collisionDetectionInterface \
     worldInterface \
-    ../CoreShare \
-    ../CoreShare/cephesMIT \
-    ../../Common \
+    eventDetectorInterface \
+    manipulatorInterface \
     ../../Interfaces \
-    ../../Interfaces/roadInterface
+    ../../Common \
+    ../CoreShare \
+    ../CoreShare/cephesMIT
 
-INCLUDEPATH += $$SUBDIRS
+INCLUDEPATH += $$SUBDIRS \
+    ../../Interfaces/roadInterface
 
 SOURCES += \
     $$getFiles(SUBDIRS, cpp) \

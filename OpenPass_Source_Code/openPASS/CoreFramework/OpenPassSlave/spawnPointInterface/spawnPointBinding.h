@@ -1,40 +1,39 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  spawnPointBinding.h
+//! @file  SpawnPointBinding.h
 //! @brief This file contains the interface to the spawn point libraries.
 //-----------------------------------------------------------------------------
 
-#ifndef SPAWNPOINTBINDING_H
-#define SPAWNPOINTBINDING_H
+#pragma once
 
 #include <map>
 #include <string>
-#include "spawnPointInterface.h"
-#include "agentFactory.h"
-#include "runConfig.h"
-#include "callbacks.h"
+#include "Interfaces/spawnPointInterface.h"
+#include "Interfaces/agentBlueprintProviderInterface.h"
+#include "Interfaces/agentFactoryInterface.h"
+#include "CoreFramework/CoreShare/callbacks.h"
+#include "Interfaces/samplerInterface.h"
+#include "Interfaces/scenarioInterface.h"
 
-namespace SimulationSlave
-{
+namespace SimulationSlave {
 
 class SpawnPointLibrary;
 class SpawnPoint;
-class FrameworkConfig;
 
 class SpawnPointBinding
 {
 public:
-    SpawnPointBinding(const FrameworkConfig *frameworkConfig,
-                      SimulationCommon::Callbacks *callbacks);
+    SpawnPointBinding(CallbackInterface* callbacks);
     SpawnPointBinding(const SpawnPointBinding&) = delete;
     SpawnPointBinding(SpawnPointBinding&&) = delete;
     SpawnPointBinding& operator=(const SpawnPointBinding&) = delete;
@@ -46,16 +45,22 @@ public:
     //! or create a new instance (which is then also stored), then create a new spawn
     //! point using the provided parameters.
     //!
-    //! @param[in]  spawnPointInstance  Spawn point instance that is instantiated
-    //! @param[in]  agentFactory        Factory for the agents
-    //! @param[in]  stochastics         Stochastics instance
-    //! @param[in]  world               World instance
-    //! @return                         Spawn point created from the library
+    //! @param[in]  libraryPath             Path of the spawnpoint library
+    //! @param[in]  agentFactory            Factory for the agents
+    //! @param[in]  world                   World instance
+    //! @param[in]  agentBlueprintProvider  AgentBlueprintProvider
+    //! @param[in]  parameters              SpawnPoint parameters
+    //! @param[in]  sampler                 Sampler
+    //! @param[in]  scenario                Scenario
+    //! @return                          Spawn point created from the library
     //-----------------------------------------------------------------------------
-    SpawnPoint *Instantiate(SimulationCommon::RunConfig::SpawnPointInstance *spawnPointInstance,
-                            AgentFactory *agentFactory,
-                            StochasticsInterface *stochastics,
-                            WorldInterface *world);
+    SpawnPoint* Instantiate(std::string libraryPath,
+                            AgentFactoryInterface* agentFactory,
+                            WorldInterface* world,
+                            AgentBlueprintProviderInterface* agentBlueprintProvider,
+                            ParameterInterface* parameters,
+                            const SamplerInterface& sampler,
+                            ScenarioInterface* scenario);
 
     //-----------------------------------------------------------------------------
     //! Unloads the spawn point binding by deleting all stored spawn point libraries.
@@ -63,11 +68,9 @@ public:
     void Unload();
 
 private:
-    const FrameworkConfig *frameworkConfig;
-    std::map<std::string, SpawnPointLibrary*> libraries;
-    SimulationCommon::Callbacks *callbacks;
+    SpawnPointLibrary* library {nullptr};
+    CallbackInterface* callbacks;
 };
 
 } // namespace SimulationSlave
 
-#endif // SPAWNPOINTBINDING_H

@@ -1,12 +1,13 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2019 in-tech GmbH
+*               2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 /** \addtogroup OpenPassMaster
 * @{
@@ -16,19 +17,19 @@
 * of the framework.
 *
 * These executeable is started by the GUI with or without an argument to set the
-* frameworkConfiguration.xml file.
-* It reads the frameworkConfigarion.xml and saves all options and information.
+* masterConfig.xml file.
+* It reads the masterConfig.xml and saves all options and information.
 * Following this a slave executable is started with the options and information
 * as agrument.
 *
 * \section Input arguments
-* arguments | meaning
-* -----|---------
-* -frameworkConfigFile | Path to framework configuration file. Working directory and "frameworkConfig.xml" by default.
+* | arguments | meaning                                                                                 |
+* |-----------|-----------------------------------------------------------------------------------------|
+* | --config  | Path to master configuration file. Working directory and "masterConfig.xml" by default. |
 *
 * \section Output files
-* file | description
-* -----|---------
-* logMaster.txt | This file contains all log messages depending on the logLevel. Path and name are specified in frameworkConfig.xml.
+* | file               | description                                                                                                                     |
+* |--------------------|---------------------------------------------------------------------------------------------------------------------------------|
+* | OpenPassMaster.log | Default name for file containing all log messages (depending on the logLevel). Path and name are specified in masterConfig.xml. |
 *
 * @} */

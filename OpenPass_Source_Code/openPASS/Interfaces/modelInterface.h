@@ -1,15 +1,16 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  modelInterface.h
+//! @file  ModelInterface.h
 //! @brief This file contains the interface of the component models to interact
 //!        with the framework.
 //!
@@ -18,8 +19,7 @@
 //! DynamicsInterface, SensorInterface, InitInterface
 //-----------------------------------------------------------------------------
 
-#ifndef MODELINTERFACE_H
-#define MODELINTERFACE_H
+#pragma once
 
 #include <string>
 #include <map>
@@ -28,11 +28,12 @@
 #include <iostream>
 #include <vector>
 #include <memory>
-#include "parameterInterface.h"
-#include "stochasticsInterface.h"
-#include "worldInterface.h"
-#include "observationInterface.h"
-#include "callbackInterface.h"
+#include "Interfaces/parameterInterface.h"
+#include "Interfaces/stochasticsInterface.h"
+#include "Interfaces/worldInterface.h"
+#include "Interfaces/observationInterface.h"
+#include "Interfaces/callbackInterface.h"
+#include "Interfaces/eventNetworkInterface.h"
 
 //-----------------------------------------------------------------------------
 //! Provides functionality to print information of signals
@@ -41,7 +42,7 @@
 //! @param[in]     signal  Signal to be printed
 //! @return                Output stream for concatenation
 //-----------------------------------------------------------------------------
-inline std::ostream &operator<<(std::ostream &stream,
+inline std::ostream& operator<<(std::ostream &stream,
                                 const SignalInterface &signal)
 {
     return stream << static_cast<std::string>(signal);
@@ -73,10 +74,10 @@ public:
         responseTime(responseTime),
         cycleTime(cycleTime)
     {}
-    ModelInterface(const ModelInterface &) = delete;
-    ModelInterface(ModelInterface &&) = delete;
-    ModelInterface &operator=(const ModelInterface &) = delete;
-    ModelInterface &operator=(ModelInterface &&) = delete;
+    ModelInterface(const ModelInterface&) = delete;
+    ModelInterface(ModelInterface&&) = delete;
+    ModelInterface& operator=(const ModelInterface&) = delete;
+    ModelInterface& operator=(ModelInterface&&) = delete;
     virtual ~ModelInterface() = default;
 
     //-----------------------------------------------------------------------------
@@ -92,7 +93,7 @@ public:
                              int time) = 0;
 
     //-----------------------------------------------------------------------------
-    //! Function is called by framework when this component has to deliver a signal over
+    //! Function is called by framework when this Component.has to deliver a signal over
     //! a channel to another component (scheduler calls update task of this component).
     //!
     //! @param[in]     localLinkId    Corresponds to "id" of "ComponentOutput"
@@ -185,7 +186,7 @@ public:
     //! @param[in]     responseTime   Corresponds to "responseTime" of "Component"
     //! @param[in]     cycleTime      Corresponds to "cycleTime" of "Component"
     //-----------------------------------------------------------------------------
-    RestrictedModelInterface(int componentId,
+    RestrictedModelInterface(std::string componentName,
                              bool isInit,
                              int priority,
                              int offsetTime,
@@ -193,29 +194,29 @@ public:
                              int cycleTime,
                              StochasticsInterface *stochastics,
                              const ParameterInterface *parameters,
-                             const std::map<int, ObservationInterface *> *observations,
+                             const std::map<int, ObservationInterface*> *observations,
                              const CallbackInterface *callbacks) :
         ModelInterface(isInit, priority, offsetTime, responseTime, cycleTime),
         callbacks(callbacks),
-        componentId(componentId),
+        componentName(componentName),
         stochastics(stochastics),
         parameters(parameters),
         observations(observations)
     {}
-    RestrictedModelInterface(const RestrictedModelInterface &) = delete;
-    RestrictedModelInterface(RestrictedModelInterface &&) = delete;
-    RestrictedModelInterface &operator=(const RestrictedModelInterface &) = delete;
-    RestrictedModelInterface &operator=(RestrictedModelInterface &&) = delete;
+    RestrictedModelInterface(const RestrictedModelInterface&) = delete;
+    RestrictedModelInterface(RestrictedModelInterface&&) = delete;
+    RestrictedModelInterface& operator=(const RestrictedModelInterface&) = delete;
+    RestrictedModelInterface& operator=(RestrictedModelInterface&&) = delete;
     virtual ~RestrictedModelInterface() = default;
 
     //-----------------------------------------------------------------------------
-    //! Retrieves id of this component.
+    //! Retrieves name of this component.
     //!
-    //! @return                       Component id of this model
+    //! @return                       Component name of this model
     //-----------------------------------------------------------------------------
-    int GetComponentId()
+    std::string GetComponentName()
     {
-        return componentId;
+        return componentName;
     }
 
 protected:
@@ -245,7 +246,7 @@ protected:
     //!
     //! @return                       Mapping of observation modules.
     //-----------------------------------------------------------------------------
-    const std::map<int, ObservationInterface *> *GetObservations() const
+    const std::map<int, ObservationInterface*> *GetObservations() const
     {
         return observations;
     }
@@ -261,9 +262,10 @@ protected:
     void Log(CbkLogLevel logLevel,
              const char *file,
              int line,
-             const std::string &message)
+             const std::string &message) const
     {
-        if (callbacks) {
+        if(callbacks)
+        {
             callbacks->Log(logLevel,
                            file,
                            line,
@@ -275,11 +277,10 @@ private:
     // Access to the following members is provided by the corresponding member
     // functions.
     const CallbackInterface *callbacks;   //!< Reference to framework callbacks
-    int componentId;                      //!< Id of this component
-    StochasticsInterface
-    *stochastics;    //!< Reference to the stochastics functionality of the framework
+    std::string componentName;                      //!< Name of this component
+    StochasticsInterface *stochastics;    //!< Reference to the stochastics functionality of the framework
     const ParameterInterface *parameters; //!< Reference to the configuration parameters
-    const std::map<int, ObservationInterface *> *observations; //!< Mapping of observation modules
+    const std::map<int, ObservationInterface*> *observations; //!< Mapping of observation modules
 };
 
 //-----------------------------------------------------------------------------
@@ -304,7 +305,7 @@ public:
     //! @param[in]     callbacks      Pointer to the callbacks
     //! @param[in]     agent          Pointer to the agent in which the module is situated
     //-----------------------------------------------------------------------------
-    UnrestrictedModelInterface(int componentId,
+    UnrestrictedModelInterface(std::string componentName,
                                bool isInit,
                                int priority,
                                int offsetTime,
@@ -313,10 +314,10 @@ public:
                                StochasticsInterface *stochastics,
                                WorldInterface *world,
                                const ParameterInterface *parameters,
-                               const std::map<int, ObservationInterface *> *observations,
+                               const std::map<int, ObservationInterface*> *observations,
                                const CallbackInterface *callbacks,
                                AgentInterface *agent) :
-        RestrictedModelInterface(componentId,
+        RestrictedModelInterface(componentName,
                                  isInit,
                                  priority,
                                  offsetTime,
@@ -329,10 +330,10 @@ public:
         agent(agent),
         world(world)
     {}
-    UnrestrictedModelInterface(const UnrestrictedModelInterface &) = delete;
-    UnrestrictedModelInterface(UnrestrictedModelInterface &&) = delete;
-    UnrestrictedModelInterface &operator=(const UnrestrictedModelInterface &) = delete;
-    UnrestrictedModelInterface &operator=(UnrestrictedModelInterface &&) = delete;
+    UnrestrictedModelInterface(const UnrestrictedModelInterface&) = delete;
+    UnrestrictedModelInterface(UnrestrictedModelInterface&&) = delete;
+    UnrestrictedModelInterface& operator=(const UnrestrictedModelInterface&) = delete;
+    UnrestrictedModelInterface& operator=(UnrestrictedModelInterface&&) = delete;
     virtual ~UnrestrictedModelInterface() = default;
 
 protected:
@@ -367,6 +368,7 @@ protected:
 
 private:
     AgentInterface *agent;                //!< Reference to agent containing this component
+public: //RP: BAD HACK! just for testing FMI
     WorldInterface *world;                //!< Reference to the world representation of the framework
 };
 
@@ -388,7 +390,7 @@ public:
     //! @param[in]     callbacks      Pointer to the callbacks
     //! @param[in]     agent          Pointer to the agent in which the module is situated
     //-----------------------------------------------------------------------------
-    AlgorithmInterface(int componentId,
+    AlgorithmInterface(std::string componentName,
                        bool isInit,
                        int priority,
                        int offsetTime,
@@ -396,10 +398,10 @@ public:
                        int cycleTime,
                        StochasticsInterface *stochastics,
                        const ParameterInterface *parameters,
-                       const std::map<int, ObservationInterface *> *observations,
+                       const std::map<int, ObservationInterface*> *observations,
                        const CallbackInterface *callbacks,
-                       int agentId) :
-        RestrictedModelInterface(componentId,
+                       AgentInterface *agent) :
+        RestrictedModelInterface(componentName,
                                  isInit,
                                  priority,
                                  offsetTime,
@@ -409,12 +411,12 @@ public:
                                  parameters,
                                  observations,
                                  callbacks),
-        agentId(agentId)
+        agent(agent)
     {}
-    AlgorithmInterface(const AlgorithmInterface &) = delete;
-    AlgorithmInterface(AlgorithmInterface &&) = delete;
-    AlgorithmInterface &operator=(const AlgorithmInterface &) = delete;
-    AlgorithmInterface &operator=(AlgorithmInterface &&) = delete;
+    AlgorithmInterface(const AlgorithmInterface&) = delete;
+    AlgorithmInterface(AlgorithmInterface&&) = delete;
+    AlgorithmInterface& operator=(const AlgorithmInterface&) = delete;
+    AlgorithmInterface& operator=(AlgorithmInterface&&) = delete;
     virtual ~AlgorithmInterface() = default;
 
 protected:
@@ -423,13 +425,13 @@ protected:
     //!
     //! @return                       agent id
     //-----------------------------------------------------------------------------
-    int GetAgentId() const
+    AgentInterface* GetAgent() const
     {
-        return agentId;
+        return agent;
     }
 
 private:
-    int agentId;                //!< Agent id
+    AgentInterface *agent;                //!< Agent id
 };
 
 class ActionInterface : public UnrestrictedModelInterface
@@ -452,4 +454,163 @@ class InitInterface : public UnrestrictedModelInterface
     using UnrestrictedModelInterface::UnrestrictedModelInterface;
 };
 
-#endif // MODELINTERFACE_H
+//-----------------------------------------------------------------------------
+//! Interface of restricted functionality
+//-----------------------------------------------------------------------------
+class ManipulationModelInterface : public ModelInterface
+{
+public:
+    //-----------------------------------------------------------------------------
+    //! Constructor
+    //!
+    //! @param[in]     isInit         Corresponds to "init" of "Component"
+    //! @param[in]     priority       Corresponds to "priority" of "Component"
+    //! @param[in]     offsetTime     Corresponds to "offsetTime" of "Component"
+    //! @param[in]     responseTime   Corresponds to "responseTime" of "Component"
+    //! @param[in]     cycleTime      Corresponds to "cycleTime" of "Component"
+    //-----------------------------------------------------------------------------
+    ManipulationModelInterface(std::string componentName,
+                             bool isInit,
+                             int priority,
+                             int offsetTime,
+                             int responseTime,
+                             int cycleTime,
+                             SimulationSlave::EventNetworkInterface *eventNetwork,
+                             AgentInterface *agent,
+                             const CallbackInterface *callbacks) :
+        ModelInterface(isInit, priority, offsetTime, responseTime, cycleTime),
+        componentName(componentName),
+        eventNetwork(eventNetwork),
+        agent(agent),
+        callbacks(callbacks)
+    {}
+    ManipulationModelInterface(const ManipulationModelInterface&) = delete;
+    ManipulationModelInterface(ManipulationModelInterface&&) = delete;
+    ManipulationModelInterface& operator=(const ManipulationModelInterface&) = delete;
+    ManipulationModelInterface& operator=(ManipulationModelInterface&&) = delete;
+    virtual ~ManipulationModelInterface() = default;
+
+    //-----------------------------------------------------------------------------
+    //! Retrieves id of this component.
+    //!
+    //! @return                       Component id of this model
+    //-----------------------------------------------------------------------------
+    std::string GetComponentName()
+    {
+        return componentName;
+    }
+
+protected:
+    //-----------------------------------------------------------------------------
+    //! Retrieves the eventNetwork functionality of the framework
+    //!
+    //! @return                       EventNetwork functionality
+    //-----------------------------------------------------------------------------
+    const SimulationSlave::EventNetworkInterface *GetEventNetwork() const
+    {
+        return eventNetwork;
+    }
+
+    //-----------------------------------------------------------------------------
+    //! Retrieves the agent id
+    //!
+    //! @return                       agent id
+    //-----------------------------------------------------------------------------
+    AgentInterface* GetAgent() const
+    {
+        return agent;
+    }
+
+    //-----------------------------------------------------------------------------
+    //! Provides callback to LOG() macro
+    //!
+    //! @param[in]     logLevel    Importance of log
+    //! @param[in]     file        Name of file where log is called
+    //! @param[in]     line        Line within file where log is called
+    //! @param[in]     message     Message to log
+    //-----------------------------------------------------------------------------
+    void Log(CbkLogLevel logLevel,
+             const char *file,
+             int line,
+             const std::string &message) const
+    {
+        if(callbacks)
+        {
+            callbacks->Log(logLevel,
+                           file,
+                           line,
+                           message);
+        }
+    }
+
+private:
+    // Access to the following members is provided by the corresponding member
+    // functions.
+    std::string componentName;                      //!< Id of this component
+    const SimulationSlave::EventNetworkInterface *eventNetwork;   //!< Reference to framework eventNetwork
+    AgentInterface *agent;
+    const CallbackInterface *callbacks;   //!< Reference to framework callbacks
+};
+
+class UnrestrictedEventModelInterface : public UnrestrictedModelInterface
+{
+public:
+    //-----------------------------------------------------------------------------
+    //! Constructor
+    //!
+    //! @param[in]     componentId    Corresponds to "id" of "Component"
+    //! @param[in]     isInit         Corresponds to "init" of "Component"
+    //! @param[in]     priority       Corresponds to "priority" of "Component"
+    //! @param[in]     offsetTime     Corresponds to "offsetTime" of "Component"
+    //! @param[in]     responseTime   Corresponds to "responseTime" of "Component"
+    //! @param[in]     cycleTime      Corresponds to "cycleTime" of "Component"
+    //! @param[in]     eventNetwork   Pointer to event network
+    //! @param[in]     callbacks      Pointer to the callbacks
+    //-----------------------------------------------------------------------------
+    UnrestrictedEventModelInterface(std::string componentName,
+                                    bool isInit,
+                                    int priority,
+                                    int offsetTime,
+                                    int responseTime,
+                                    int cycleTime,
+                                    StochasticsInterface *stochastics,
+                                    WorldInterface *world,
+                                    const ParameterInterface *parameters,
+                                    const std::map<int, ObservationInterface*> *observations,
+                                    const CallbackInterface *callbacks,
+                                    AgentInterface *agent,
+                                    SimulationSlave::EventNetworkInterface * const eventNetwork):
+        UnrestrictedModelInterface(componentName,
+                                   isInit,
+                                   priority,
+                                   offsetTime,
+                                   responseTime,
+                                   cycleTime,
+                                   stochastics,
+                                   world,
+                                   parameters,
+                                   observations,
+                                   callbacks,
+                                   agent),
+        eventNetwork(eventNetwork)
+    {}
+    UnrestrictedEventModelInterface(const UnrestrictedEventModelInterface&) = delete;
+    UnrestrictedEventModelInterface(UnrestrictedEventModelInterface&&) = delete;
+    UnrestrictedEventModelInterface& operator=(const UnrestrictedEventModelInterface&) = delete;
+    UnrestrictedEventModelInterface& operator=(UnrestrictedEventModelInterface&&) = delete;
+    virtual ~UnrestrictedEventModelInterface() = default;
+
+protected:
+    //-----------------------------------------------------------------------------
+    //! Retrieves the EventNetwork
+    //!
+    //! @return                       EventNetwork
+    //-----------------------------------------------------------------------------
+    SimulationSlave::EventNetworkInterface* GetEventNetwork() const
+    {
+        return eventNetwork;
+    }
+
+private:
+    SimulationSlave::EventNetworkInterface * const eventNetwork;
+};

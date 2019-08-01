@@ -1,66 +1,49 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 #include <algorithm>
 #include <list>
 #include <sstream>
-#include "worldInterface.h"
-#include "runConfig.h"
-#include "agentFactory.h"
 #include "agent.h"
+#include "agentFactory.h"
 #include "agentType.h"
-#include "modelBinding.h"
-#include "agentTypeImporter.h"
-#include "frameworkConfig.h"
-#include "component.h"
 #include "channel.h"
-#include "parameters.h"
-#include "spawnPoint.h"
-#include "observationNetwork.h"
 #include "channelBuffer.h"
+#include "Interfaces/componentInterface.h"
+#include "CoreFramework/CoreShare/log.h"
+#include "modelBinding.h"
+#include "Interfaces/observationNetworkInterface.h"
+#include "CoreFramework/CoreShare/parameters.h"
+#include "spawnPoint.h"
 #include "stochastics.h"
-#include "log.h"
+#include "Interfaces/worldInterface.h"
 
 namespace SimulationSlave
 {
 
-AgentFactory::AgentFactory(FrameworkConfig *frameworkConfig,
-                           ModelBinding *modelBinding,
+AgentFactory::AgentFactory(ModelBinding *modelBinding,
                            WorldInterface *world,
                            Stochastics *stochastics,
-                           ObservationNetwork *observationNetwork) :
-    frameworkConfig(frameworkConfig),
+                           ObservationNetworkInterface *observationNetwork,
+                           EventNetworkInterface *eventNetwork) :
     modelBinding(modelBinding),
     world(world),
     stochastics(stochastics),
-    observationNetwork(observationNetwork)
-{}
+    observationNetwork(observationNetwork),
+    eventNetwork(eventNetwork)
+{
+}
 
 AgentFactory::~AgentFactory()
 {
-    ClearAgentTypes();
-}
-
-bool AgentFactory::ReloadAgentTypes()
-{
-    LOG_INTERN(LogLevel::DebugCore) << "import agent types...";
-
-    ClearAgentTypes();
-
-    if(!AgentTypeImporter::Import(frameworkConfig->GetAgentConfigFile(), agentTypes))
-    {
-        ClearAgentTypes();
-        return false;
-    }
-
-    return true;
 }
 
 void AgentFactory::ResetIds()
@@ -77,13 +60,11 @@ void AgentFactory::Clear()
     agentList.clear();
 }
 
-Agent *AgentFactory::AddAgent(const AgentSpawnItem *agentSpawnItem,
-                              const SpawnItemParameter &spawnItemParameter,
+Agent* AgentFactory::AddAgent(AgentBlueprintInterface* agentBlueprint,
                               int spawnTime)
 {
     Agent *agent = CreateAgent(lastAgentId,
-                               agentSpawnItem,
-                               spawnItemParameter,
+                               agentBlueprint,
                                spawnTime);
     if(!agent)
     {
@@ -106,30 +87,13 @@ Agent *AgentFactory::AddAgent(const AgentSpawnItem *agentSpawnItem,
 }
 
 Agent *AgentFactory::CreateAgent(int id,
-                                 const AgentSpawnItem *agentSpawnItem,
-                                 const SpawnItemParameter &spawnItemParameter,
+                                 AgentBlueprintInterface* agentBlueprint,
                                  int spawnTime)
 {
-    LOG_INTERN(LogLevel::DebugCore) << "instantiate agent (id " << id << ", type ref " << agentSpawnItem->GetReference() << ")";
-
-    const AgentType *agentType;
-    try
-    {
-        agentType = agentTypes.at(agentSpawnItem->GetReference());
-    }
-    catch(const std::out_of_range&)
-    {
-        LOG_INTERN(LogLevel::Error) << "agent types not available yet for agent creation";
-        return nullptr;
-    }
-
-    if(!agentType)
-    {
-        return nullptr;
-    }
+    LOG_INTERN(LogLevel::DebugCore) << "instantiate agent (id " << id << ")";
 
     Agent *agent = new (std::nothrow) Agent(id,
-                                            agentType,
+                                            agentBlueprint,
                                             spawnTime,
                                             world);
     if(!agent)
@@ -137,11 +101,11 @@ Agent *AgentFactory::CreateAgent(int id,
         return nullptr;
     }
 
-    if(!agent->Instantiate(agentSpawnItem,
-                           spawnItemParameter,
+    if(!agent->Instantiate(agentBlueprint,
                            modelBinding,
                            stochastics,
-                           observationNetwork))
+                           observationNetwork,
+                           eventNetwork))
     {
         LOG_INTERN(LogLevel::Error) << "agent could not be instantiated";
         delete agent;
@@ -159,19 +123,9 @@ Agent *AgentFactory::CreateAgent(int id,
     return agent;
 }
 
-void AgentFactory::ClearAgentTypes()
-{
-    for(auto &item : agentTypes)
-    {
-        delete item.second;
-    }
-
-    agentTypes.clear();
-}
-
 bool AgentFactory::ConnectAgentLinks(Agent *agent)
 {
-    for(const std::pair<const int, Component*> &itemComponent : agent->GetComponents())
+    for(const std::pair<const std::string, ComponentInterface*> &itemComponent : agent->GetComponents())
     {
         if(!itemComponent.second)
         {
@@ -187,7 +141,7 @@ bool AgentFactory::ConnectAgentLinks(Agent *agent)
                 return false;
             }
 
-            Component *source= channel->GetSource();
+            ComponentInterface *source = channel->GetSource();
             if(!source)
             {
                 return false;
@@ -200,10 +154,10 @@ bool AgentFactory::ConnectAgentLinks(Agent *agent)
             }
 
             // channel buffer is now attached to channel and will be released when deleting the agent
-            for(const std::tuple<int, Component*> &item : channel->GetTargets())
+            for(const std::tuple<int, ComponentInterface*> &item : channel->GetTargets())
             {
                 int targetLinkId = std::get<static_cast<size_t>(Channel::TargetLinkType::LinkId)>(item);
-                Component *targetComponent = std::get<static_cast<size_t>(Channel::TargetLinkType::Component)>(item);
+                ComponentInterface *targetComponent = std::get<static_cast<size_t>(Channel::TargetLinkType::Component)>(item);
                 targetComponent->SetInputBuffer(targetLinkId, buffer);
             }
         }

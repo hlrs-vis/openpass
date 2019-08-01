@@ -1,24 +1,25 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  stochasticsBinding.h
+//! @file  StochasticsBinding.h
 //! @brief This file contains the interface to the stochastics library.
 //-----------------------------------------------------------------------------
 
-#ifndef STOCHASTICSBINDING_H
-#define STOCHASTICSBINDING_H
+#pragma once
 
-#include "runConfig.h"
-#include "callbacks.h"
-#include "stochasticsInterface.h"
+#include <memory>
+
+#include "CoreFramework/CoreShare/callbacks.h"
+#include "Interfaces/stochasticsInterface.h"
 
 namespace SimulationSlave
 {
@@ -29,8 +30,7 @@ class FrameworkConfig;
 class StochasticsBinding
 {
 public:
-    StochasticsBinding(const FrameworkConfig *frameworkConfig,
-                      SimulationCommon::Callbacks *callbacks);
+    StochasticsBinding(CallbackInterface *callbacks);
     StochasticsBinding(const StochasticsBinding&) = delete;
     StochasticsBinding(StochasticsBinding&&) = delete;
     StochasticsBinding& operator=(const StochasticsBinding&) = delete;
@@ -38,13 +38,13 @@ public:
     virtual ~StochasticsBinding();
 
     //-----------------------------------------------------------------------------
-    //! Gets the stochastics instance library and stores it,
+    //! Gets the stochastics library and stores it,
     //! then creates a new stochasticsInterface of the library.
     //!
-    //! @param[in]  stochasticsInstance stochastics instance that is instantiated
+    //! @param[in]  libraryPath         Path of the library
     //! @return                         StochasticsInterface created from the library
     //-----------------------------------------------------------------------------
-    StochasticsInterface *Instantiate(SimulationCommon::RunConfig::StochasticsInstance *stochasticsInstance);
+    StochasticsInterface *Instantiate(std::string libraryPath);
 
     //-----------------------------------------------------------------------------
     //! Unloads the stochasticsInterface binding by deleting the library.
@@ -52,11 +52,10 @@ public:
     void Unload();
 
 private:
-    const FrameworkConfig *frameworkConfig;
-    StochasticsLibrary *library = nullptr;
-    SimulationCommon::Callbacks *callbacks;
+    std::shared_ptr<StochasticsLibrary> library = nullptr;
+    CallbackInterface *callbacks {nullptr};
 };
 
 } // namespace SimulationSlave
 
-#endif // STOCHASTICSBINDING_H
+

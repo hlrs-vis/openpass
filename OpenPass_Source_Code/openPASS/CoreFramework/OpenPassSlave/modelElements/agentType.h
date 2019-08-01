@@ -1,24 +1,23 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  agentType.h
+//! @file  AgentType.h
 //! @brief This file contains the internal representation of an agent type as
 //!        given by the configuration.
 //-----------------------------------------------------------------------------
 
-#ifndef AGENTTYPE_H
-#define AGENTTYPE_H
+#pragma once
 
-#include <map>
-#include <list>
+#include "Interfaces/agentTypeInterface.h"
 
 namespace SimulationSlave
 {
@@ -26,31 +25,23 @@ namespace SimulationSlave
 class ComponentType;
 class ChannelType;
 
-class AgentType
+class AgentType : public AgentTypeInterface
 {
 public:
-    AgentType(int id, int priority);
-    AgentType(const AgentType&) = delete;
-    AgentType(AgentType&&) = delete;
-    AgentType& operator=(const AgentType&) = delete;
-    AgentType& operator=(AgentType&&) = delete;
-    virtual ~AgentType();
+    ~AgentType() = default;
 
-    bool AddChannel(int id);
-    bool AddComponent(int id, ComponentType *component);
-    int GetAgentPriority() const;
-    const std::list<int> &GetChannels() const;
-    const std::map<int, ComponentType*> &GetComponents() const;
-    int GetId() const;
+    virtual bool AddChannel(int id);
+    virtual bool AddComponent(std::shared_ptr<ComponentType> component);
+
+    //Getter
+    virtual const std::list<int> &GetChannels() const;
+    virtual const std::map<std::string, std::shared_ptr<ComponentType>> &GetComponents() const;
 
 private:
-    // components, etc. can not be stored in one global map due to redundant ids (same id could be used within different agents)
-    int id;
-    int priority;
     std::list<int> channels;
-    std::map<int, ComponentType*> components;
+    std::map<std::string, std::shared_ptr<ComponentType>> components;
 };
 
 } // namespace SimulationSlave
 
-#endif // AGENTTYPE_H
+

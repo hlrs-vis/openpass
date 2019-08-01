@@ -1,18 +1,20 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 #include <iostream>
 #include <algorithm>
+
 #include "agent.h"
 #include "channel.h"
-#include "log.h"
+#include "CoreFramework/CoreShare/log.h"
 
 namespace SimulationSlave
 {
@@ -35,7 +37,7 @@ Agent *Channel::GetAgent() const
     return agent;
 }
 
-bool Channel::SetSource(Component *source, int sourceLinkId)
+bool Channel::SetSource(ComponentInterface *source, int sourceLinkId)
 {
     if(this->source || Undefined != this->sourceLinkId)
     {
@@ -61,7 +63,7 @@ bool Channel::AttachSourceBuffer(ChannelBuffer *buffer)
     return true;
 }
 
-bool Channel::AddTarget(Component *target, int targetLinkId)
+bool Channel::AddTarget(ComponentInterface *target, int targetLinkId)
 {
     for(auto &item : targets)
     {
@@ -77,14 +79,14 @@ bool Channel::AddTarget(Component *target, int targetLinkId)
     return true;
 }
 
-Component *Channel::GetSource() const
+ComponentInterface *Channel::GetSource() const
 {
     return source;
 }
 
-const std::list<std::tuple<int, Component*>> &Channel::GetTargets() const
+const std::list<std::tuple<int, ComponentInterface *> > &Channel::GetTargets() const
 {
-                                             return targets;
+    return targets;
 }
 
 } // namespace SimulationSlave

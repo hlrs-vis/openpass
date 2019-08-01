@@ -1,12 +1,13 @@
-/*********************************************************************
-* Copyright (c) 2016 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 
 //-----------------------------------------------------------------------------
@@ -663,15 +664,13 @@ public:
         Q_UNUSED(laneSpeedDifferential);
         return false;
     } //dummy
-    void ObtainGroundTruthObjectLaneExistences(AreaOfInterest aoi,
-                                               AgentInterface *&agentAOI,
+    void ObtainGroundTruthObjectLaneExistences(AgentInterface *&agent,
                                                bool &hasRightLane,
                                                bool &hasLeftLane,
                                                double PreviewDistance,
                                                double _carLengthEffective)
     {
-        Q_UNUSED(aoi);
-        Q_UNUSED(agentAOI);
+        Q_UNUSED(agent);
         Q_UNUSED(hasRightLane);
         Q_UNUSED(hasLeftLane);
         Q_UNUSED(PreviewDistance);

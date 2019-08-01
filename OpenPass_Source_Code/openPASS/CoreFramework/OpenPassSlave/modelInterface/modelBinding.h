@@ -1,42 +1,41 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  modelBinding.h
+//! @file  ModelBinding.h
 //! @brief This file contains the interface to the model libraries.
 //-----------------------------------------------------------------------------
 
-#ifndef MODELBINDING_H
-#define MODELBINDING_H
+#pragma once
 
 #include <map>
 #include <string>
-#include "modelInterface.h"
-#include "callbacks.h"
-#include "log.h"
+#include "Interfaces/modelInterface.h"
+#include "Interfaces/componentInterface.h"
+#include "CoreFramework/CoreShare/callbacks.h"
+#include "CoreFramework/CoreShare/log.h"
 
 namespace SimulationSlave
 {
 
 class ModelLibrary;
-class Component;
 class Agent;
 class ComponentType;
-class ObservationNetwork;
-class FrameworkConfig;
+class ObservationNetworkInterface;
 
 class ModelBinding
 {
 public:
-    ModelBinding(const FrameworkConfig *frameworkConfig,
-                 SimulationCommon::Callbacks *callbacks);
+    ModelBinding(const std::string libraryPath,
+                 CallbackInterface *callbacks);
     ModelBinding(const ModelBinding&) = delete;
     ModelBinding(ModelBinding&&) = delete;
     ModelBinding& operator=(const ModelBinding&) = delete;
@@ -60,12 +59,13 @@ public:
     //!
     //! @return                         The instantiated component
     //-----------------------------------------------------------------------------
-    Component *Instantiate(ComponentType *componentType,
-                           int componentId,
+    ComponentInterface *Instantiate(std::shared_ptr<ComponentType> componentType,
+                           std::string componentName,
                            StochasticsInterface *stochastics,
                            WorldInterface *world,
-                           ObservationNetwork *observationNetwork,
-                           Agent *agent);
+                           ObservationNetworkInterface *observationNetwork,
+                           Agent *agent,
+                           EventNetworkInterface *eventNetwork);
 
     //-----------------------------------------------------------------------------
     //! Unloads the model library by deleting the stored libraries
@@ -73,11 +73,11 @@ public:
     void Unload();
 
 private:
-    const FrameworkConfig *frameworkConfig;
+    const std::string libraryPath;
     std::map<std::string, ModelLibrary*> modelLibraries;
-    SimulationCommon::Callbacks *callbacks;
+    CallbackInterface *callbacks {nullptr};
 };
 
 } // namespace SimulationSlave
 
-#endif // MODELBINDING_H
+

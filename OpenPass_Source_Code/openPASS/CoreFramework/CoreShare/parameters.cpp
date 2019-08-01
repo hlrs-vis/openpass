@@ -1,150 +1,82 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 #include "parameters.h"
 #include "log.h"
+#include <memory>
 
-namespace SimulationCommon
-{
+namespace SimulationCommon {
 
-Parameters::~Parameters()
+template <typename Map, typename Value >
+bool CheckedInsert(Map& map, std::string name, Value& value)
 {
-    for(std::pair<const int, const std::vector<double>*> &item : parametersDoubleVector)
+    auto inserted = std::get<1>(map.try_emplace(name, value));
+    if (!inserted)
     {
-        delete item.second;
+        LOG_INTERN(LogLevel::Error) << "trying to insert parameter " + name + " twice, must be unique";
     }
-    parametersDoubleVector.clear();
-
-    for(std::pair<const int, const std::vector<int>*> &item : parametersIntVector)
-    {
-        delete item.second;
-    }
-    parametersIntVector.clear();
-
-    for(std::pair<const int, const std::vector<bool>*> &item : parametersBoolVector)
-    {
-        delete item.second;
-    }
-    parametersBoolVector.clear();
+    return inserted;
 }
 
-bool Parameters::AddParameterDouble(int name, double value)
+bool Parameters::AddParameterDouble(std::string name, double value)
 {
-    if(!parametersDouble.insert({name, value}).second)
-    {
-        LOG_INTERN(LogLevel::Warning) << "parameter names must be unique";
-        return false;
-    }
-
-    return true;
+    return CheckedInsert(parametersDouble, name, value);
 }
 
-bool Parameters::AddParameterInt(int name, int value)
+bool Parameters::AddParameterInt(std::string name, int value)
 {
-    if(!parametersInt.insert({name, value}).second)
-    {
-        LOG_INTERN(LogLevel::Warning) << "parameter names must be unique";
-        return false;
-    }
-
-    return true;
+    return CheckedInsert(parametersInt, name, value);
 }
 
-bool Parameters::AddParameterBool(int name, bool value)
+bool Parameters::AddParameterBool(std::string name, bool value)
 {
-    if(!parametersBool.insert({name, value}).second)
-    {
-        LOG_INTERN(LogLevel::Warning) << "parameter names must be unique";
-        return false;
-    }
-
-    return true;
+    return CheckedInsert(parametersBool, name, value);
 }
 
-bool Parameters::AddParameterDoubleVector(int name, const std::vector<double> *value)
+bool Parameters::AddParameterDoubleVector(std::string name, const std::vector<double> value)
 {
-    if(!parametersDoubleVector.insert({name, value}).second)
-    {
-        LOG_INTERN(LogLevel::Warning) << "parameter names must be unique";
-        return false;
-    }
-
-    return true;
+    return CheckedInsert(parametersDoubleVector, name, value);
 }
 
-bool Parameters::AddParameterIntVector(int name, const std::vector<int> *value)
+bool Parameters::AddParameterIntVector(std::string name, const std::vector<int> value)
 {
-    if(!parametersIntVector.insert({name, value}).second)
-    {
-        LOG_INTERN(LogLevel::Warning) << "parameter names must be unique";
-        return false;
-    }
-
-    return true;
+    return CheckedInsert(parametersIntVector, name, value);
 }
 
-bool Parameters::AddParameterBoolVector(int name, const std::vector<bool> *value)
+bool Parameters::AddParameterBoolVector(std::string name, const std::vector<bool> value)
 {
-    if(!parametersBoolVector.insert({name, value}).second)
-    {
-        LOG_INTERN(LogLevel::Warning) << "parameter names must be unique";
-        return false;
-    }
-
-    return true;
+    return CheckedInsert(parametersBoolVector, name, value);
 }
 
-bool Parameters::AddParameterString(int name, const std::string &value)
+bool Parameters::AddParameterString(std::string name, const std::string& value)
 {
-    if(!parametersString.insert({name, value}).second)
-    {
-        LOG_INTERN(LogLevel::Warning) << "parameter names must be unique";
-        return false;
-    }
-
-    return true;
+    return CheckedInsert(parametersString, name, value);
 }
 
-const std::map<int, double> &Parameters::GetParametersDouble() const
+bool Parameters::AddParameterStringVector(std::string name, const std::vector<std::string> value)
 {
-    return parametersDouble;
+    return CheckedInsert(parametersStringVector, name, value);
 }
 
-const std::map<int, int> &Parameters::GetParametersInt() const
+bool Parameters::AddParameterNormalDistribution(std::string name,
+        const StochasticDefintions::NormalDistributionParameter value)
 {
-    return parametersInt;
+    return CheckedInsert(parametersNormalDistribution, name, value);
 }
 
-const std::map<int, bool> &Parameters::GetParametersBool() const
+ParameterInterface& Parameters::InitializeListItem(std::string key)
 {
-    return parametersBool;
-}
-
-const std::map<int, const std::string> &Parameters::GetParametersString() const
-{
-    return parametersString;
-}
-
-const std::map<int, const std::vector<double>*> &Parameters::GetParametersDoubleVector() const
-{
-    return parametersDoubleVector;
-}
-
-const std::map<int, const std::vector<int>*> &Parameters::GetParametersIntVector() const
-{
-    return parametersIntVector;
-}
-
-const std::map<int, const std::vector<bool>*> &Parameters::GetParametersBoolVector() const
-{
-    return parametersBoolVector;
+    auto& element = parameterLists[key];
+    element.emplace_back(std::make_shared<ModelParameters>());
+    return *element.back().get();
 }
 
 } // namespace SimulationCommon

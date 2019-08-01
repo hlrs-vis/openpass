@@ -1,555 +1,627 @@
-/******************************************************************************
-* Copyright (c) 2018 in-tech GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2018 AMFD GmbH
+*               2016 ITK Engineering GmbH
 *
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* https://www.eclipse.org/legal/epl-2.0/
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-******************************************************************************/
+*******************************************************************************/
 
 #include <cassert>
 #include <algorithm>
-
 #include "AgentAdapter.h"
-#include "globalDefinitions.h"
-#include "worldInterface.h"
-#include "WorldData.h"
+#include "Common/globalDefinitions.h"
 
 namespace loc = World::Localization;
 
-AgentAdapter::AgentAdapter(WorldInterface *world, const CallbackInterface *callbacks) :
+AgentAdapter::AgentAdapter(WorldInterface* world,
+                           const CallbackInterface* callbacks,
+                           World::Localization::Cache& localizationCache) :
+    WorldObjectAdapter{static_cast<OWL::Interfaces::WorldData*>(world->GetWorldData())->AddMovingObject(static_cast<void*>(this))},
     world{world},
-    worldData{static_cast<OWL::WorldData*>(world->GetWorldData())},
     callbacks{callbacks},
-    locator{static_cast<OWL::WorldData*>(world->GetWorldData())->GetRoads()}
+    worldData{static_cast<OWL::Interfaces::WorldData*>(world->GetWorldData())},
+    locator{baseTrafficObject, *worldData, localizationCache}
 {
 }
 
 AgentAdapter::~AgentAdapter()
 {
-    if(carInfo) {
-        delete carInfo;
-        carInfo = nullptr;
-    }
-}
-
-void AgentAdapter::UpdateCollision(int collisionPartnerId)
-{
-    auto findIter = std::find_if(idsCollisionPartners.begin(), idsCollisionPartners.end(),
-                                 [collisionPartnerId](const int &idInList)
-    {
-        return collisionPartnerId == idInList;
-    });
-    if (findIter == idsCollisionPartners.end())
-    {
-        // not in list yet
-        idsCollisionPartners.push_back(collisionPartnerId);
-    }
-}
-
-void AgentAdapter::UpdateCollision(int collisionPartnerId, int collisionDataId, void *collisionData)
-{
-    // dummy
-}
-
-IndicatorState AgentAdapter::GetIndicatorState()
-{
-    // TODO
-    return IndicatorState::IndicatorState_Off;
-}
-
-void AgentAdapter::SetIndicatorState(IndicatorState indicatorState)
-{
-    // TODO
-}
-
-AgentInterface* AgentAdapter::GetAgentBehind(int laneId) const
-{
-    // TODO
-    return nullptr;
-}
-
-CarInfo *AgentAdapter::GenerateCarInfo()
-{
-    // TODO
-    return nullptr;
-}
-
-void AgentAdapter::SetAccelerationIntention(double accelerationIntention)
-{
-    world->QueueAgentUpdate([this](double arg)
-    {
-        UpdateAccelerationIntention(arg);
-    },
-    accelerationIntention);
-}
-
-double AgentAdapter::GetAccelerationIntention() const
-{
-    return accelerationIntention;
-}
-
-void AgentAdapter::SetDecelerationIntention(double decelerationIntention)
-{
-    world->QueueAgentUpdate([this](double arg)
-    {
-        UpdateDecelerationIntention(arg);
-    },
-    decelerationIntention);
-}
-
-double AgentAdapter::GetDecelerationIntention() const
-{
-    return decelerationIntention;
-}
-
-void AgentAdapter::SetAngleIntention(double angleIntention)
-{
-    world->QueueAgentUpdate([this](double arg)
-    {
-        UpdateAngleIntention(arg);
-    },
-    angleIntention);
-}
-
-double AgentAdapter::GetAngleIntention() const
-{
-    return angleIntention;
-}
-
-void AgentAdapter::SetCollisionState(bool collisionState)
-{
-    world->QueueAgentUpdate([this](bool arg)
-    {
-        UpdateCollisionState(arg);
-    },
-    collisionState);
-}
-
-bool AgentAdapter::GetCollisionState() const
-{
-    return collisionState;
-}
-
-std::vector<void *> AgentAdapter::GetCollisionData(int collisionPartnerId, int collisionDataId) const
-{
-    Q_UNUSED(collisionPartnerId);
-    Q_UNUSED(collisionDataId);
-
-    return std::vector<void*>();
-}
-const OWL::MovingObject* AgentAdapter::GetBaseTrafficObject() const
-{
-    return baseTrafficObject;
 }
 
 bool AgentAdapter::InitAgentParameter(int id,
-                                      int agentTypeId,
                                       int spawnTime,
-                                      const AgentSpawnItem *agentSpawnItem,
-                                      const SpawnItemParameterInterface &spawnItemParameter)
+                                      AgentBlueprintInterface* agentBlueprint)
 {
+    VehicleModelParameters vehicleModelParameters = agentBlueprint->GetVehicleModelParameters();
+    this->vehicleModelParameters = vehicleModelParameters;
+
+    this->vehicleModelType = agentBlueprint->GetVehicleModelName();
+    this->driverProfileName = agentBlueprint->GetDriverProfileName();
+    this->vehicleType = vehicleModelParameters.vehicleType;
     this->id = id;
-    this->vehicleType = agentSpawnItem->GetVehicleType();
+    this->agentCategory = agentBlueprint->GetAgentCategory();
+    this->agentTypeName = agentBlueprint->GetAgentProfileName();
+    this->objectName = agentBlueprint->GetObjectName();
+    this->speedGoalMin = agentBlueprint->GetSpeedGoalMin();
     this->spawnTime = spawnTime;
 
-    if (AgentVehicleType::Car == vehicleType ||
-        AgentVehicleType::Truck == vehicleType ||
-        AgentVehicleType::Motorbike == vehicleType ||
-        AgentVehicleType::Bicycle == vehicleType ||
-        AgentVehicleType::Pedestrian == vehicleType)
-    {
-        baseTrafficObject = worldData->AddMovingObject();
-    }
-    else
+    if (vehicleType != AgentVehicleType::Car &&
+            vehicleType != AgentVehicleType::Truck &&
+            vehicleType != AgentVehicleType::Motorbike &&
+            vehicleType != AgentVehicleType::Bicycle &&
+            vehicleType != AgentVehicleType::Pedestrian)
     {
         LOG(CbkLogLevel::Error, "undefined traffic object type");
         return false;
     }
 
-    if (!baseTrafficObject)
-    {
-        return false;
-    }
-
     // set default values
-    baseTrafficObject->SetHeight(1.0);
-    baseTrafficObject->SetZ(0.0);
-    baseTrafficObject->SetPitch(0.0f);
-    baseTrafficObject->SetRoll(0.0f);
+    GetBaseTrafficObject().SetHeight(1.0);
+    GetBaseTrafficObject().SetZ(0.0);
+    GetBaseTrafficObject().SetPitch(0.0);
+    GetBaseTrafficObject().SetRoll(0.0);
 
-    UpdatePositionX(spawnItemParameter.GetPositionX());
-    UpdatePositionY(spawnItemParameter.GetPositionY());
+
+    UpdateWidth(vehicleModelParameters.width);
+    UpdateLength(vehicleModelParameters.length);
+    UpdateDistanceReferencePointToFrontAxle(vehicleModelParameters.distanceReferencePointToFrontAxle);
+    UpdateDistanceReferencePointToLeadingEdge(vehicleModelParameters.distanceReferencePointToLeadingEdge);
+    UpdateYaw(agentBlueprint->GetSpawnParameter().yawAngle); //Yaw is needed to calculate velocity
+    UpdatePositionX(agentBlueprint->GetSpawnParameter().positionX);
+    UpdatePositionY(agentBlueprint->GetSpawnParameter().positionY);
     UpdateAccelPedal(0.);
     UpdateBrakePedal(0.);
-    UpdateVelocityX(spawnItemParameter.GetVelocityX());
-    UpdateVelocityY(spawnItemParameter.GetVelocityY());
-    UpdateAccelerationX(spawnItemParameter.GetAccelerationX());
-    UpdateGear(0.);
-    UpdateYaw(spawnItemParameter.GetYawAngle());
+    UpdateVelocity(agentBlueprint->GetSpawnParameter().velocity);
+    UpdateAcceleration(agentBlueprint->GetSpawnParameter().acceleration);
+    UpdateGear(agentBlueprint->GetSpawnParameter().gear);
+    UpdateWeight(vehicleModelParameters.weight);
+    UpdateHeightCOG(vehicleModelParameters.heightCOG);
+    UpdateWheelbase(vehicleModelParameters.wheelbase);
+    UpdateFrictionCoeff(vehicleModelParameters.frictionCoeff);
+    UpdateTrackWidth(vehicleModelParameters.trackwidth);
+    UpdateMomentInertiaRoll(vehicleModelParameters.momentInertiaRoll);
+    UpdateMomentInertiaPitch(vehicleModelParameters.momentInertiaPitch);
+    UpdateMomentInertiaYaw(vehicleModelParameters.momentInertiaYaw);
+    UpdateMaxVelocity(vehicleModelParameters.maxVelocity);
+    UpdateMaxCurvature(vehicleModelParameters.maxCurvature);
 
-    UpdateWidth(agentSpawnItem->GetWidth());
-    UpdateLength(agentSpawnItem->GetLength());
-    UpdateWeight(agentSpawnItem->GetWeight());
-    UpdateHeightCOG(agentSpawnItem->GetHeightCOG());
-    UpdateWheelbase(agentSpawnItem->GetWheelbase());
-    UpdateFrictionCoeff(agentSpawnItem->GetFrictionCoeff());
-    UpdateTrackWidth(agentSpawnItem->GetTrackWidth());
-    UpdateMomentInertiaRoll(agentSpawnItem->GetMomentInertiaRoll());
-    UpdateMomentInertiaPitch(agentSpawnItem->GetMomentInertiaPitch());
-    UpdateMomentInertiaYaw(agentSpawnItem->GetMomentInertiaYaw());
-    UpdateMaxVelocity(70.);
-    UpdateMaxCurvature(0.2);
-    UpdateDistanceReferencePointToFrontAxle(agentSpawnItem->GetDistanceCOGtoFrontAxle());   // TODO corrections
-    UpdateDistanceReferencePointToLeadingEdge(agentSpawnItem->GetDistanceCOGtoLeadingEdge());
+    SetSensorParameters(agentBlueprint->GetSensorParameters());
 
+    // spawn tasks are executed before any other task types within current scheduling time
+    // other task types will have a consistent view of the world
     // calculate initial position
-    locator.SetBaseTrafficObject(baseTrafficObject);
     Locate();
 
     return true;
 }
 
+bool AgentAdapter::Update()
+{
+    if (GetVelocity() == 0.0)
+    {
+        return true;
+    }
+    boundingBoxNeedsUpdate = true;
+
+    return Locate();
+}
+
+void AgentAdapter::SetBrakeLight(bool brakeLightStatus)
+{
+    GetBaseTrafficObject().SetBrakeLightState(brakeLightStatus);
+}
+
+bool AgentAdapter::GetBrakeLight() const
+{
+    return GetBaseTrafficObject().GetBrakeLightState();
+}
+
 bool AgentAdapter::Locate()
 {
-    locator.Locate();
+    // reset on-demand values
+    remainders.clear();
+    boundaryPoints.clear();
 
-    frontMainLaneId = locator.GetMainLaneId(World::Localization::Reference::Front);
-    rearMainLaneId = locator.GetMainLaneId(World::Localization::Reference::Rear);
-    frontLaneCoverages = locator.GetLaneCoverages(World::Localization::Reference::Front);
-    rearLaneCoverages= locator.GetLaneCoverages(World::Localization::Reference::Rear);
-    completlyInWorld = locator.AllPointsLocated();
-    roadPos = locator.GetReferencePoint();
-    remainder = locator.GetLaneRemainder();
-
-    if(completlyInWorld == false) {
-        LOG(CbkLogLevel::Warning, "Locate | Agent " + std::to_string(GetAgentId()) + " not completly covered by world");
-    }
-
-    if(frontLaneCoverages.size() == 1 && frontLaneCoverages[frontMainLaneId] < 1) {
-        LOG(CbkLogLevel::Warning, "Locate | Front main lane coverage below 1mm");
-    }
-
-    if(rearLaneCoverages.size() == 1 && rearLaneCoverages[rearMainLaneId] < 1) {
-        LOG(CbkLogLevel::Warning, "Locate | Rear main lane coverage below 1mm");
-    }
-
-    if(frontLaneCoverages.size() == 0 && rearLaneCoverages.size() == 0) {
-        LOG(CbkLogLevel::Warning, "Locate | No sections covered by agent");
+    locateResult = locator.Locate(GetBoundingBox2D(), GetLength() + GetWidth());
+    if (!locateResult.isLocalizable)
+    {
         return false;
     }
 
+    GetBaseTrafficObject().SetRoadCoordinate(locateResult.globalRoadPosition.roadPosition);
     return true;
 }
 
-bool AgentAdapter::Unlocate()
+void AgentAdapter::Unlocate()
 {
-    locator.Unlocate();
-
-    return true;
+    if (GetVelocity() != 0.0)
+    {
+        locator.Unlocate();
+    }
 }
 
-bool AgentAdapter::IsAgentInWorld()
+AgentCategory AgentAdapter::GetAgentCategory() const
 {
-    return completlyInWorld;
+    return agentCategory;
+}
+
+std::string AgentAdapter::GetAgentTypeName() const
+{
+    return agentTypeName;
+}
+
+void AgentAdapter::SetIndicatorState(IndicatorState indicatorState)
+{
+    GetBaseTrafficObject().SetIndicatorState(indicatorState);
+}
+
+IndicatorState AgentAdapter::GetIndicatorState() const
+{
+    return GetBaseTrafficObject().GetIndicatorState();
+}
+
+std::string AgentAdapter::GetRoadId(MeasurementPoint mp) const
+{
+    if (mp == MeasurementPoint::Front)
+    {
+        return locateResult.mainRoadId;
+    }
+    if (mp == MeasurementPoint::Reference)
+    {
+        return locateResult.globalRoadPosition.roadId;
+    }
+    if (mp == MeasurementPoint::Rear)
+    {
+        throw std::invalid_argument("measurement point not valid");
+    }
+
+    return {};
+}
+
+int AgentAdapter::GetMainLaneId(MeasurementPoint mp) const
+{
+    if (mp == MeasurementPoint::Front)
+    {
+        return locateResult.mainLaneId;
+    }
+    if (mp == MeasurementPoint::Reference)
+    {
+        return locateResult.globalRoadPosition.laneId;
+    }
+    if (mp == MeasurementPoint::Rear)
+    {
+        throw std::invalid_argument("measurement point not valid");
+    }
+
+    return -999;
+}
+
+int AgentAdapter::GetLaneIdLeft() const
+{
+    return locateResult.globalRoadPosition.laneId + 1;
+}
+
+int AgentAdapter::GetLaneIdRight() const
+{
+    return locateResult.globalRoadPosition.laneId - 1;
+}
+
+int AgentAdapter::GetLaneIdFromRelative(int relativeLaneId) const
+{
+    switch (relativeLaneId)
+    {
+    case 0:
+        return GetMainLaneId();
+    case 1:
+        return GetLaneIdLeft();
+    case -1:
+        return GetLaneIdRight();
+    default:
+        throw std::invalid_argument("relativeLaneId not supported");
+    }
+}
+
+int AgentAdapter::GetNumberOfLanes()
+{
+    return world->GetNumberOfLanes(GetRoadId(), GetDistanceToStartOfRoad());
+}
+
+bool AgentAdapter::IsAgentInWorld() const
+{
+    return locateResult.isLocalizable;
 }
 
 void AgentAdapter::SetPosition(Position pos)
 {
     SetPositionX(pos.xPos);
     SetPositionY(pos.yPos);
-    SetYawAngle(pos.yawAngle);
-}
-
-double AgentAdapter::GetDistanceToStartOfRoad() const
-{
-    return GetDistanceToStartOfRoad(MeasurementPoint::Front);
+    SetYaw(pos.yawAngle);
 }
 
 double AgentAdapter::GetDistanceToStartOfRoad(MeasurementPoint mp) const
 {
-    if (mp == MeasurementPoint::Front) {
-        return roadPos.s + WorldObjectCommon::GetFrontDeltaS(GetLength(), GetWidth(), roadPos.hdg, distanceReferencePointToLeadingEdge);
+    if (mp == MeasurementPoint::Front)
+    {
+        return GetBaseTrafficObject().GetDistance(OWL::MeasurementPoint::RoadEnd);
     }
-    if (mp == MeasurementPoint::Rear) {
-        return roadPos.s - WorldObjectCommon::GetRearDeltaS(GetLength(), GetWidth(), roadPos.hdg, distanceReferencePointToLeadingEdge);
+    if (mp == MeasurementPoint::Rear)
+    {
+        return GetBaseTrafficObject().GetDistance(OWL::MeasurementPoint::RoadStart);
     }
-    if (mp == MeasurementPoint::Reference) {
-        auto value = roadPos.s;
-        //LOG(CbkLogLevel::Warning, "GetDistanceToStartOfRoad(Ref)   | Agent " + std::to_string(GetAgentId()) + ", value: " + std::to_string(value));
+    if (mp == MeasurementPoint::Reference)
+    {
+        auto value =  GetRoadPosition().s;
         return value;
     }
 
     throw std::invalid_argument("measurement point not within valid bounds");
 }
 
-double AgentAdapter::GetLaneWidth()
+double AgentAdapter::GetVelocity(VelocityScope velocityScope) const
 {
-    // TODO: use locator information
-    //OWL::CLane& lane = worldData->GetLaneById(frontMainLaneId);
+    if (velocityScope == VelocityScope::Absolute)
+    {
+        return GetBaseTrafficObject().GetAbsVelocityDouble();
+    }
+    if (velocityScope == VelocityScope::Lateral)
+    {
+        return GetBaseTrafficObject().GetAbsVelocityDouble() * std::sin(GetBaseTrafficObject().GetRoadCoordinate().hdg);
+    }
+    if (velocityScope == VelocityScope::Longitudinal)
+    {
+        return GetBaseTrafficObject().GetAbsVelocityDouble() * std::cos(GetBaseTrafficObject().GetRoadCoordinate().hdg);
+    }
+    if (velocityScope == VelocityScope::DirectionX)
+    {
+        return GetBaseTrafficObject().GetAbsVelocity().vx;
+    }
+    if (velocityScope == VelocityScope::DirectionY)
+    {
+        return GetBaseTrafficObject().GetAbsVelocity().vy;
+    }
 
-    if (baseTrafficObject->GetLaneAssignments().empty())
+    throw std::invalid_argument("velocity scope not within valid bounds");
+}
+
+double AgentAdapter::GetLaneWidth(int relativeLane, double distance) const
+{
+    return world->GetLaneWidth(GetRoadId(), GetLaneIdFromRelative(relativeLane), GetRoadPosition().s + distance);
+}
+
+double AgentAdapter::GetLaneWidthRightDrivingAndStopLane()
+{
+    if (!IsLaneDrivingLane(GetLaneIdRight()) && !IsLaneStopLane(GetLaneIdRight()))
+    {
+        return 0.0;
+    }
+    return world->GetLaneWidth(GetRoadId(), GetLaneIdRight(), GetDistanceToStartOfRoad());
+}
+
+double AgentAdapter::GetLaneCurvature(int relativeLane, double distance)
+{
+    return world->GetLaneCurvature(GetRoadId(), GetLaneIdFromRelative(relativeLane), GetRoadPosition().s + distance);
+}
+
+bool AgentAdapter::IsEgoAgent() const
+{
+    return agentCategory == AgentCategory::Ego;
+}
+
+WorldObjectInterface* AgentAdapter::GetObjectInFront(double previewDistance, int relativeLaneId) const
+{
+    return world->GetNextObjectInLane(GetRoadId(), GetLaneIdFromRelative(relativeLaneId), GetBaseTrafficObject().GetDistance(OWL::MeasurementPoint::RoadEnd), previewDistance);
+}
+
+WorldObjectInterface *AgentAdapter::GetObjectBehind(double previewDistance, int relativeLaneId) const
+{
+    return world->GetClosestObjectInUpstream(GetRoadId(), GetLaneIdFromRelative(relativeLaneId), GetBaseTrafficObject().GetDistance(OWL::MeasurementPoint::RoadEnd),  previewDistance);
+}
+
+TrafficObjectInterface* AgentAdapter::GetTrafficObjectInFront(int laneId) const
+{
+    return world->GetNextTrafficObjectInLane(GetRoadId(), laneId,
+            GetBaseTrafficObject().GetDistance(OWL::MeasurementPoint::RoadEnd));
+}
+
+AgentInterface* AgentAdapter::GetAgentInFront(int laneId) const
+{
+    return world->GetNextAgentInLane(GetRoadId(), laneId, GetBaseTrafficObject().GetDistance(OWL::MeasurementPoint::RoadEnd));
+}
+
+std::vector<const TrafficObjectInterface*> AgentAdapter::GetAllTrafficObjectsInFront() const
+{
+    std::vector<const TrafficObjectInterface*> frontTrafficObjects;
+    for (auto laneId : locateResult.frontLaneIds)
+    {
+        const auto trafficObjectInFront = GetTrafficObjectInFront(laneId);
+        if (trafficObjectInFront)
+        {
+            frontTrafficObjects.push_back(trafficObjectInFront);
+        }
+    }
+    return frontTrafficObjects;
+}
+
+std::vector<const WorldObjectInterface*> AgentAdapter::GetAllWorldObjectsInFront() const
+{
+    std::vector<const WorldObjectInterface*> frontObjects;
+    for (auto laneId : locateResult.frontLaneIds)
+    {
+        const auto objectInFront = GetObjectInFront(laneId);
+        if (objectInFront)
+        {
+            frontObjects.push_back(objectInFront);
+        }
+    }
+    return frontObjects;
+}
+
+std::vector<AgentInterface*> AgentAdapter::GetAllAgentsInFront() const
+{
+    std::vector<AgentInterface*> frontAgents;
+    for (auto laneId : locateResult.frontLaneIds)
+    {
+        auto agentInFront = GetAgentInFront(laneId);
+        if (agentInFront)
+        {
+            frontAgents.push_back(agentInFront);
+        }
+    }
+    return frontAgents;
+}
+
+const AgentInterface* AgentAdapter::GetAgentBehind(int laneId) const
+{
+    return world->GetClosestAgentInUpstream(GetRoadId(), laneId,
+                                            GetBaseTrafficObject().GetDistance(OWL::MeasurementPoint::RoadStart));
+}
+
+double AgentAdapter::GetDistanceToObject(const WorldObjectInterface* otherObject) const
+{
+    if (otherObject == nullptr)
     {
         return INFINITY;
     }
 
-    OWL::CLane& lane = *(baseTrafficObject->GetLaneAssignments().front());
+    double distanceIfOtherObjectIsInFront = otherObject->GetDistanceToStartOfRoad(MeasurementPoint::Rear) -
+                                           GetDistanceToStartOfRoad(MeasurementPoint::Front);
+    double distanceIfOtherObjectIsBehind = otherObject->GetDistanceToStartOfRoad(MeasurementPoint::Front) -
+                                          GetDistanceToStartOfRoad(MeasurementPoint::Rear);
 
-    return lane.GetWidth(roadPos.s);
-}
-
-double AgentAdapter::GetLaneWidthLeft()
-{
-    OWL::CLane& lane = worldData->GetLaneById(frontMainLaneId);
-    OWL::CLane& leftLane = lane.GetLeftLane();
-
-    if (leftLane.Exists())
+    //other object is in front
+    if (distanceIfOtherObjectIsInFront >= 0)
     {
-        // TODO: implement width retrieval
-        //return leftLane.GetWidthAtPosition(...);
-        return 3.5;
+        return distanceIfOtherObjectIsInFront;
     }
-
-    return 0.0;
+    //other object is behind
+    else
+        if (distanceIfOtherObjectIsBehind < 0)
+        {
+            return distanceIfOtherObjectIsBehind;
+        }
+        else
+        {
+            return 0;
+        }
 }
 
-double AgentAdapter::GetLaneWidthRight()
+void AgentAdapter::UpdateCollision(std::pair<ObjectTypeOSI, int> collisionPartner)
 {
-    OWL::CLane& lane = worldData->GetLaneById(frontMainLaneId);
-    OWL::CLane& rightLane = lane.GetRightLane();
-
-    if (rightLane.Exists())
+    auto findIter = std::find_if(collisionPartners.begin(), collisionPartners.end(),
+                                 [collisionPartner](const std::pair<ObjectTypeOSI, int>& storedCollisionPartner)
     {
-        // TODO: implement width retrieval
-        //return rightLane.GetWidthAtPosition(...);
-        return 3.5;
-    }
-
-    return 0.0;
-}
-
-double AgentAdapter::GetCurvature()
-{
-    return GetCurvatureInDistance(0);
-}
-
-double AgentAdapter::GetCurvatureInDistance(double distance)
-{
-    OWL::CLanes& lanes = GetBaseTrafficObject()->GetLaneAssignments();
-
-    // TODO: use lane position instead of road position
-    return lanes.front()->GetCurvature(GetRoadPosition().s + distance);
-}
-
-bool AgentAdapter::IsSpecialAgent() const
-{
-    // TODO: dummy
-    return false;
-}
-
-double AgentAdapter::GetDistanceToFrontAgent(int laneId)
-{
-    const AgentInterface* frontAgent = GetAgentInFront(laneId);
-
-    if (frontAgent == nullptr)
+        return collisionPartner == storedCollisionPartner;
+    });
+    if (findIter == collisionPartners.end())
     {
-        return INFINITY;
+        collisionPartners.push_back(collisionPartner);
     }
-
-    return frontAgent->GetDistanceToStartOfRoad(MeasurementPoint::Rear) - GetDistanceToStartOfRoad(MeasurementPoint::Front);
 }
 
-double AgentAdapter::GetDistanceToFrontAgent()
+const WorldObjectInterface* AgentAdapter::GetNearestObjectInVector(std::vector<const WorldObjectInterface*> objects)
 {
-    std::vector<AgentInterface*> agentsInFront = GetAllAgentsInFront();
+    const WorldObjectInterface* nearestObject = nullptr;
+
+    double minDistance = INFINITY;
+    double currentDistance;
+
+    for (const WorldObjectInterface* object : objects)
+    {
+        currentDistance = GetDistanceToObject(object);
+        if (currentDistance < minDistance)
+        {
+            minDistance = currentDistance;
+            nearestObject = object;
+        }
+    }
+    return nearestObject;
+}
+
+bool AgentAdapter::IsLeavingWorld() const
+{
+    return locateResult.isLeavingWorld;
+}
+
+bool AgentAdapter::IsCrossingLanes() const
+{
+    return locateResult.isCrossingLanes;
+}
+
+std::vector<CommonTrafficSign::Entity> AgentAdapter::GetTrafficSignsInRange(double searchDistance, int relativeLane) const
+{
+    assert(relativeLane != (int)INFINITY);
+    return world->GetTrafficSignsInRange(GetRoadId(), GetLaneIdFromRelative(relativeLane), GetDistanceToStartOfRoad(), searchDistance);
+}
+
+bool AgentAdapter::GetHeadLight() const
+{
+    return GetBaseTrafficObject().GetHeadLight();
+}
+
+bool AgentAdapter::GetHighBeamLight() const
+{
+    return GetBaseTrafficObject().GetHighBeamLight();
+}
+
+double AgentAdapter::GetDistanceToFrontTrafficObject() const
+{
+    std::vector<const TrafficObjectInterface*> trafficObjectsInFront = GetAllTrafficObjectsInFront();
     double minDist = INFINITY;
 
-    for (auto agentInFront : agentsInFront)
+    for (auto trafficObjectInFront : trafficObjectsInFront)
     {
-        double currDist = agentInFront->GetDistanceToStartOfRoad(MeasurementPoint::Rear) - GetDistanceToStartOfRoad(MeasurementPoint::Front);
+        double currDist = trafficObjectInFront->GetDistanceToStartOfRoad() - GetDistanceToStartOfRoad();
         minDist = std::min(minDist, currDist);
     }
 
     return minDist;
 }
 
-double AgentAdapter::GetDistanceToRearAgent(int laneId)
+const Obstruction AgentAdapter::GetObstruction(const WorldObjectInterface& worldObject) const
 {
-    // TODO
-    Q_UNUSED(laneId);
-    return INFINITY;
-}
+    auto leftGap = GetLaneRemainder(Side::Left);
+    auto rightGap = GetLaneRemainder(Side::Right);
 
-double AgentAdapter::GetDistanceToAgent(AgentInterface* otherAgent)
-{
-    // TODO
-    Q_UNUSED(otherAgent);
-    return INFINITY;
-}
-
-template <typename T> struct SearchResult;
-
-template <typename T>
-struct SearchResult<T*>
-{
-    T* storedObject {nullptr};
-    double storedDistance {std::numeric_limits<double>::max()};
-
-    void StoreIfCloser(T* object, double minimumDistance)
+    if (leftGap == 0.0 && rightGap == 0.0)
     {
-        auto rear = object->GetRoadPosition().s + object->GetDistanceReferencePointToLeadingEdge() - object->GetLength();
-        if (rear > minimumDistance && rear < storedDistance)
+        return Obstruction::Invalid();
+    }
+
+    double distanceLeft = 0.0;
+    double distanceRight = 0.0;
+
+    if (leftGap > 0.0)
+    {
+        auto lateralDistance = world->GetLateralDistance(GetBoundaryPoint(Side::Right),
+                               worldObject.GetBoundaryPoint(Side::Left));
+        if (std::get<0>(lateralDistance))
         {
-            storedObject = object;
-            storedDistance = object->GetRoadPosition().s;
+            distanceLeft = std::get<1>(lateralDistance);
         }
-    }
-
-    bool Valid()
-    {
-        return storedObject != nullptr;
-    }
-};
-
-bool AgentAdapter::OnRoad(const OWL::Interfaces::Road& road) const
-{
-    return &baseTrafficObject->GetRoad() == &road;
-}
-
-bool AgentAdapter::OnLane(const OWL::Interfaces::Lane& lane) const
-{
-    return &baseTrafficObject->GetLane() == &lane;
-}
-
-const AgentInterface* AgentAdapter::GetAgentInFront(int laneId) const
-{
-    Q_UNUSED(laneId);
-
-    SearchResult<const AgentInterface*> searchResult;
-
-    for (const auto& agentMapItem : world->GetAgents())
-    {
-        auto agent = static_cast<const AgentAdapter*>(agentMapItem.second);
-
-        if (agent->OnRoad(baseTrafficObject->GetRoad()))
+        else
         {
-            for (auto lane : baseTrafficObject->GetLaneAssignments())
-            {
-                if(agent->OnLane(*lane))
-                {
-                    // TODO: correct call
-                    searchResult.StoreIfCloser(agent, roadPos.s + distanceReferencePointToLeadingEdge);
-                }
-            }
-        }
-
-    }
-
-    //TODO: make return value const AgentInterface* if possible
-    return const_cast<AgentInterface*>(searchResult.storedObject);
-}
-
-std::vector<AgentInterface*> AgentAdapter::GetAllAgentsInFront() const
-{
-    std::vector<AgentInterface*> frontAgents;
-    for(auto coverageItem : frontLaneCoverages)
-    {
-        int laneId = coverageItem.first;
-        auto agentInFront = GetAgentInFront(laneId);
-
-        if(agentInFront != nullptr){
-            frontAgents.push_back((AgentInterface*)agentInFront);
+            return Obstruction::Invalid();
         }
     }
-    return frontAgents;
-}
 
-bool AgentAdapter::ExistLaneLeft()
-{
-    OWL::CLanes& lanes = baseTrafficObject->GetLaneAssignments();
-
-    // NOTE: checks first associated lane only
-    if (lanes.size() > 0)
+    if (rightGap > 0.0)
     {
-        return lanes.front()->GetLeftLane().Exists();
+        auto lateralDistance = world->GetLateralDistance(GetBoundaryPoint(Side::Left),
+                               worldObject.GetBoundaryPoint(Side::Right));
+        if (std::get<0>(lateralDistance))
+        {
+            distanceRight = std::get<1>(lateralDistance);
+        }
+        else
+        {
+            return Obstruction::Invalid();
+        }
     }
 
+    return {distanceLeft, distanceRight};
+}
+
+bool AgentAdapter::ExistsLaneLeft() const
+{
+    return world->ExistsLaneLeft(GetRoadId(), GetMainLaneId(),
+                                 GetBaseTrafficObject().GetDistance(OWL::MeasurementPoint::RoadEnd));
+}
+
+bool AgentAdapter::ExistsLaneRight() const
+{
+    return world->ExistsLaneRight(GetRoadId(), GetMainLaneId(),
+                                  GetBaseTrafficObject().GetDistance(OWL::MeasurementPoint::RoadEnd));
+}
+
+bool AgentAdapter::IsLaneStopLane(int laneId, double distance)
+{
+    const auto& availableStopLanes = world->GetStopLanesAtDistance(GetRoadId(), GetDistanceToStartOfRoad() + distance);
+    for (int lane : availableStopLanes)
+    {
+        if (lane == laneId)
+        {
+            return true;
+        }
+    }
     return false;
 }
 
-bool AgentAdapter::ExistLaneRight()
+bool AgentAdapter::IsLaneDrivingLane(int laneId, double distance)
 {
-    OWL::CLanes& lanes = baseTrafficObject->GetLaneAssignments();
-
-    // NOTE: checks first associated lane only
-    if (lanes.size() > 0)
+    const auto& availableDrivingLanes = world->GetDrivingLanesAtDistance(GetRoadId(), GetDistanceToStartOfRoad() + distance);
+    for (int lane : availableDrivingLanes)
     {
-        return lanes.front()->GetRightLane().Exists();
+        if (lane == laneId)
+        {
+            return true;
+        }
     }
-
     return false;
 }
 
-void AgentAdapter::GetAgentsDirectlyInFront(double PeripheralPreviewDistance,
-                                            AgentInterface *&agentFront,
-                                            AgentInterface *&agentFrontLeft,
-                                            AgentInterface *&agentFrontRight)
+bool AgentAdapter::IsLaneExitLane(int laneId, double distance)
 {
-    Q_UNUSED(PeripheralPreviewDistance);
-    Q_UNUSED(agentFront);
-    Q_UNUSED(agentFrontLeft);
-    Q_UNUSED(agentFrontRight);
-}
-
-double AgentAdapter::GetDistanceToEndOfLane(double sightDistance) const
-{
-    OWL::CLane& lane = worldData->GetLaneById(frontMainLaneId);
-
-    // TODO: use lane position instead if road position
-    double distance = lane.GetLength() - GetRoadPosition().s;
-
-    if (distance > sightDistance)
+    const auto& availableExitLanes = world->GetExitLanesAtDistance(GetRoadId(), GetDistanceToStartOfRoad() + distance);
+    for (int lane : availableExitLanes)
     {
-        return INFINITY;
+        if (lane == laneId)
+        {
+            return true;
+        }
     }
-    else
+    return false;
+}
+
+bool AgentAdapter::IsLaneRamp(int laneId, double distance)
+{
+    const auto& availableRamps = world->GetRampsAtDistance(GetRoadId(), GetDistanceToStartOfRoad() + distance);
+    for (int lane : availableRamps)
     {
-        return distance;
+        if (lane == laneId)
+        {
+            return true;
+        }
     }
+    return false;
 }
 
-void AgentAdapter::ObtainGroundTruthObjectLaneExistences(AreaOfInterest aoi,
-                                                         AgentInterface *&agentAOI,
-                                                         bool &hasRightLane,
-                                                         bool &hasLeftLane,
-                                                         double PreviewDistance,
-                                                         double _carLengthEffective)
+double AgentAdapter::GetDistanceToEndOfLane(double sightDistance, int relativeLane) const
 {
-    Q_UNUSED(aoi);
-    Q_UNUSED(agentAOI);
-    Q_UNUSED(hasRightLane);
-    Q_UNUSED(hasLeftLane);
-    Q_UNUSED(PreviewDistance);
-    Q_UNUSED(_carLengthEffective);
+    return world->GetDistanceToEndOfLane(GetRoadId(), GetLaneIdFromRelative(relativeLane),
+                                         GetBaseTrafficObject().GetDistance(OWL::MeasurementPoint::RoadEnd),
+                                         sightDistance);
 }
 
-void AgentAdapter::SetCarInfo(CarInfo *carInfo)
+std::vector<const WorldObjectInterface*> AgentAdapter::GetObjectsInRange(int relativeLane, double backwardsRange,
+        double forwardRange, MeasurementPoint mp) const
 {
-    delete this->carInfo;
-    this->carInfo = carInfo;
+    return world->GetObjectsInRange(GetRoadId(), GetLaneIdFromRelative(relativeLane), GetDistanceToStartOfRoad(mp) - backwardsRange,
+                                    GetDistanceToStartOfRoad(mp) + forwardRange);
 }
 
-CarInfo *AgentAdapter::GetCarInfo() const
+std::vector<const AgentInterface*> AgentAdapter::GetAgentsInRange(int relativeLane, double backwardsRange,
+        double forwardRange, MeasurementPoint mp) const
 {
-    return carInfo;
+    return world->GetAgentsInRange(GetRoadId(), GetLaneIdFromRelative(relativeLane), GetDistanceToStartOfRoad(mp) - backwardsRange,
+                                   GetDistanceToStartOfRoad(mp) + forwardRange);
 }
 
-double AgentAdapter::GetDistanceToEndOfRamp(int laneId)
+std::vector<const AgentInterface*> AgentAdapter::GetAgentsInRangeAbsolute(int laneId, double minDistance,
+        double maxDistance) const
 {
-    Q_UNUSED(laneId);
+    return world->GetAgentsInRange(GetRoadId(), laneId, minDistance, maxDistance);
+}
 
-    return INFINITY;
+double AgentAdapter::GetDistanceToEndOfRamp(int laneId, double sightDistance) const
+{
+
+    return world->GetDistanceToEndOfRamp(GetRoadId(), laneId,
+                                         GetBaseTrafficObject().GetDistance(OWL::MeasurementPoint::RoadEnd),
+                                         sightDistance);
 }
 
 double AgentAdapter::GetPositionLateral() const
@@ -557,54 +629,66 @@ double AgentAdapter::GetPositionLateral() const
     return GetRoadPosition().t;
 }
 
-// don't take responsibility for extraInfo!
-void AgentAdapter::SetCarInfoExtra(void *extraInfo)
-{
-    Q_UNUSED(extraInfo);
-}
-
-void* AgentAdapter::GetCarInfoExtra()
-{
-    return nullptr;
-}
-
-void AgentAdapter::AssignCarInfo(double accSensDist)
-{
-    CarInfo* carInfo = new CarInfo();
-    SetCarInfo(carInfo);
-}
-
-void AgentAdapter::AssignCarInfoExtra()
-{
-}
-
 double AgentAdapter::GetLaneDirection() const
 {
-    return GetYawAngle() + roadPos.hdg;
+    return world->GetLaneDirection(GetRoadId(), GetMainLaneId(), GetRoadPosition().s);
 }
 
 void AgentAdapter::Unregister() const
 {
+    worldData->RemoveMovingObjectById(GetBaseTrafficObject().GetId());
 }
 
 double AgentAdapter::GetLaneRemainder(Side side) const
 {
-    if (remainder.empty())
+    if (remainders.empty())
     {
-        return 0.0;
+        // Update only on request
+        remainders = locator.GetLaneRemainders();
     }
 
-    if (side == Side::Left)
+    assert(!remainders.empty());
+    return side == Side::Left ? remainders.begin()->left : remainders.rbegin()->right;
+}
+
+GlobalRoadPosition AgentAdapter::GetBoundaryPoint(Side side) const
+{
+    if (boundaryPoints.empty())
     {
-        auto lRemainder = remainder.begin()->second;
-        return std::get<1>(lRemainder.left) ? std::get<0>(lRemainder.left) : 0;
+        // Update only on request
+        boundaryPoints = locator.GetBoundaryPoints();
+    }
+    assert(!boundaryPoints.empty());
+    return side == Side::Left ? *boundaryPoints.begin() : *boundaryPoints.rbegin();
+}
+
+double AgentAdapter::GetDistanceToEndOfExit(int laneID, double sightDistance) const
+{
+    return world->GetDistanceToEndOfExit(GetRoadId(), laneID,
+                                         GetBaseTrafficObject().GetDistance(OWL::MeasurementPoint::RoadEnd),
+                                         sightDistance);
+}
+
+LightState AgentAdapter::GetLightState() const
+{
+
+    if (GetFlasher())
+    {
+        return LightState::Flash;
+    }
+    if (GetHighBeamLight())
+    {
+        return LightState::HighBeam;
+    }
+    if (GetHeadLight())
+    {
+        return LightState::LowBeam;
     }
 
-    if (side == Side::Right)
-    {
-        auto rRemainder = remainder.rbegin()->second;
-        return std::get<1>(rRemainder.right) ? std::get<0>(rRemainder.right) : 0;
-    }
+    return LightState::Off;
+}
 
-    throw std::invalid_argument("side not within valid bounds");
+std::list<int> AgentAdapter::GetSecondaryCoveredLanes()
+{
+    return locateResult.touchedLaneIds;
 }

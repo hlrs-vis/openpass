@@ -15,7 +15,7 @@
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           = "openPASS - PCM Developer Documentation"
+PROJECT_NAME           = "openPASS - Developer Documentation"
 
 
 
@@ -118,7 +118,7 @@ HTML_EXTRA_FILES       = openPASS_Setup_StepByStep.pdf
 # written to the html output directory.
 # This tag requires that the tag GENERATE_HTMLHELP is set to YES.
 
-CHM_FILE               = openPASS_PCM_Delevoper.chm
+CHM_FILE               = openPASS_Delevoper_Docu.chm
 
 
 

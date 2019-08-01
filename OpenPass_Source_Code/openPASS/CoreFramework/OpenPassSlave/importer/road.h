@@ -1,16 +1,16 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* Copyright (c) 2018 in-tech GmbH.
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* https://www.eclipse.org/legal/epl-2.0/
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-******************************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  road.h
+//! @file  Road.h
 //! @brief This file contains the internal representation of a road in a
 //!        scenery.
 //-----------------------------------------------------------------------------
@@ -28,12 +28,13 @@
 #include <algorithm>
 #include <list>
 #include <map>
-#include "log.h"
-#include "roadInterface.h"
+#include "Common/vector2d.h"
+#include "Interfaces/worldInterface.h"
+#include "Interfaces/roadInterface/roadInterface.h"
+#include "CoreFramework/CoreShare/log.h"
+
 #include "road/roadSignal.h"
 #include "road/roadObject.h"
-#include "vector2d.h"
-#include "worldInterface.h"
 
 class Road;
 class RoadLane;
@@ -141,7 +142,7 @@ class RoadLane : public RoadLaneInterface
 public:
     RoadLane(RoadLaneSectionInterface *laneSection,
              int id,
-             RoadLaneTypeType type) :
+             RoadLaneType type) :
         laneSection(laneSection),
         id(id),
         type(type)
@@ -202,7 +203,7 @@ public:
     //!
     //! @return                         RoadLaneTypeType of the road lane
     //-----------------------------------------------------------------------------
-    RoadLaneTypeType GetType() const
+    RoadLaneType GetType() const
     {
         return type;
     }
@@ -212,7 +213,7 @@ public:
     //!
     //! @return                         RoadLaneTypeType of the road lane
     //-----------------------------------------------------------------------------
-    std::list< RoadLaneWidth*> &GetWidths()
+    const std::list< RoadLaneWidth*> &GetWidths() const
     {
         return widths;
     }
@@ -287,7 +288,7 @@ public:
     //!
     //! @return                         List of road marks
     //-----------------------------------------------------------------------------
-    std::list<RoadLaneRoadMark*> &getRoadMarks()
+    const std::list<RoadLaneRoadMark*> &getRoadMarks() const
     {
         return roadMarks;
     }
@@ -295,7 +296,7 @@ public:
 private:
     RoadLaneSectionInterface *laneSection;
     int id;
-    RoadLaneTypeType type;
+    RoadLaneType type;
     // using lists to indicate empty predecessor/successor
     std::list<RoadLaneWidth*> widths;
     std::list<int> predecessor;
@@ -323,7 +324,7 @@ public:
     RoadLaneSection(RoadLaneSection&&) = delete;
     RoadLaneSection& operator=(const RoadLaneSection&) = delete;
     RoadLaneSection& operator=(RoadLaneSection&&) = delete;
-    virtual ~RoadLaneSection();
+    ~RoadLaneSection();
 
 
     //-----------------------------------------------------------------------------
@@ -335,7 +336,7 @@ public:
     //! @return                         False if an error occurred, true otherwise
     //-----------------------------------------------------------------------------
     RoadLane *AddRoadLane(int id,
-                          RoadLaneTypeType type);
+                          RoadLaneType type);
 
     //-----------------------------------------------------------------------------
     //! Returns the stored road lanes as a mapping from their respective IDs.
@@ -1311,21 +1312,21 @@ public:
     //!
     //! @return                         created road signal
     //-----------------------------------------------------------------------------
-    RoadSignal *AddRoadSignal(const RoadSignalSpecification &signal);
+    void AddRoadSignal(const RoadSignalSpecification &signal);
 
     void AddRoadType(const RoadTypeSpecification &info);
 
-    // todo: add documentation
-    RoadObject* AddRoadObject(const RoadObjectSpecification &object);
+    void AddRoadObject(const RoadObjectSpecification &object);
 
-    RoadTypeInformation GetRoadType(double start);
+    RoadTypeInformation GetRoadType(double start) const;
+
 
     //-----------------------------------------------------------------------------
     //! Returns the ID of the road.
     //!
     //! @return                         ID of the road
     //-----------------------------------------------------------------------------
-    const std::string &GetId() const
+    const std::string GetId() const
     {
         return id;
     }
@@ -1335,7 +1336,7 @@ public:
     //!
     //! @return                         list of elevation profiles
     //-----------------------------------------------------------------------------
-    std::list<RoadElevation*> &GetElevations()
+    std::list<RoadElevation*> & GetElevations()
     {
         return elevations;
     }
@@ -1345,7 +1346,17 @@ public:
     //!
     //! @return                         list of lane offsets
     //-----------------------------------------------------------------------------
-    std::list<RoadLaneOffset*> &GetLaneOffsets()
+    std::list<RoadLaneOffset*> & GetLaneOffsets()
+    {
+        return laneOffsets;
+    }
+
+    //-----------------------------------------------------------------------------
+    //! Returns the stored list of lane offsets.
+    //!
+    //! @return                         list of lane offsets
+    //-----------------------------------------------------------------------------
+    const std::list<RoadLaneOffset*> & GetLaneOffsets() const
     {
         return laneOffsets;
     }
@@ -1355,7 +1366,7 @@ public:
     //!
     //! @return                         list of road geometries
     //-----------------------------------------------------------------------------
-    std::list<RoadGeometryInterface*> &GetGeometries()
+    std::list<RoadGeometryInterface*> & GetGeometries()
     {
         return geometries;
     }
@@ -1365,7 +1376,7 @@ public:
     //!
     //! @return                         list of road links
     //-----------------------------------------------------------------------------
-    std::list<RoadLinkInterface*> &GetRoadLinks()
+    std::list<RoadLinkInterface*> & GetRoadLinks()
     {
         return links;
     }
@@ -1375,7 +1386,7 @@ public:
     //!
     //! @return                         list of lane sections
     //-----------------------------------------------------------------------------
-    std::list<RoadLaneSectionInterface*> &GetLaneSections()
+    std::vector<RoadLaneSectionInterface*> & GetLaneSections()
     {
         return laneSections;
     }
@@ -1423,15 +1434,29 @@ public:
         return inDirection;
     }
 
+    virtual void SetJunctionId(const std::string& junctionId)
+    {
+        this->junctionId = junctionId;
+    }
+
+    virtual std::string GetJunctionId()
+    {
+        return junctionId;
+    }
+
+
 private:
     const std::string id;
     std::list<RoadElevation*> elevations;
     std::list<RoadLaneOffset*> laneOffsets;
     std::list<RoadGeometryInterface*> geometries;
     std::list<RoadLinkInterface*> links;
-    std::list<RoadLaneSectionInterface*> laneSections;
+    std::vector<RoadLaneSectionInterface*> laneSections;
     std::vector<RoadSignalInterface*> roadSignals;
     std::vector<RoadObjectInterface*> roadObjects;
     std::vector<RoadTypeSpecification> roadTypes;
     bool inDirection = true;
+    std::string junctionId;
 };
+
+

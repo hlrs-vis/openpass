@@ -1,58 +1,60 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 #include <algorithm>
 #include <iostream>
 #include <cassert>
 #include <climits>
 #include <stdexcept>
-#include "component.h"
-#include "modelLibrary.h"
-#include "modelInterface.h"
-#include "observationInterface.h"
-#include "channelBuffer.h"
-#include "log.h"
 
-namespace SimulationSlave
-{
+#include "component.h"
+#include "CoreFramework/CoreShare/log.h"
+#include "modelLibrary.h"
+#include "Interfaces/modelInterface.h"
+#include "Interfaces/observationInterface.h"
+#include "observationModule.h"
+#include "channelBuffer.h"
+
+namespace SimulationSlave {
 
 Component::~Component()
 {
-    LOG_INTERN(LogLevel::DebugCore) << "deleting component " << id;
+    LOG_INTERN(LogLevel::DebugCore) << "deleting component " << name;
 
     // each component is only responsible for its own output channel buffers
-    for(auto &item : outputChannelBuffers)
+    for (auto& item : outputChannelBuffers)
     {
         delete item.second;
     }
     outputChannelBuffers.clear();
 }
 
-void Component::SetImplementation(ModelInterface *implementation)
+void Component::SetImplementation(ModelInterface* implementation)
 {
     this->implementation = implementation;
 }
 
-Agent *Component::GetAgent() const
+Agent* Component::GetAgent() const
 {
     return agent;
 }
 
-int Component::GetId() const
+std::string Component::GetName() const
 {
-    return id;
+    return name;
 }
 
-bool Component::AddInputLink(Channel *input, int linkId)
+bool Component::AddInputLink(Channel* input, int linkId)
 {
-    if(!inputs.insert({linkId, input}).second)
+    if (!inputs.insert({linkId, input}).second)
     {
         LOG_INTERN(LogLevel::Warning) << "input must be unique";
         return false;
@@ -61,9 +63,9 @@ bool Component::AddInputLink(Channel *input, int linkId)
     return true;
 }
 
-bool Component::AddOutputLink(Channel *output, int linkId)
+bool Component::AddOutputLink(Channel* output, int linkId)
 {
-    if(!outputs.insert({linkId, output}).second)
+    if (!outputs.insert({linkId, output}).second)
     {
         LOG_INTERN(LogLevel::Warning) << "output must be unique";
         return false;
@@ -72,35 +74,32 @@ bool Component::AddOutputLink(Channel *output, int linkId)
     return true;
 }
 
-bool Component::AddObservationLink(ObservationInterface *observation, int linkId)
+void Component::SetObservations(const std::map<int, ObservationModule*>& observations)
 {
-    if(!observations.insert({linkId, observation}).second)
+    for (const auto& item : observations)
     {
-        LOG_INTERN(LogLevel::Warning) << "observation must be unique";
-        return false;
+        this->observations.insert({item.first, item.second->GetImplementation()});
     }
-
-    return true;
 }
 
-std::map<int, Channel*> &Component::GetInputLinks()
+std::map<int, Channel*>& Component::GetInputLinks()
 {
     return inputs;
 }
 
-std::map<int, Channel*> &Component::GetOutputLinks()
+std::map<int, Channel*>& Component::GetOutputLinks()
 {
     return outputs;
 }
 
-const std::map<int, ObservationInterface*> &Component::GetObservationLinks() const
+const std::map<int, ObservationInterface*>& Component::GetObservations() const
 {
     return observations;
 }
 
 bool Component::TriggerCycle(int time)
 {
-    if(!implementation)
+    if (!implementation)
     {
         LOG_INTERN(LogLevel::Warning) << "no implementation available";
         return false;
@@ -110,20 +109,20 @@ bool Component::TriggerCycle(int time)
 
     try
     {
-        if(!modelLibrary->Trigger(implementation, time))
+        if (!modelLibrary->Trigger(implementation, time))
         {
-            LOG_INTERN(LogLevel::Error) << "an error occurred during trigger (component " << GetId() << ")";
+            LOG_INTERN(LogLevel::Error) << "an error occurred during trigger (component " << GetName() << ")";
             return false;
         }
     }
-    catch(std::runtime_error const &ex)
+    catch (std::runtime_error const& ex)
     {
-        LOG_INTERN(LogLevel::Error) << "an error occurred during trigger (component " << GetId() << "): " << ex.what();
+        LOG_INTERN(LogLevel::Error) << "an error occurred during trigger (component " << GetName() << "): " << ex.what();
         return false;
     }
-    catch(...)
+    catch (...)
     {
-        LOG_INTERN(LogLevel::Error) << "an error occurred during trigger (component " << GetId() << ")";
+        LOG_INTERN(LogLevel::Error) << "an error occurred during trigger (component " << GetName() << ")";
         return false;
     }
 
@@ -134,18 +133,18 @@ bool Component::TriggerCycle(int time)
 
 bool Component::AcquireOutputData(int linkId, int time)
 {
-    if(!implementation)
+    if (!implementation)
     {
         LOG_INTERN(LogLevel::Warning) << "no implementation available";
         return false;
     }
 
-    ChannelBuffer *buffer;
+    ChannelBuffer* buffer;
     try
     {
         buffer = outputChannelBuffers.at(linkId);
     }
-    catch(const std::out_of_range&)
+    catch (const std::out_of_range&)
     {
         LOG_INTERN(LogLevel::Error) << "no channel buffer given for output link: " << linkId;
         return false;
@@ -157,20 +156,23 @@ bool Component::AcquireOutputData(int linkId, int time)
 
     try
     {
-        if(!modelLibrary->UpdateOutput(implementation, linkId, data, time))
+        if (!modelLibrary->UpdateOutput(implementation, linkId, data, time))
         {
-            LOG_INTERN(LogLevel::Error) << "an error occurred during update of output data for link " << linkId << " (component " << GetId() << ")";
+            LOG_INTERN(LogLevel::Error) << "an error occurred during update of output data for link " << linkId << " (component " <<
+                                        GetName() << ")";
             return false;
         }
     }
-    catch(std::runtime_error const &ex)
+    catch (std::runtime_error const& ex)
     {
-        LOG_INTERN(LogLevel::Error) << "an error occurred during update of output data for link " << linkId << " (component " << GetId() << "): " << ex.what();
+        LOG_INTERN(LogLevel::Error) << "an error occurred during update of output data for link " << linkId << " (component " <<
+                                    GetName() << "): " << ex.what();
         return false;
     }
-    catch(...)
+    catch (...)
     {
-        LOG_INTERN(LogLevel::Error) << "an error occurred during update of output data for link " << linkId << " (component " << GetId() << ")";
+        LOG_INTERN(LogLevel::Error) << "an error occurred during update of output data for link " << linkId << " (component " <<
+                                    GetName() << ")";
         return false;
     }
 
@@ -183,18 +185,18 @@ bool Component::AcquireOutputData(int linkId, int time)
 
 bool Component::ReleaseOutputData(int linkId)
 {
-    if(!implementation)
+    if (!implementation)
     {
         LOG_INTERN(LogLevel::Warning) << "no implementation available";
         return false;
     }
 
-    ChannelBuffer *buffer;
+    ChannelBuffer* buffer;
     try
     {
         buffer = outputChannelBuffers.at(linkId);
     }
-    catch(const std::out_of_range&)
+    catch (const std::out_of_range&)
     {
         LOG_INTERN(LogLevel::Error) << "no channel buffer given for output link: " << linkId;
         return false;
@@ -208,18 +210,18 @@ bool Component::ReleaseOutputData(int linkId)
 
 bool Component::UpdateInputData(int linkId, int time)
 {
-    if(!implementation)
+    if (!implementation)
     {
         LOG_INTERN(LogLevel::Warning) << "no implementation available";
         return false;
     }
 
-    ChannelBuffer *buffer;
+    ChannelBuffer* buffer;
     try
     {
         buffer = inputChannelBuffers.at(linkId);
     }
-    catch(const std::out_of_range&)
+    catch (const std::out_of_range&)
     {
         LOG_INTERN(LogLevel::Error) << "no channel buffer given for input link: " << linkId;
         return false;
@@ -229,20 +231,23 @@ bool Component::UpdateInputData(int linkId, int time)
 
     try
     {
-        if(!modelLibrary->UpdateInput(implementation, linkId, buffer->GetDataPtr(), time))
+        if (!modelLibrary->UpdateInput(implementation, linkId, buffer->GetDataPtr(), time))
         {
-            LOG_INTERN(LogLevel::Error) << "an error occurred during update of input data for link " << linkId << " (component " << GetId() << ")";
+            LOG_INTERN(LogLevel::Error) << "an error occurred during update of input data for link " << linkId << " (component " <<
+                                        GetName() << ")";
             return false;
         }
     }
-    catch(std::runtime_error const &ex)
+    catch (std::runtime_error const& ex)
     {
-        LOG_INTERN(LogLevel::Error) << "an error occurred during update of input data for link " << linkId << " (component " << GetId() << "): " << ex.what();
+        LOG_INTERN(LogLevel::Error) << "an error occurred during update of input data for link " << linkId << " (component " <<
+                                    GetName() << "): " << ex.what();
         return false;
     }
-    catch(...)
+    catch (...)
     {
-        LOG_INTERN(LogLevel::Error) << "an error occurred during update of input data for link " << linkId << " (component " << GetId() << ")";
+        LOG_INTERN(LogLevel::Error) << "an error occurred during update of input data for link " << linkId << " (component " <<
+                                    GetName() << ")";
         return false;
     }
 
@@ -251,9 +256,9 @@ bool Component::UpdateInputData(int linkId, int time)
     return true;
 }
 
-ChannelBuffer *Component::CreateOutputBuffer(int linkId)
+ChannelBuffer* Component::CreateOutputBuffer(int linkId)
 {
-    if(!implementation)
+    if (!implementation)
     {
         LOG_INTERN(LogLevel::Warning) << "no implementation available";
         return nullptr;
@@ -261,13 +266,13 @@ ChannelBuffer *Component::CreateOutputBuffer(int linkId)
 
     LOG_INTERN(LogLevel::DebugCore) << "create buffer for output link: " << linkId;
 
-    ChannelBuffer *buffer = new (std::nothrow) ChannelBuffer(linkId);
-    if(!buffer)
+    ChannelBuffer* buffer = new (std::nothrow) ChannelBuffer(linkId);
+    if (!buffer)
     {
         return nullptr;
     }
 
-    if(!outputChannelBuffers.insert({linkId, buffer}).second)
+    if (!outputChannelBuffers.insert({linkId, buffer}).second)
     {
         LOG_INTERN(LogLevel::Error) << "links must be unique";
         delete buffer;
@@ -277,9 +282,9 @@ ChannelBuffer *Component::CreateOutputBuffer(int linkId)
     return (ChannelBuffer*)buffer;
 }
 
-bool Component::SetInputBuffer(int linkId, ChannelBuffer *buffer)
+bool Component::SetInputBuffer(int linkId, ChannelBuffer* buffer)
 {
-    if(!implementation)
+    if (!implementation)
     {
         LOG_INTERN(LogLevel::Warning) << "no implementation available";
         return false;
@@ -287,7 +292,7 @@ bool Component::SetInputBuffer(int linkId, ChannelBuffer *buffer)
 
     LOG_INTERN(LogLevel::DebugCore) << "set buffer (" << buffer->GetId() << ") for input link: " << linkId;
 
-    if(!inputChannelBuffers.insert({linkId, buffer}).second)
+    if (!inputChannelBuffers.insert({linkId, buffer}).second)
     {
         LOG_INTERN(LogLevel::Error) << "channel buffers must be unique";
         return false;
@@ -298,7 +303,7 @@ bool Component::SetInputBuffer(int linkId, ChannelBuffer *buffer)
 
 bool Component::GetInit() const
 {
-    if(!implementation)
+    if (!implementation)
     {
         LOG_INTERN(LogLevel::Warning) << "could not retrieve init flag";
         return false;
@@ -308,12 +313,12 @@ bool Component::GetInit() const
     {
         return implementation->GetInit();
     }
-    catch(std::runtime_error const &ex)
+    catch (std::runtime_error const& ex)
     {
         LOG_INTERN(LogLevel::Warning) << "could not retrieve init flag: " << ex.what();
         return false;
     }
-    catch(...)
+    catch (...)
     {
         LOG_INTERN(LogLevel::Warning) << "could not retrieve init flag";
         return false;
@@ -322,7 +327,7 @@ bool Component::GetInit() const
 
 int Component::GetPriority() const
 {
-    if(!implementation)
+    if (!implementation)
     {
         LOG_INTERN(LogLevel::Warning) << "could not retrieve priority";
     }
@@ -331,12 +336,12 @@ int Component::GetPriority() const
     {
         return implementation->GetPriority();
     }
-    catch(std::runtime_error const &ex)
+    catch (std::runtime_error const& ex)
     {
         LOG_INTERN(LogLevel::Warning) << "could not retrieve priority: " << ex.what();
         return std::numeric_limits<int>::min();
     }
-    catch(...)
+    catch (...)
     {
         LOG_INTERN(LogLevel::Warning) << "could not retrieve priority";
         return std::numeric_limits<int>::min();
@@ -345,7 +350,7 @@ int Component::GetPriority() const
 
 int Component::GetOffsetTime() const
 {
-    if(!implementation)
+    if (!implementation)
     {
         LOG_INTERN(LogLevel::Warning) << "could not retrieve offset time";
     }
@@ -354,12 +359,12 @@ int Component::GetOffsetTime() const
     {
         return implementation->GetOffsetTime();
     }
-    catch(std::runtime_error const &ex)
+    catch (std::runtime_error const& ex)
     {
         LOG_INTERN(LogLevel::Warning) << "could not retrieve offset time: " << ex.what();
         return 0;
     }
-    catch(...)
+    catch (...)
     {
         LOG_INTERN(LogLevel::Warning) << "could not retrieve offset time";
         return 0;
@@ -368,7 +373,7 @@ int Component::GetOffsetTime() const
 
 int Component::GetResponseTime() const
 {
-    if(!implementation)
+    if (!implementation)
     {
         LOG_INTERN(LogLevel::Warning) << "could not retrieve response time";
     }
@@ -377,12 +382,12 @@ int Component::GetResponseTime() const
     {
         return implementation->GetResponseTime();
     }
-    catch(std::runtime_error const &ex)
+    catch (std::runtime_error const& ex)
     {
         LOG_INTERN(LogLevel::Warning) << "could not retrieve response time: " << ex.what();
         return 0;
     }
-    catch(...)
+    catch (...)
     {
         LOG_INTERN(LogLevel::Warning) << "could not retrieve response time";
         return 0;
@@ -391,7 +396,7 @@ int Component::GetResponseTime() const
 
 int Component::GetCycleTime() const
 {
-    if(!implementation)
+    if (!implementation)
     {
         LOG_INTERN(LogLevel::Warning) << "could not retrieve cycle time";
     }
@@ -400,21 +405,21 @@ int Component::GetCycleTime() const
     {
         return implementation->GetCycleTime();
     }
-    catch(std::runtime_error const &ex)
+    catch (std::runtime_error const& ex)
     {
         LOG_INTERN(LogLevel::Warning) << "could not retrieve cycle time: " << ex.what();
         return 0;
     }
-    catch(...)
+    catch (...)
     {
         LOG_INTERN(LogLevel::Warning) << "could not retrieve cycle time";
         return 0;
     }
 }
 
-bool Component::SetModelLibrary(ModelLibrary *modelLibrary)
+bool Component::SetModelLibrary(ModelLibrary* modelLibrary)
 {
-    if(this->modelLibrary)
+    if (this->modelLibrary)
     {
         return false;
     }
@@ -430,7 +435,7 @@ bool Component::ReleaseFromLibrary()
     return modelLibrary->ReleaseComponent(this);
 }
 
-ModelInterface *Component::GetImplementation() const
+ModelInterface* Component::GetImplementation() const
 {
     return implementation;
 }

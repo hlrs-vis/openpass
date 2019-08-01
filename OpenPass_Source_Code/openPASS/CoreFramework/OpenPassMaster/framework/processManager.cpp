@@ -1,52 +1,57 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2019 in-tech GmbH
+*               2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
-
+*******************************************************************************/
 
 #include "processManager.h"
+#include <algorithm>
 
-ProcessManager::ProcessManager(QObject *parent):
+ProcessManager::ProcessManager(QObject* parent):
     QObject(parent)
 {
     idealProcessCount = QThread::idealThreadCount();
 }
 
-void ProcessManager::RemoveProcess(QProcess *process)
+void ProcessManager::RemoveProcess(QProcess* process)
 {
     processMap.remove(process);
     delete process;
 }
 
-ProcessManager &ProcessManager::getInstance()
+ProcessManager& ProcessManager::getInstance()
 {
     static ProcessManager instance;
     return instance;
 }
 
-ProcessManager::~ProcessManager()
+bool ProcessManager::StartProcess(const std::string& processPath,
+                                  const std::list<std::pair<std::string, std::string>>& arguments)
 {
-    KillAll();
-}
+    auto qProcessPath = QString::fromStdString(processPath);
 
-bool ProcessManager::StartProcess(QString &processPath, QStringList &arguments)
-{
+    QStringList qArguments;
+    for (const std::pair<std::string, std::string>& argument : arguments)
+    {
+        qArguments << QString::fromStdString(argument.first) << QString::fromStdString(argument.second);
+    }
+
     while (processMap.size() > idealProcessCount)
     {
         processMap.begin().key()->waitForFinished(1);
     }
 
-    QProcess *newProcess = new QProcess();
-    newProcess->start(processPath, arguments);
+    QProcess* newProcess = new QProcess();
+    newProcess->start(qProcessPath, qArguments);
 
     if (newProcess->processId() == 0)
     {
-        LOG_INTERN(LogLevel::Error) << processPath.toStdString() << " not started, check path.";
+        LOG_INTERN(LogLevel::Error) << processPath << " not started, check path.";
         return false;
     }
 
@@ -61,29 +66,29 @@ bool ProcessManager::StartProcess(QString &processPath, QStringList &arguments)
         RemoveProcess(newProcess);
     });
 
-    processMap.insert( newProcess, newProcess->processId());
+    processMap.insert(newProcess, newProcess->processId());
 
     return true;
 }
 
 void ProcessManager::WaitAndClear()
 {
-    QMapIterator<QProcess *, int> processMapIterator(processMap);
+    QMapIterator<QProcess*, int> processMapIterator(processMap);
     while (processMapIterator.hasNext())
     {
         processMapIterator.next();
-        QProcess *process = processMapIterator.key();
+        QProcess* process = processMapIterator.key();
         process->waitForFinished(-1); //default timeout 30s, -1 :infinity
     }
 }
 
 void ProcessManager::KillAll()
 {
-    QMapIterator<QProcess *, int> processMapIterator(processMap);
+    QMapIterator<QProcess*, int> processMapIterator(processMap);
     while (processMapIterator.hasNext())
     {
         processMapIterator.next();
-        QProcess *process = processMapIterator.key();
+        QProcess* process = processMapIterator.key();
         process->kill();
         RemoveProcess(process);
     }

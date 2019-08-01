@@ -1,54 +1,67 @@
-/******************************************************************************
-* Copyright (c) 2018 in-tech GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
 *
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* https://www.eclipse.org/legal/epl-2.0/
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-******************************************************************************/
-
+*******************************************************************************/
 #pragma once
 
 #include "OWL/DataTypes.h"
 #include "PointQuery.h"
-#include "vector2d.h"
+#include "Common/vector2d.h"
+#include "LaneWalker.h"
 
-namespace OWL {
+namespace World {
+namespace Localization {
 
 class GeometryProcessor
 {
-
-const Primitive::LaneGeometryElement& laneGeometryElement;
-const Common::Vector2d vectorAlongMiddle;
-const Common::Vector2d vectorLeftToMiddle;
+    const OWL::Primitive::LaneGeometryElement* laneGeometryElement;
+    Common::Vector2d vectorAlongMiddle;
+    Common::Vector2d vectorLeftToMiddle;
 
 public:
-GeometryProcessor(const Primitive::LaneGeometryElement& laneGeometryElement) :
-    laneGeometryElement{laneGeometryElement},
-    vectorAlongMiddle{laneGeometryElement.joints.current.projectionAxes.s},
-    vectorLeftToMiddle{laneGeometryElement.joints.current.projectionAxes.t}
-{}
+    GeometryProcessor(const OWL::Primitive::LaneGeometryElement* laneGeometryElement) :
+        laneGeometryElement{laneGeometryElement},
+        vectorAlongMiddle{laneGeometryElement->joints.current.projectionAxes.s},
+        vectorLeftToMiddle{laneGeometryElement->joints.current.projectionAxes.t}
+    {}
 
-bool Match(const Common::Vector2d &point) const;
+    GeometryProcessor(const LaneWalker& laneWalker)
+    {
+        if (!laneWalker.IsDepleted())
+        {
+            laneGeometryElement = &laneWalker.GetLaneGeometryElement();
+            vectorAlongMiddle = laneGeometryElement->joints.current.projectionAxes.s;
+            vectorLeftToMiddle = laneGeometryElement->joints.current.projectionAxes.t;
+        }
+    }
 
-Primitive::RoadCoordinate GetRoadCoordinate(const Common::Vector2d &point, double hdg) const {
-    const auto s = getS(point);
-    const auto t = getT(point);
-    const auto yaw = getYaw(hdg);
-    return {s, t, yaw};
-}
+    bool Match(const Common::Vector2d& point) const;
+
+    RoadPosition GetRoadCoordinate(const Common::Vector2d& point, double hdg) const
+    {
+        const auto s = GetS(point);
+        const auto t = GetT(point);
+        const auto yaw = GetYaw(hdg);
+        return {s, t, yaw};
+    }
 
 private:
-double getS(const Common::Vector2d &point) const;
-double getT(const Common::Vector2d &point) const;
-double getYaw(double hdg) const;
-double getProjectedVectorLength(const Common::Vector2d &vectorToProject,
-                                const Common::Vector2d &directionVector) const;
+    double GetS(const Common::Vector2d& point) const;
+    double GetT(const Common::Vector2d& point) const;
+    double GetYaw(double hdg) const;
+    double GetProjectedVectorLength(const Common::Vector2d& vectorToProject,
+                                    const Common::Vector2d& directionVector) const;
 
-const Common::Vector2d getVectorPointToReference(Common::Vector2d point) const;
-const Common::Vector2d getOrthogonalMiddleVector() const;
+    const Common::Vector2d GetVectorPointToReference(Common::Vector2d point) const;
+    const Common::Vector2d GetOrthogonalMiddleVector() const;
 
 };
 
-} // namespace OWL
+} // namespace Localization
+} // namespace World
+

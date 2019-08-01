@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSCENARIO>
+    <FileHeader revMajor="0" revMinor="1" date="2018-12-03T10:00:00" description="openPASS vehicle models" author="in-tech GmbH"/>
+    <Catalog name="VehicleCatalog">
+        <!-- name format: @vehicletype_@brand_@publicmodelname_@internmodelname_@constructionyear -->
+        <Vehicle name="car_bmw_i3" category="car">
+            <ParameterDeclaration>
+                <Parameter name="AirDragCoefficient" type="double" value="0.3"/><!-- dummy value -->
+                <Parameter name="AxleRatio" type="double" value="1.0"/>
+                <Parameter name="DecelerationFromPowertrainDrag" type="double" value="0.5"/><!-- dummy value -->
+                <Parameter name="FrictionCoefficient" type="double" value="0.0"/>
+                <Parameter name="FrontSurface" type="double" value="2.38"/>
+                <Parameter name="GearRatio1" type="double" value="9.665"/>
+                <Parameter name="MaximumEngineSpeed" type="double" value="6000.0"/><!-- dummy value -->
+                <Parameter name="MaximumEngineTorque" type="double" value="250.0"/>
+                <Parameter name="MinimumEngineSpeed" type="double" value="900.0"/><!-- dummy value -->
+                <Parameter name="MinimumEngineTorque" type="double" value="-54.0"/><!-- dummy value -->
+                <Parameter name="MomentInertiaPitch" type="double" value="0.0"/>
+                <Parameter name="MomentInertiaRoll" type="double" value="0.0"/>
+                <Parameter name="MomentInertiaYaw" type="double" value="0.0"/>
+                <Parameter name="NumberOfGears" type="integer" value="1"/>
+                <Parameter name="SteeringRatio" type="double" value="10.7"/><!-- dummy value -->
+            </ParameterDeclaration>
+            <BoundingBox>
+                <Center x="1.25" y="0.0" z="0.84"/>
+                <Dimension width="2.04" length="3.96" height="1.68"/>
+            </BoundingBox>
+            <Performance maxSpeed="41.67" maxDeceleration="9.80665" mass="1320.0"/>
+            <Axles>
+                <Front maxSteering="0.5282" wheelDiameter="0.682" trackWidth="1.8" positionX="2.52" positionZ="0.341"/><!-- dummy values -->
+                <Rear maxSteering="0.0" wheelDiameter="0.682" trackWidth="1.8" positionX="0.0" positionZ="0.341"/><!-- dummy values -->
+            </Axles>
+        </Vehicle>
+        <Vehicle name="car_bmw_3" category="car">
+            <ParameterDeclaration>
+                <Parameter name="AirDragCoefficient" type="double" value="0.3"/><!-- dummy value -->
+                <Parameter name="AxleRatio" type="double" value="2.813"/>
+                <Parameter name="DecelerationFromPowertrainDrag" type="double" value="0.5"/><!-- dummy value -->
+                <Parameter name="FrictionCoefficient" type="double" value="0.0"/>
+                <Parameter name="FrontSurface" type="double" value="2.2"/>
+                <Parameter name="GearRatio1" type="double" value="5.0"/>
+                <Parameter name="GearRatio2" type="double" value="3.2"/>
+                <Parameter name="GearRatio3" type="double" value="2.143"/>
+                <Parameter name="GearRatio4" type="double" value="1.72"/>
+                <Parameter name="GearRatio5" type="double" value="1.314"/>
+                <Parameter name="GearRatio6" type="double" value="1.0"/>
+                <Parameter name="GearRatio7" type="double" value="0.822"/>
+                <Parameter name="GearRatio8" type="double" value="0.64"/>
+                <Parameter name="MaximumEngineSpeed" type="double" value="6000.0"/><!-- dummy value -->
+                <Parameter name="MaximumEngineTorque" type="double" value="270.0"/>
+                <Parameter name="MinimumEngineSpeed" type="double" value="900.0"/><!-- dummy value -->
+                <Parameter name="MinimumEngineTorque" type="double" value="-54.0"/><!-- dummy value -->
+                <Parameter name="MomentInertiaPitch" type="double" value="0.0"/>
+                <Parameter name="MomentInertiaRoll" type="double" value="0.0"/>
+                <Parameter name="MomentInertiaYaw" type="double" value="0.0"/>
+                <Parameter name="NumberOfGears" type="integer" value="8"/>
+                <Parameter name="SteeringRatio" type="double" value="10.7"/><!-- dummy value -->
+            </ParameterDeclaration>
+            <BoundingBox>
+                <Center x="1.285" y="0.0" z="0.72"/>
+                <Dimension width="1.96" length="4.63" height="1.44"/>
+            </BoundingBox>
+            <Performance maxSpeed="69.44" maxDeceleration="9.80665" mass="1525.0"/>
+            <Axles>
+                <Front maxSteering="0.5012" wheelDiameter="0.634" trackWidth="1.8" positionX="2.81" positionZ="0.317"/><!-- dummy values -->
+                <Rear maxSteering="0.0" wheelDiameter="0.634" trackWidth="1.8" positionX="0.0" positionZ="0.317"/><!-- dummy values -->
+            </Axles>
+        </Vehicle>
+        <Vehicle name="car_bmw_7_1" category="car">
+            <ParameterDeclaration>
+                <Parameter name="AirDragCoefficient" type="double" value="0.3"/><!-- dummy value -->
+                <Parameter name="AxleRatio" type="double" value="3.077"/>
+                <Parameter name="DecelerationFromPowertrainDrag" type="double" value="0.5"/><!-- dummy value -->
+                <Parameter name="FrictionCoefficient" type="double" value="0.0"/>
+                <Parameter name="FrontSurface" type="double" value="2.42"/>
+                <Parameter name="GearRatio1" type="double" value="5.0"/>
+                <Parameter name="GearRatio2" type="double" value="3.2"/>
+                <Parameter name="GearRatio3" type="double" value="2.143"/>
+                <Parameter name="GearRatio4" type="double" value="1.72"/>
+                <Parameter name="GearRatio5" type="double" value="1.314"/>
+                <Parameter name="GearRatio6" type="double" value="1.0"/>
+                <Parameter name="GearRatio7" type="double" value="0.822"/>
+                <Parameter name="GearRatio8" type="double" value="0.64"/>
+                <Parameter name="MaximumEngineSpeed" type="double" value="6000.0"/><!-- dummy value -->
+                <Parameter name="MaximumEngineTorque" type="double" value="450.0"/>
+                <Parameter name="MinimumEngineSpeed" type="double" value="900.0"/><!-- dummy value -->
+                <Parameter name="MinimumEngineTorque" type="double" value="-54.0"/><!-- dummy value -->
+                <Parameter name="MomentInertiaPitch" type="double" value="0.0"/>
+                <Parameter name="MomentInertiaRoll" type="double" value="0.0"/>
+                <Parameter name="MomentInertiaYaw" type="double" value="0.0"/>
+                <Parameter name="NumberOfGears" type="integer" value="8"/>
+                <Parameter name="SteeringRatio" type="double" value="10.7"/><!-- dummy value -->
+            </ParameterDeclaration>
+            <BoundingBox>
+                <Center x="1.46" y="0.0" z="0.755"/>
+                <Dimension width="2.18" length="5.26" height="1.51"/>
+            </BoundingBox>
+            <Performance maxSpeed="69.44" maxDeceleration="9.80665" mass="1845.0"/>
+            <Axles>
+                <Front maxSteering="0.5226" wheelDiameter="0.682" trackWidth="1.8" positionX="3.22" positionZ="0.341"/><!-- dummy values -->
+                <Rear maxSteering="0.0" wheelDiameter="0.682" trackWidth="1.8" positionX="0.0" positionZ="0.341"/><!-- dummy values -->
+            </Axles>
+        </Vehicle>
+        <Vehicle name="car_bmw_7_2" category="car">
+            <ParameterDeclaration>
+                <Parameter name="AirDragCoefficient" type="double" value="0.3"/><!-- dummy value -->
+                <Parameter name="AxleRatio" type="double" value="3.077"/>
+                <Parameter name="DecelerationFromPowertrainDrag" type="double" value="0.5"/><!-- dummy value -->
+                <Parameter name="FrictionCoefficient" type="double" value="0.0"/>
+                <Parameter name="FrontSurface" type="double" value="2.42"/>
+                <Parameter name="GearRatio1" type="double" value="4.714"/>
+                <Parameter name="GearRatio2" type="double" value="3.143"/>
+                <Parameter name="GearRatio3" type="double" value="2.106"/>
+                <Parameter name="GearRatio4" type="double" value="1.667"/>
+                <Parameter name="GearRatio5" type="double" value="1.285"/>
+                <Parameter name="GearRatio6" type="double" value="1.0"/>
+                <Parameter name="GearRatio7" type="double" value="0.839"/>
+                <Parameter name="GearRatio8" type="double" value="0.667"/>
+                <Parameter name="MaximumEngineSpeed" type="double" value="6000.0"/><!-- dummy value -->
+                <Parameter name="MaximumEngineTorque" type="double" value="450.0"/>
+                <Parameter name="MinimumEngineSpeed" type="double" value="900.0"/><!-- dummy value -->
+                <Parameter name="MinimumEngineTorque" type="double" value="-54.0"/><!-- dummy value -->
+                <Parameter name="MomentInertiaPitch" type="double" value="0.0"/>
+                <Parameter name="MomentInertiaRoll" type="double" value="0.0"/>
+                <Parameter name="MomentInertiaYaw" type="double" value="0.0"/>
+                <Parameter name="NumberOfGears" type="integer" value="8"/>
+                <Parameter name="SteeringRatio" type="double" value="10.7"/><!-- dummy value -->
+            </ParameterDeclaration>
+            <BoundingBox>
+                <Center x="1.485" y="0.0" z="0.745"/>
+                <Dimension width="2.16" length="5.27" height="1.49"/>
+            </BoundingBox>
+            <Performance maxSpeed="69.44" maxDeceleration="9.80665" mass="1900.0"/>
+            <Axles>
+                <Front maxSteering="0.5279" wheelDiameter="0.682" trackWidth="1.8" positionX="3.25" positionZ="0.341"/><!-- dummy values -->
+                <Rear maxSteering="0.0" wheelDiameter="0.682" trackWidth="1.8" positionX="0.0" positionZ="0.341"/><!-- dummy values -->
+            </Axles>
+        </Vehicle>
+        <Vehicle name="car_mini_cooper" category="car">
+            <ParameterDeclaration>
+                <Parameter name="AirDragCoefficient" type="double" value="0.3"/><!-- dummy value -->
+                <Parameter name="AxleRatio" type="double" value="3.789"/>
+                <Parameter name="DecelerationFromPowertrainDrag" type="double" value="0.5"/><!-- dummy value -->
+                <Parameter name="FrictionCoefficient" type="double" value="0.0"/>
+                <Parameter name="FrontSurface" type="double" value="2.07"/>
+                <Parameter name="GearRatio1" type="double" value="4.154"/>
+                <Parameter name="GearRatio2" type="double" value="2.45"/>
+                <Parameter name="GearRatio3" type="double" value="1.557"/>
+                <Parameter name="GearRatio4" type="double" value="1.09"/>
+                <Parameter name="GearRatio5" type="double" value="0.843"/>
+                <Parameter name="GearRatio6" type="double" value="0.675"/>
+                <Parameter name="GearRatio7" type="double" value="0.547"/>
+                <Parameter name="MaximumEngineSpeed" type="double" value="6000.0"/><!-- dummy value -->
+                <Parameter name="MaximumEngineTorque" type="double" value="220.0"/>
+                <Parameter name="MinimumEngineSpeed" type="double" value="900.0"/><!-- dummy value -->
+                <Parameter name="MinimumEngineTorque" type="double" value="-54.0"/><!-- dummy value -->
+                <Parameter name="MomentInertiaPitch" type="double" value="0.0"/>
+                <Parameter name="MomentInertiaRoll" type="double" value="0.0"/>
+                <Parameter name="MomentInertiaYaw" type="double" value="0.0"/>
+                <Parameter name="NumberOfGears" type="integer" value="7"/>
+                <Parameter name="SteeringRatio" type="double" value="10.7"/><!-- dummy value -->
+            </ParameterDeclaration>
+            <BoundingBox>
+                <Center x="1.35" y="0.0" z="0.71"/>
+                <Dimension width="1.89" length="3.8" height="1.42"/>
+            </BoundingBox>
+            <Performance maxSpeed="58.33" maxDeceleration="9.80665" mass="1235.0"/>
+            <Axles>
+                <Front maxSteering="0.4766" wheelDiameter="0.59" trackWidth="1.8" positionX="2.48" positionZ="0.295"/><!-- dummy values -->
+                <Rear maxSteering="0.0" wheelDiameter="0.59" trackWidth="1.8" positionX="0.0" positionZ="0.295"/><!-- dummy values -->
+            </Axles>
+        </Vehicle>
+        <Vehicle name="bus" category="truck">
+            <ParameterDeclaration>
+                <Parameter name="AirDragCoefficient" type="double" value="0.8"/><!-- dummy value -->
+                <Parameter name="AxleRatio" type="double" value="4.0"/><!-- dummy value -->
+                <Parameter name="DecelerationFromPowertrainDrag" type="double" value="1.0"/><!-- dummy value -->
+                <Parameter name="FrictionCoefficient" type="double" value="0.0"/>
+                <Parameter name="FrontSurface" type="double" value="9.0"/><!-- dummy value -->
+                <Parameter name="GearRatio1" type="double" value="6.316"/><!-- dummy value -->
+                <Parameter name="GearRatio2" type="double" value="4.554"/><!-- dummy value -->
+                <Parameter name="GearRatio3" type="double" value="3.269"/><!-- dummy value -->
+                <Parameter name="GearRatio4" type="double" value="2.352"/><!-- dummy value -->
+                <Parameter name="GearRatio5" type="double" value="1.692"/><!-- dummy value -->
+                <Parameter name="GearRatio6" type="double" value="1.217"/><!-- dummy value -->
+                <Parameter name="GearRatio7" type="double" value="0.876"/><!-- dummy value -->
+                <Parameter name="GearRatio8" type="double" value="0.630"/><!-- dummy value -->
+                <Parameter name="MaximumEngineSpeed" type="double" value="2500.0"/><!-- dummy value -->
+                <Parameter name="MaximumEngineTorque" type="double" value="1400.0"/><!-- dummy value -->
+                <Parameter name="MinimumEngineSpeed" type="double" value="600.0"/><!-- dummy value -->
+                <Parameter name="MinimumEngineTorque" type="double" value="-140.0"/><!-- dummy value -->
+                <Parameter name="MomentInertiaPitch" type="double" value="0.0"/>
+                <Parameter name="MomentInertiaRoll" type="double" value="0.0"/>
+                <Parameter name="MomentInertiaYaw" type="double" value="0.0"/>
+                <Parameter name="NumberOfGears" type="integer" value="8"/><!-- dummy value -->
+                <Parameter name="SteeringRatio" type="double" value="15.0"/><!-- dummy value -->
+            </ParameterDeclaration>
+            <BoundingBox>
+                <Center x="2.815" y="0.0" z="1.92"/>
+                <Dimension width="2.91" length="13.23" height="3.84"/>
+            </BoundingBox>
+            <Performance maxSpeed="33.33" maxDeceleration="9.80665" mass="25000.0"/>
+            <Axles>
+                <Front maxSteering="0.6972" wheelDiameter="0.808" trackWidth="1.8" positionX="6.64" positionZ="0.404"/><!-- dummy values -->
+                <Rear maxSteering="0.0" wheelDiameter="0.808" trackWidth="1.8" positionX="0.0" positionZ="0.404"/><!-- dummy values -->
+            </Axles>
+        </Vehicle>
+        <Vehicle name="truck" category="truck">
+            <ParameterDeclaration>
+                <Parameter name="AirDragCoefficient" type="double" value="0.8"/><!-- dummy value -->
+                <Parameter name="AxleRatio" type="double" value="4.0"/><!-- dummy value -->
+                <Parameter name="DecelerationFromPowertrainDrag" type="double" value="1.0"/><!-- dummy value -->
+                <Parameter name="FrictionCoefficient" type="double" value="0.0"/>
+                <Parameter name="FrontSurface" type="double" value="9.0"/><!-- dummy value -->
+                <Parameter name="GearRatio1" type="double" value="6.316"/><!-- dummy value -->
+                <Parameter name="GearRatio2" type="double" value="4.554"/><!-- dummy value -->
+                <Parameter name="GearRatio3" type="double" value="3.269"/><!-- dummy value -->
+                <Parameter name="GearRatio4" type="double" value="2.352"/><!-- dummy value -->
+                <Parameter name="GearRatio5" type="double" value="1.692"/><!-- dummy value -->
+                <Parameter name="GearRatio6" type="double" value="1.217"/><!-- dummy value -->
+                <Parameter name="GearRatio7" type="double" value="0.876"/><!-- dummy value -->
+                <Parameter name="GearRatio8" type="double" value="0.630"/><!-- dummy value -->
+                <Parameter name="MaximumEngineSpeed" type="double" value="2500.0"/><!-- dummy value -->
+                <Parameter name="MaximumEngineTorque" type="double" value="1400.0"/><!-- dummy value -->
+                <Parameter name="MinimumEngineSpeed" type="double" value="600.0"/><!-- dummy value -->
+                <Parameter name="MinimumEngineTorque" type="double" value="-140.0"/><!-- dummy value -->
+                <Parameter name="MomentInertiaPitch" type="double" value="0.0"/>
+                <Parameter name="MomentInertiaRoll" type="double" value="0.0"/>
+                <Parameter name="MomentInertiaYaw" type="double" value="0.0"/>
+                <Parameter name="NumberOfGears" type="integer" value="8"/><!-- dummy value -->
+                <Parameter name="SteeringRatio" type="double" value="15.0"/><!-- dummy value -->
+            </ParameterDeclaration>
+            <BoundingBox>
+                <Center x="2.685" y="0.0" z="1.74"/>
+                <Dimension width="3.16" length="8.83" height="3.48"/>
+            </BoundingBox>
+            <Performance maxSpeed="25.0" maxDeceleration="9.80665" mass="30000.0"/>
+            <Axles>
+                <Front maxSteering="0.4352" wheelDiameter="0.808" trackWidth="1.8" positionX="4.36" positionZ="0.404"/><!-- dummy values -->
+                <Rear maxSteering="0.0" wheelDiameter="0.808" trackWidth="1.8" positionX="0.0" positionZ="0.404"/><!-- dummy values -->
+            </Axles>
+        </Vehicle>
+        <Vehicle name="bicycle" category="bicycle">
+            <ParameterDeclaration>
+                <Parameter name="AirDragCoefficient" type="double" value="0.3"/><!-- dummy value -->
+                <Parameter name="AxleRatio" type="double" value="3.0"/>
+                <Parameter name="DecelerationFromPowertrainDrag" type="double" value="0.5"/><!-- dummy value -->
+                <Parameter name="FrictionCoefficient" type="double" value="0.0"/>
+                <Parameter name="FrontSurface" type="double" value="1.9"/>
+                <Parameter name="GearRatio1" type="double" value="4.350"/>
+                <Parameter name="GearRatio2" type="double" value="2.496"/>
+                <Parameter name="GearRatio3" type="double" value="1.665"/>
+                <Parameter name="GearRatio4" type="double" value="1.230"/>
+                <Parameter name="GearRatio5" type="double" value="1.0"/>
+                <Parameter name="GearRatio6" type="double" value="0.851"/>
+                <Parameter name="MaximumEngineSpeed" type="double" value="6000.0"/><!-- dummy value -->
+                <Parameter name="MaximumEngineTorque" type="double" value="540.0"/>
+                <Parameter name="MinimumEngineSpeed" type="double" value="900.0"/><!-- dummy value -->
+                <Parameter name="MinimumEngineTorque" type="double" value="-54.0"/><!-- dummy value -->
+                <Parameter name="MomentInertiaPitch" type="double" value="0.0"/>
+                <Parameter name="MomentInertiaRoll" type="double" value="0.0"/>
+                <Parameter name="MomentInertiaYaw" type="double" value="0.0"/>
+                <Parameter name="NumberOfGears" type="integer" value="6"/>
+                <Parameter name="SteeringRatio" type="double" value="10.7"/><!-- dummy value -->
+            </ParameterDeclaration>
+            <BoundingBox>
+                <Center x="0.175" y="0.0" z="0.9325"/>
+                <Dimension width="0.5" length="1.89" height="1.865"/>
+            </BoundingBox>
+            <Performance maxSpeed="10.0" maxDeceleration="9.80665" mass="90.0"/>
+            <Axles>
+                <Front maxSteering="1.5708" wheelDiameter="0.636" trackWidth="0.1" positionX="1.04" positionZ="0.318"/><!-- dummy values -->
+                <Rear maxSteering="0.0" wheelDiameter="0.636" trackWidth="0.1" positionX="0.0" positionZ="0.318"/><!-- dummy values -->
+            </Axles>
+        </Vehicle>
+    </Catalog>
+</OpenSCENARIO>

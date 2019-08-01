@@ -1,24 +1,23 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  worldBinding.h
+//! @file  WorldBinding.h
 //! @brief This file contains the interface to the world library.
 //-----------------------------------------------------------------------------
 
-#ifndef WORLDBINDING_H
-#define WORLDBINDING_H
+#pragma once
 
-#include "runConfig.h"
 #include "callbacks.h"
-#include "worldInterface.h"
+#include "Interfaces/worldInterface.h"
 
 namespace SimulationSlave
 {
@@ -29,8 +28,8 @@ class FrameworkConfig;
 class WorldBinding
 {
 public:
-    WorldBinding(const FrameworkConfig *frameworkConfig,
-                      SimulationCommon::Callbacks *callbacks);
+    WorldBinding(std::string libraryPath,
+                 CallbackInterface *callbacks);
     WorldBinding(const WorldBinding&) = delete;
     WorldBinding(WorldBinding&&) = delete;
     WorldBinding& operator=(const WorldBinding&) = delete;
@@ -41,10 +40,9 @@ public:
     //! Gets the world instance library and stores it,
     //! then creates a new worldInterface of the library.
     //!
-    //! @param[in]  worldParameter      world parameter that is instantiated
     //! @return                         worldInterface created from the library
     //-----------------------------------------------------------------------------
-    WorldInterface *Instantiate(WorldParameter *worldParameter);
+    WorldInterface *Instantiate();
 
     //-----------------------------------------------------------------------------
     //! Unloads the stochasticsInterface binding by deleting the library.
@@ -52,11 +50,11 @@ public:
     void Unload();
 
 private:
-    const FrameworkConfig *frameworkConfig;
+    const std::string libraryPath;
     WorldLibrary *library = nullptr;
-    SimulationCommon::Callbacks *callbacks;
+    CallbackInterface *callbacks;
 };
 
 } // namespace SimulationSlave
 
-#endif // WORLDBINDING_H
+

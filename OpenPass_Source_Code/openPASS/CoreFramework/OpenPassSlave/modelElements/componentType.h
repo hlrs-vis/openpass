@@ -1,25 +1,25 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  componentType.h
+//! @file  ComponentType.h
 //! @brief This file contains the internal representation of the type of a
 //!        model component as given by the configuration.
 //-----------------------------------------------------------------------------
 
-#ifndef COMPONENTTYPE_H
-#define COMPONENTTYPE_H
+#pragma once
 
 #include <map>
-#include "modelInterface.h"
-#include "parameters.h"
+#include "Interfaces/modelInterface.h"
+#include "Interfaces/parameterInterface.h"
 
 namespace SimulationSlave
 {
@@ -27,40 +27,30 @@ namespace SimulationSlave
 class ComponentType
 {
 public:
-    ComponentType(int id,
+    ComponentType(std::string name,
                   bool isInit,
                   int priority,
                   int offsetTime,
                   int responseTime,
                   int cycleTime,
                   const std::string &modelLibrary);
-    ComponentType(const ComponentType&) = delete;
+    ComponentType(const ComponentType&) = default;
     ComponentType(ComponentType&&) = delete;
-    ComponentType& operator=(const ComponentType&) = delete;
-    ComponentType& operator=(ComponentType&&) = delete;
-    virtual ~ComponentType() = default;
+    ComponentType& operator=(const ComponentType&) = default;
+    ComponentType& operator=(ComponentType&&) = default;
+    ~ComponentType() = default;
 
-    bool AddInputLink(int inputRef, int linkId);
-    bool AddOutputLink(int outputRef, int linkId);
-    bool AddObservationLink(int observationRef, int linkId);
-    int GetId()
-    {
-        return id;
-    }
+    bool AddInputLink(int localLinkId, int channelId);
+    bool AddOutputLink(int localLinkId, int channelId);
 
-    std::map<int, int> &GetInputLinks()
+    const std::map<int, int> &GetInputLinks() const
     {
         return inputs;
     }
 
-    std::map<int, int> &GetOutputLinks()
+    const std::map<int, int> &GetOutputLinks() const
     {
         return outputs;
-    }
-
-    std::map<int, int> &GetObservationLinks()
-    {
-        return observations;
     }
 
     bool GetInit() const
@@ -93,25 +83,31 @@ public:
         return modelLibrary;
     }
 
-    SimulationCommon::ModelParameters &GetModelParameters()
+    ParameterInterface *GetModelParameters()
     {
-        return modelParameters;
+        return parameters;
     }
 
+    void SetModelParameter(ParameterInterface* parameters)
+    {
+        this->parameters = parameters;
+    }
+
+    std::string GetName() const;
+
 private:
-    int id;
-    bool isInit;
-    int priority;
-    int offsetTime;
-    int responseTime;
-    int cycleTime;
-    std::string modelLibrary;
+    std::string name = "";
+    bool isInit = false;
+    int priority = -999;
+    int offsetTime = -999;
+    int responseTime = -999;
+    int cycleTime = -999;
+    std::string modelLibrary = "";
     std::map<int, int> inputs;
     std::map<int, int> outputs;
-    std::map<int, int> observations;
-    SimulationCommon::ModelParameters modelParameters;
+    ParameterInterface* parameters = nullptr;
 };
 
 } // namespace SimulationSlave
 
-#endif // COMPONENTTYPE_H
+

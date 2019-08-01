@@ -1,102 +1,127 @@
-/******************************************************************************
-* Copyright (c) 2018 in-tech GmbH
+/*******************************************************************************
+* Copyright (c) 2018, 2019 in-tech GmbH
 *
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* https://www.eclipse.org/legal/epl-2.0/
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-******************************************************************************/
+*******************************************************************************/
 
 #include <list>
 #include <vector>
 #include <memory>
 
-#include "GeometryProcessor.h"
-#include "LaneWalker.h"
-#include "PointAggregator.h"
 #include "PointLocator.h"
-#include "WorldData.h"
 
-namespace OWL {
+namespace World {
+namespace Localization {
 
-using LaneWalkers = std::vector<std::shared_ptr<LaneWalker>>;
-
-PointLocator::PointLocator(World::Localization::PointAggregator& pointAggregator,
-                           const OWL::Interfaces::Sections &sections,
-                           std::list<SearchablePoint> searchPoints) :
+PointLocator::PointLocator(PointAggregator& pointAggregator,
+                           const OWL::Interfaces::Section* section) :
     pointAggregator(pointAggregator),
-    sections(sections),
-    sectionIterator(sections.end()),
-    searchPoints(searchPoints)
+    section(section)
 {
 }
 
-void PointLocator::locate()
+void PointLocator::Locate(const std::list<OWL::SearchablePoint>& searchPoints, double maxDistance)
 {
-    establishSearchState();
+    InitLocate(searchPoints);
 
-    for (auto iter = sectionIterator; iter != sections.end(); ++iter)
+    const auto& forwardSectionStream = section->forwardSectionStream;
+    const auto& reverseSectionStream = section->reverseSectionStream;
+
+    for (const auto& currSection : forwardSectionStream)
     {
-        sectionIterator = iter;
-        section = *sectionIterator;
-
-        if (laneWalkers.empty()) {
-            laneWalkers = wrapLanes();
+        if(!searchPoints.empty())
+        {
+            section = &currSection;
+            WrapLanes(section->IsInStreamDirection());
+            CalculateMaxStepsAfterFirstHit(maxDistance);
+            LocatePoints();
         }
-
-        locatePoint();
-        sectionOffset += section->GetLength();
     }
-}
 
-
-void PointLocator::establishSearchState()
-{
-    if (sectionIterator == sections.end()) {
-        sectionIterator = sections.begin();
-        sectionOffset = 0;
-        laneWalkers.clear();
-    }
-}
-
-
-void PointLocator::suppressWalkerSwitchIfBelowMotionPreviewDistance()
-{
-    double searchedOffset  = currentLaneWalker->GetSOffset() - currentWalkerSOffset;
-    if (searchedOffset < motionPreviewDistance) {
-        suppressWalkerChange = true;
-    }
-}
-
-void PointLocator::locatePoint()
-{
-    removeDepletedWalkers();
-
-    while (laneWalkers.size() > 0)
+    if(!searchPoints.empty())
     {
-        setCurrentLaneWalker();
-        GeometryProcessor gp(currentLaneWalker->GetLaneGeometryElement());
+        for (const auto& currSection : reverseSectionStream)
+        {
+            if(!searchPoints.empty())
+            {
+                section = &currSection;
+                WrapLanes(!section->IsInStreamDirection());
+                CalculateMaxStepsAfterFirstHit(maxDistance);
+                LocatePoints();
+            }
+        }
+    }
+}
+
+void PointLocator::InitLocate(const std::list<OWL::SearchablePoint>& searchPoints)
+{
+    this->searchPoints = {searchPoints};
+    firstHit = false;
+    searchInitializer = {};
+}
+
+void PointLocator::SaveSearchInitializerOnFirstHit()
+{
+    if (firstHit == false)
+    {
+        SaveSearchInitializer();
+        RewindWalkers(searchInitializer.upstreamLaneWalkers);
+        RewindWalkers(searchInitializer.downstreamLaneWalkers);
+    }
+
+    firstHit = true;
+}
+
+void PointLocator::LocatePoints()
+{
+    while (!searchPoints.empty() && stepsAfterFirstHit <= maxStepsAfterFirstHit)
+    {
+        bool hasDownstreamLaneWalker = !downstreamLaneWalkers.at(downstreamLaneWalkers.size() - 1).IsDepleted();
+        bool hasUpstreamLaneWalker = !upstreamLaneWalkers.at(upstreamLaneWalkers.size() - 1).IsDepleted();
+
+        if (!hasUpstreamLaneWalker && !hasDownstreamLaneWalker)
+        {
+            break;
+        }
+        GeometryProcessor gpDownstream(downstreamLaneWalkers.at(indexDownstreamWalker));
+        GeometryProcessor gpUpstream(upstreamLaneWalkers.at(indexUpstreamWalker));
 
         auto searchPointsIterator = searchPoints.begin();
-        while(searchPointsIterator != searchPoints.end())
+        while (searchPointsIterator != searchPoints.end())
         {
             auto searchPoint = *searchPointsIterator;
             const Common::Vector2d point{searchPoint.coordinate.x, searchPoint.coordinate.y};
 
-            if (gp.Match(point))
+            if (hasDownstreamLaneWalker && gpDownstream.Match(point))
             {
-                const auto roadCoordinate = gp.GetRoadCoordinate(point, searchPoint.coordinate.hdg);
-                LocatedPoint searchResult{roadCoordinate, searchPoint.pointType};
-                pointAggregator.Add(*section,
-                                    sectionOffset,
-                                    currentLaneWalker->GetLane(),
-                                    searchResult);
+                const auto roadCoordinate = gpDownstream.GetRoadCoordinate(point, searchPoint.coordinate.hdg);
+                pointAggregator.Add(section->GetRoad().GetId(),
+                                    downstreamLaneWalkers.at(indexDownstreamWalker).GetLane().GetStreamId(),
+                                    downstreamLaneWalkers.at(indexDownstreamWalker).GetLane(),
+                                    roadCoordinate,
+                                    searchPoint.pointType);
 
-                locatedPoints++;
-                //referencePointLocated = true;
+                sectionOffset = roadCoordinate.s;
+                SaveSearchInitializerOnFirstHit();
 
-                //saveSearchInitializer();
+                searchPointsIterator = searchPoints.erase(searchPointsIterator);
+            }
+            else if (hasUpstreamLaneWalker && gpUpstream.Match(point))
+            {
+                const auto roadCoordinate = gpUpstream.GetRoadCoordinate(point, searchPoint.coordinate.hdg);
+                pointAggregator.Add(section->GetRoad().GetId(),
+                                    upstreamLaneWalkers.at(indexUpstreamWalker).GetLane().GetStreamId(),
+                                    upstreamLaneWalkers.at(indexUpstreamWalker).GetLane(),
+                                    roadCoordinate,
+                                    searchPoint.pointType);
+
+                sectionOffset = roadCoordinate.s;
+                SaveSearchInitializerOnFirstHit();
+
                 searchPointsIterator = searchPoints.erase(searchPointsIterator);
             }
             else
@@ -104,66 +129,90 @@ void PointLocator::locatePoint()
                 searchPointsIterator++;
             }
         }
-        //suppressWalkerSwitchIfOnTrack(remainingPoints);
-        suppressWalkerSwitchIfBelowMotionPreviewDistance();
-
-        currentLaneWalker->Step();
-        removeDepletedWalkers();
-    }
-}
-
-LaneWalkers PointLocator::wrapLanes()
-{
-    LaneWalkers laneWalkers;
-
-    for (const auto lane : section->GetLanes()) {
-        laneWalkers.push_back(std::make_shared<LaneWalker>(*lane));
+        Step();
     }
 
-    return laneWalkers;
+    downstreamLaneWalkers.clear();
+    upstreamLaneWalkers.clear();
+    stepsAfterFirstHit = 0;
 }
 
-void PointLocator::setCurrentLaneWalker()
+void PointLocator::Step()
 {
-    if (suppressWalkerChange && currentLaneWalker->IsDepleted() == false) {
+    if (firstHit)
+    {
+        ++stepsAfterFirstHit;
+    }
+
+    downstreamLaneWalkers.at(indexDownstreamWalker).Step();
+    upstreamLaneWalkers.at(indexUpstreamWalker).Step();
+
+    indexDownstreamWalker = (indexDownstreamWalker + 1) % downstreamLaneWalkers.size();
+    indexUpstreamWalker = (indexUpstreamWalker + 1) % upstreamLaneWalkers.size();
+}
+
+void PointLocator::WrapLanes(bool startAtRoadStart)
+{
+    if (!(upstreamLaneWalkers.empty() && downstreamLaneWalkers.empty()))
+    {
         return;
     }
 
-    std::vector<double> searchHorizon;
-
-    for (const auto& laneWalker : laneWalkers) {
-        searchHorizon.push_back(laneWalker->GetSOffset());
-    }
-
-    auto index = getMinIndex(searchHorizon);
-    if (laneWalkers.at(index) != currentLaneWalker)
+    for (const auto lane : section->GetLanes())
     {
-        currentLaneWalker = laneWalkers.at(index);
-        currentWalkerSOffset = currentLaneWalker->GetSOffset();
+        upstreamLaneWalkers.push_back(LaneWalker(*lane, false, startAtRoadStart));
+        downstreamLaneWalkers.push_back(LaneWalker(*lane, true, startAtRoadStart));
     }
+
+    indexDownstreamWalker = 0;
+    indexUpstreamWalker = 0;
 }
 
-void PointLocator::removeDepletedWalkers()
+void PointLocator::CalculateMaxStepsAfterFirstHit(double maxDistance)
 {
-    laneWalkers.erase(std::remove_if(laneWalkers.begin(),
-                                     laneWalkers.end(),
-                                     [](const std::shared_ptr<LaneWalker>& lw)
-                                     {
-                                         return lw->IsDepleted();
-                                     }),
-                                     laneWalkers.end());
+    const auto& firstLaneElement = *section->GetLanes().front()->GetLaneGeometryElements().begin();
+    double jointsDistance =  std::abs(firstLaneElement->joints.next.projectionAxes.sOffset - firstLaneElement->joints.current.projectionAxes.sOffset);
+
+    constexpr double buffer = 2.0;  //on the inside of a curved road the s coordinate advances faster then the euclidean distance. Therefore we add an aditional buffer.
+    maxStepsAfterFirstHit = static_cast<int>(std::ceil(maxDistance / jointsDistance * buffer)) * section->GetLanes().size();
 }
 
-bool PointLocator::allPointsLocated()
+bool PointLocator::AllPointsLocated()
 {
     return searchPoints.empty();
 }
 
-void PointLocator::suppressWalkerSwitchIfOnTrack(int& remainingPointsLast)
+void PointLocator::SaveSearchInitializer()
 {
-    int remainingPoints = referencePointLocated ? 0 : 1;
-    suppressWalkerChange = (remainingPointsLast > remainingPoints);
-    remainingPointsLast = remainingPoints;
+    searchInitializer = SearchInitializer(
+                true,
+                section,
+                sectionOffset,
+                upstreamLaneWalkers,
+                downstreamLaneWalkers
+                );
 }
 
-} // namespace OWL
+SearchInitializer PointLocator::GetSearchInitializer() const
+{
+    return searchInitializer;
+}
+
+void PointLocator::SetSearchInitializer(SearchInitializer searchInitializer)
+{
+    section = searchInitializer.section;
+    sectionOffset = searchInitializer.sectionOffset;
+    upstreamLaneWalkers = searchInitializer.upstreamLaneWalkers;
+    downstreamLaneWalkers = searchInitializer.downstreamLaneWalkers;
+}
+
+void PointLocator::RewindWalkers(LaneWalkers& laneWalkers)
+{
+    for (auto& laneWalker : laneWalkers)
+    {
+        laneWalker.Rewind(sectionOffset);
+    }
+}
+
+} // namespace Localization
+} // namespace World

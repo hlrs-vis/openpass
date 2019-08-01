@@ -1,13 +1,13 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* Copyright (c) 2018 in-tech GmbH.
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* https://www.eclipse.org/legal/epl-2.0/
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-******************************************************************************/
+*******************************************************************************/
 
 #include <sstream>
 #include "xmlParser.h"
@@ -18,6 +18,23 @@ namespace SimulationCommon
 bool GetFirstChildElement(QDomElement rootElement, const std::string &tag, QDomElement &result)
 {
     QDomNode node = rootElement.firstChildElement(QString::fromStdString(tag));
+    if(node.isNull())
+    {
+        return false;
+    }
+
+    result = node.toElement();
+    if(result.isNull())
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool GetLastChildElement(QDomElement rootElement, const std::string &tag, QDomElement &result)
+{
+    QDomNode node = rootElement.lastChildElement(QString::fromStdString(tag));
     if(node.isNull())
     {
         return false;
@@ -99,6 +116,43 @@ bool ParseDouble(QDomElement rootElement, const std::string &tag, double &result
     try
     {
         result = std::stod(element.text().toStdString());
+    }
+    catch(...)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool ParseDoubleVector(QDomElement rootElement, const std::string &tag, std::vector<double> &result)
+{
+    QDomNode node = rootElement.firstChildElement(QString::fromStdString(tag));
+    if(node.isNull())
+    {
+        return false;
+    }
+
+    QDomElement element = node.toElement();
+    if(element.isNull())
+    {
+        return false;
+    }
+
+    try
+    {
+        std::stringstream valueStream(element.text().toStdString());
+
+        double item;
+        while(valueStream >> item)
+        {
+            result.push_back(item);
+
+            if(valueStream.peek() == ',')
+            {
+                valueStream.ignore();
+            }
+        }
     }
     catch(...)
     {
@@ -190,6 +244,67 @@ bool ParseBool(QDomElement rootElement, const std::string &tag, bool &result)
     }
 
     return true;
+}
+
+template <typename T>
+bool Parse(QDomElement, const std::string&, T&)
+{
+    throw std::runtime_error("not implemented yet");
+}
+
+template <>
+bool Parse(QDomElement rootElement, const std::string &tag, std::string & result)
+{
+    return ParseString(rootElement, tag, result);
+}
+
+template <>
+bool Parse(QDomElement rootElement, const std::string &tag, double & result)
+{
+    return ParseDouble(rootElement, tag, result);
+}
+
+template <>
+bool Parse(QDomElement rootElement, const std::string &tag, std::vector<double> & result)
+{
+    return ParseDoubleVector(rootElement, tag, result  );
+}
+
+template <>
+bool Parse(QDomElement rootElement, const std::string &tag, int & result)
+{
+    return ParseInt(rootElement, tag, result   );
+}
+
+template <>
+bool Parse(QDomElement rootElement, const std::string &tag, unsigned long & result)
+{
+    return ParseULong(rootElement, tag, result );
+}
+
+template <>
+bool Parse(QDomElement rootElement, const std::string &tag, bool & result)
+{
+    return ParseBool(rootElement, tag, result  );
+}
+
+
+template<>
+bool ParseAttribute<int>(QDomElement element, const std::string &attributeName, int& result)
+{
+   return ParseAttributeInt(element, attributeName, result);
+}
+
+template<>
+bool ParseAttribute<double>(QDomElement element, const std::string &attributeName, double& result)
+{
+   return ParseAttributeDouble(element, attributeName, result);
+}
+
+template<>
+bool ParseAttribute<std::string>(QDomElement element, const std::string &attributeName, std::string& result)
+{
+   return ParseAttributeString(element, attributeName, result);
 }
 
 bool ParseAttributeString(QDomElement element, const std::string &attributeName, std::string &result)
@@ -431,8 +546,9 @@ bool ParseType(const std::string &element, RoadObjectType &objectType)
             assignIfMatching(element, objectType, "building", RoadObjectType::building) ||
             assignIfMatching(element, objectType, "parkingSpace", RoadObjectType::parkingSpace) ||
             assignIfMatching(element, objectType, "wind", RoadObjectType::wind)  ||
-            assignIfMatching(element, objectType, "patch", RoadObjectType::patch);
+            assignIfMatching(element, objectType, "patch", RoadObjectType::patch) ||
+            assignIfMatching(element, objectType, "GuardRail", RoadObjectType::guardRail) ||
+            assignIfMatching(element, objectType, "RoadSideMarkerPost", RoadObjectType::roadSideMarkerPost);
 }
-
 
 } // namespace SimulationCommon

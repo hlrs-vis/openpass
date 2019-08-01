@@ -1,26 +1,35 @@
+# /*********************************************************************
+# * Copyright (c) 2017, 2018, 2019 in-tech GmbH
+# *
+# * This program and the accompanying materials are made
+# * available under the terms of the Eclipse Public License 2.0
+# * which is available at https://www.eclipse.org/legal/epl-2.0/
+# *
+# * SPDX-License-Identifier: EPL-2.0
+# **********************************************************************/
+
 #-----------------------------------------------------------------------------
-# \file  World.pro
+# \file  World_OSI.pro
 # \brief This file contains the information for the QtCreator-project of the
-#        world module
-#
-# Copyright (c) 2018 in-tech GmbH
-#
+#        module World_OSI
 #-----------------------------------------------------------------------------/
+
 DEFINES += WORLD_LIBRARY
 CONFIG += OPENPASS_LIBRARY
-include(../../../Global.pri)
+include(../../../global.pri)
 
 SUBDIRS += \
     . \
     Localization \
     OWL \
     ../../Common \
-    ../../Interfaces
+    ../../Interfaces \
+    ../../Interfaces/OpenScenarioInterfaces
 
 INCLUDEPATH += \
     $$SUBDIRS \
     ../../Interfaces \
-    ../../Interfaces/roadInterface \
+    ../../Interfaces/RoadInterface \
     ..
 
 SOURCES += \

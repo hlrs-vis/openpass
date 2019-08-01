@@ -1,0 +1,105 @@
+<Profiles SchemaVersion="0.2.0">
+    <AgentProfiles>
+        <AgentProfile Name="EgoAgent" Type="Static">
+            <System>
+                <File>systemConfig.xml</File>
+                <Id>0</Id>
+            </System>
+            <VehicleModel>car_bmw_7_1</VehicleModel>
+        </AgentProfile>
+        <AgentProfile Name="LuxuryClassCarAgent" Type="Dynamic">
+            <DriverProfiles>
+                <DriverProfile Name="Regular" Probability="1.0"/>
+            </DriverProfiles>
+            <VehicleProfiles>
+                <VehicleProfile Name="BMW 7 1" Probability="0.5"/>
+                <VehicleProfile Name="BMW 7 2" Probability="0.5"/>
+            </VehicleProfiles>
+        </AgentProfile>
+        <AgentProfile Name="MiddleClassCarAgent" Type="Dynamic">
+            <DriverProfiles>
+                <DriverProfile Name="Regular" Probability="1.0"/>
+            </DriverProfiles>
+            <VehicleProfiles>
+                <VehicleProfile Name="Mini Cooper" Probability="0.4"/>
+                <VehicleProfile Name="BMW i3" Probability="0.3"/>
+                <VehicleProfile Name="BMW 3" Probability="0.3"/>
+            </VehicleProfiles>
+        </AgentProfile>
+        <AgentProfile Name="TruckAgent" Type="Dynamic">
+            <DriverProfiles>
+                <DriverProfile Name="Regular" Probability="1.0"/>
+            </DriverProfiles>
+            <VehicleProfiles>
+                <VehicleProfile Name="Truck" Probability="0.5"/>
+                <VehicleProfile Name="Bus" Probability="0.5"/>
+            </VehicleProfiles>
+        </AgentProfile>
+    </AgentProfiles>
+    <!-- ######################################################################################################### -->
+    <DriverProfiles>
+        <DriverProfile Name="Regular">
+            <String Key="Type" Value="AlgorithmAgentFollowingDriverModel"/>
+            <String Key="AlgorithmLateralModule" Value="AlgorithmLateralAmfd"/>
+            <String Key="AlgorithmLongitudinalModule" Value="AlgorithmLongitudinalAmfd"/>
+        </DriverProfile>
+    </DriverProfiles>
+    <!-- ######################################################################################################### -->
+    <VehicleProfiles>
+        <VehicleProfile Name="BMW 7 1">
+            <Model Name="car_bmw_7_1"/>
+            <Components>
+			</Components>
+            <Sensors>
+			</Sensors>
+        </VehicleProfile>
+        <VehicleProfile Name="BMW 7 2">
+            <Model Name="car_bmw_7_2"/>
+            <Components>
+			</Components>
+            <Sensors>
+			</Sensors>
+        </VehicleProfile>
+        <VehicleProfile Name="Mini Cooper">
+            <Model Name="car_mini_cooper"/>
+            <Components>
+			</Components>
+            <Sensors>
+			</Sensors>
+        </VehicleProfile>
+        <VehicleProfile Name="BMW i3">
+            <Model Name="car_bmw_i3"/>
+            <Components>
+			</Components>
+            <Sensors>
+			</Sensors>
+        </VehicleProfile>
+        <VehicleProfile Name="BMW 3">
+            <Model Name="car_bmw_3"/>
+            <Components>
+			</Components>
+            <Sensors>
+			</Sensors>
+        </VehicleProfile>
+        <VehicleProfile Name="Truck">
+            <Model Name="truck"/>
+            <Components>
+			</Components>
+            <Sensors>
+			</Sensors>
+        </VehicleProfile>
+        <VehicleProfile Name="Bus">
+            <Model Name="bus"/>
+            <Components>
+			</Components>
+            <Sensors>
+			</Sensors>
+        </VehicleProfile>
+    </VehicleProfiles>
+    <!-- ######################################################################################################### -->
+    <VehicleComponentProfiles>
+    </VehicleComponentProfiles>
+    <!-- ######################################################################################################### -->
+    <SensorProfiles>
+    </SensorProfiles>
+</Profiles>

@@ -1,24 +1,22 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 #include <stdexcept>
+#include "CoreFramework/CoreShare/log.h"
 #include "observationNetwork.h"
-#include "observationModule.h"
 #include "observationBinding.h"
-#include "runConfig.h"
-#include "stochastics.h"
+#include "observationModule.h"
 #include "runResult.h"
-#include "log.h"
 
-namespace SimulationSlave
-{
+namespace SimulationSlave {
 
 ObservationNetwork::~ObservationNetwork()
 {
@@ -27,180 +25,188 @@ ObservationNetwork::~ObservationNetwork()
 
 void ObservationNetwork::Clear()
 {
-    for(auto &item : modules)
+    for (auto& items : modules)
     {
-        delete item.second;
+        delete items.second;
     }
 
     modules.clear();
 
-    binding->Unload();
+    if (binding != nullptr)
+    {
+        binding->Unload();
+    }
 }
 
-bool ObservationNetwork::Instantiate(const std::map<int, SimulationCommon::RunConfig::ObservationInstance*> &observationInstances,
-                                     Stochastics *stochastics,
-                                     WorldInterface *world)
+bool ObservationNetwork::Instantiate(const std::map<int, ObservationInstance>& observationInstances,
+                                     StochasticsInterface* stochastics,
+                                     WorldInterface* world,
+                                     EventNetworkInterface* eventNetwork)
 {
-    for(const std::pair<const int, SimulationCommon::RunConfig::ObservationInstance*> &item : observationInstances)
+    int id;
+    try
     {
-        ObservationModule *module = binding->Instantiate(item.second, stochastics, world);
-        if(!module)
+        for (const auto& item : observationInstances)
         {
-            return false;
-        }
+            id = item.first;
+            auto observationInstance = item.second;
 
-        if(!(modules.insert({item.first, module})).second)
-        {
-            delete module;
-            return false;
+            auto module = binding->Instantiate(observationInstance.libraryPath,
+                                               observationInstance.parameters,
+                                               stochastics,
+                                               world,
+                                               eventNetwork);
+
+            modules.insert({id, module});
         }
+    }
+    catch (const std::exception& ex)
+    {
+        LOG_INTERN(LogLevel::Error) << "observation " << id << ", could not be initialized: " << ex.what();
+        return false;
     }
 
     return true;
 }
 
-std::map<int, ObservationModule*> &ObservationNetwork::GetObservationModules()
+const std::map<int, ObservationModule*>& ObservationNetwork::GetObservationModules()
 {
     return modules;
 }
 
-bool ObservationNetwork::InitAll(const std::string &path)
+bool ObservationNetwork::InitAll(const std::string& path)
 {
-    for(auto &item : modules)
+    for (auto& item : modules)
     {
-        ObservationModule *module = item.second;
+        auto module = item.second;
         try
         {
-            if(!module->GetLibrary()->SlavePreHook(module->GetImplementation(), path))
+            if (!module->GetLibrary()->SlavePreHook(module->GetImplementation(), path))
             {
                 LOG_INTERN(LogLevel::Error) << "observation " << module->GetId() << ", slave pre hook failed";
                 return false;
             }
         }
-        catch(std::runtime_error const &ex)
+        catch (const std::runtime_error& ex)
         {
             LOG_INTERN(LogLevel::Error) << "observation " << module->GetId() << ", slave pre hook failed: " << ex.what();
             return false;
         }
-        catch(...)
+        catch (...)
         {
             LOG_INTERN(LogLevel::Error) << "observation " << module->GetId() << ", slave pre hook failed";
             return false;
         }
     }
-
     return true;
 }
 
 bool ObservationNetwork::InitRun()
 {
-    for(auto &item : modules)
+    for (auto& item : modules)
     {
-        ObservationModule *module = item.second;
+        auto module = item.second;
         try
         {
-            if(!module->GetLibrary()->SlavePreRunHook(module->GetImplementation()))
+            if (!module->GetLibrary()->SlavePreRunHook(module->GetImplementation()))
             {
                 LOG_INTERN(LogLevel::Error) << "observation " << module->GetId() << ", slave pre run hook failed";
                 return false;
             }
         }
-        catch(std::runtime_error const &ex)
+        catch (std::runtime_error const& ex)
         {
             LOG_INTERN(LogLevel::Error) << "observation " << module->GetId() << ", slave pre run hook failed: " << ex.what();
             return false;
         }
-        catch(...)
+        catch (...)
         {
             LOG_INTERN(LogLevel::Error) << "observation " << module->GetId() << ", slave pre run hook failed";
             return false;
         }
     }
-
     return true;
 }
 
-bool ObservationNetwork::UpdateTimeStep(int time, RunResult &runResult)
+bool ObservationNetwork::UpdateTimeStep(int time, RunResult& runResult)
 {
-    for(auto &item : modules)
+    for (auto& item : modules)
     {
-        ObservationModule *module = item.second;
+        ObservationModule* module = item.second;
         try
         {
-            if(!module->GetLibrary()->SlaveUpdateHook(module->GetImplementation(), time, runResult))
+            if (!module->GetLibrary()->SlaveUpdateHook(module->GetImplementation(), time, runResult))
             {
                 LOG_INTERN(LogLevel::Error) << "observation " << module->GetId() << ", slave update hook failed";
                 return false;
             }
         }
-        catch(std::runtime_error const &ex)
+        catch (std::runtime_error const& ex)
         {
             LOG_INTERN(LogLevel::Error) << "observation " << module->GetId() << ", slave update hook failed: " << ex.what();
             return false;
         }
-        catch(...)
+        catch (...)
         {
             LOG_INTERN(LogLevel::Error) << "observation " << module->GetId() << ", slave update hook failed";
             return false;
         }
     }
-
     return true;
 }
 
-bool ObservationNetwork::FinalizeRun(const RunResult &result)
+
+bool ObservationNetwork::FinalizeRun(const RunResult& result)
 {
-    for(auto &item : modules)
+    for (auto& item : modules)
     {
-        ObservationModule *module = item.second;
+        auto module = item.second;
         try
         {
-            if(!module->GetLibrary()->SlavePostRunHook(module->GetImplementation(), result))
+            if (!module->GetLibrary()->SlavePostRunHook(module->GetImplementation(), result))
             {
                 LOG_INTERN(LogLevel::Error) << "observation " << module->GetId() << ", slave post run hook failed";
                 return false;
             }
         }
-        catch(std::runtime_error const &ex)
+        catch (std::runtime_error const& ex)
         {
             LOG_INTERN(LogLevel::Error) << "observation " << module->GetId() << ", slave post run hook failed: " << ex.what();
             return false;
         }
-        catch(...)
+        catch (...)
         {
             LOG_INTERN(LogLevel::Error) << "observation " << module->GetId() << ", slave post run hook failed";
             return false;
         }
     }
-
     return true;
 }
 
 bool ObservationNetwork::FinalizeAll()
 {
-    for(auto &item : modules)
+    for (auto& item : modules)
     {
-        ObservationModule *module = item.second;
+        auto module = item.second;
         try
         {
-            if(!module->GetLibrary()->SlavePostHook(module->GetImplementation()))
+            if (!module->GetLibrary()->SlavePostHook(module->GetImplementation()))
             {
                 LOG_INTERN(LogLevel::Error) << "observation " << module->GetId() << ", slave post hook failed";
                 return false;
             }
         }
-        catch(std::runtime_error const &ex)
+        catch (std::runtime_error const& ex)
         {
             LOG_INTERN(LogLevel::Error) << "observation " << module->GetId() << ", slave post hook failed: " << ex.what();
             return false;
         }
-        catch(...)
+        catch (...)
         {
             LOG_INTERN(LogLevel::Error) << "observation " << module->GetId() << ", slave post hook failed";
             return false;
         }
     }
-
     return true;
 }
 

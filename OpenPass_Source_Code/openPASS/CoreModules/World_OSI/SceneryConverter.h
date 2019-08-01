@@ -1,12 +1,12 @@
-/******************************************************************************
-* Copyright (c) 2018 in-tech GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
 *
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* https://www.eclipse.org/legal/epl-2.0/
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-******************************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
 //! @file  SceneryConverter.h
@@ -17,38 +17,12 @@
 
 #include <map>
 #include <list>
-#include "sceneryInterface.h"
-#include "vector3d.h"
-#include "worldInterface.h"
+#include "Interfaces/worldInterface.h"
+#include "Interfaces/sceneryInterface.h"
+#include "Localization/LocalizationCache.h"
+#include "Common/vector3d.h"
 #include "WorldData.h"
-
-//todo: delete!
-template <class T>
-class SimpleHasher
-{
-private:
-    std::map<const std::string, T> cache;
-
-public:
-    T get(const std::string key)
-    {
-        auto search = cache.find(key);
-        if(search != cache.end())
-        {
-            return search->second;
-        }
-
-        T value = static_cast<T>(cache.size() - 1);
-        cache[key] = (T) value;
-        return value;
-    }
-
-    void clear()
-    {
-        cache.clear();
-    }
-};
-
+#include "WorldDataQuery.h"
 
 //-----------------------------------------------------------------------------
 //! Class for the convertion of a scenery, i.e. the roads in it; the road geometry
@@ -59,7 +33,8 @@ class SceneryConverter
 
 public:
     SceneryConverter(SceneryInterface *scenery,
-                     OWL::WorldData& worldData,
+                     OWL::Interfaces::WorldData& worldData,
+                     World::Localization::Cache& localizationCache,
                      const CallbackInterface *callbacks);
     SceneryConverter(const SceneryConverter&) = delete;
     SceneryConverter(SceneryConverter&&) = delete;
@@ -68,11 +43,10 @@ public:
     virtual ~SceneryConverter() = default;
 
     //-----------------------------------------------------------------------------
-    //! Triggers the convertion process from OpenDrive to OSI world in the
-    //! following steps:
+    //! Triggers the convertion process from OpenDrive to OSI in the following steps:
     //! - defines a unique direction within the road cluster (MarkDirections())
     //! - assigns IDs to OpenDrive lane sections
-    //! - generates the mappings for lanes and lane sections from OpenDrive to OWL
+    //! - generates the mappings for lanes and lane sections from OpenDrive to OSI
     //! - then connects these sections
     //! - finally, triggers convertion of the road geometries
     //!
@@ -80,34 +54,8 @@ public:
     //-----------------------------------------------------------------------------
     bool Convert();
 
-    bool CreateXfObjects();
+    std::tuple<bool, double, double, double> CalculateAbsoluteCoordinates(RoadInterface* road, OWL::CSection* section, const RoadObjectInterface *object) const;
 
-    bool CreateTrafficDevices();
-
-    // TODO
-    /*
-    bool GenerateAndLinkSectionObject(TRAFFIC_DEVICE * trafficDevice,
-                                      Interface::SECTION * section,
-                                      SECTION_OBJ **sectionObject);
-
-    bool GenerateAndLinkLaneObject(SECTION_OBJ *sectionObj,
-                                   Interface::LANE *xfLane,
-                                   LANE_OBJ **laneObject);
-    */
-
-    /*!
-    * \brief Returns the distance to the section start.
-    *
-    * This function recursivly adds up the lengths of the previous sections then returns the sum.
-    *
-    * @param[in]     currentDistance           Current distance to section start that was already calculated.
-    * @param[in]     section                   Section for which the distance is being calculated.
-    * @return        Distance to section start in m.
-    */
-    // TODO
-    //static double GetDistanceToSectionStart (double currentDistance, const Interface::SECTION *section);
-
-    //static std::tuple<bool, double, double, double> CalculateAbsoluteCoordinates(Interface::SECTION* section, const RoadObjectInterface *object);
 protected:
     //-----------------------------------------------------------------------------
     //! Provides callback to LOG() macro
@@ -155,9 +103,6 @@ private:
     //-----------------------------------------------------------------------------
     RoadInterface *GetConnectedRoad(RoadLinkInterface *roadLink);
 
-
-
-
     //-----------------------------------------------------------------------------
     //! Marks the direction of the provided road, on all of its lane sections
     //! and lanes within these lane sections to the provided value.
@@ -177,7 +122,7 @@ private:
     //! Notes:
     //! - The first road of each cluster implictely defines the driving direction
     //!   (OpenDrive lanes/roads which are connected with opposite directions will
-    //!   be converted to OWL lanes/sections which point into the same direction)
+    //!   be converted to OSI lanes/sections which point into the same direction)
     //!
     //! @return                         False if an error occurred, true otherwise
     //-----------------------------------------------------------------------------
@@ -192,7 +137,7 @@ private:
     bool IndexElements();
 
     //-----------------------------------------------------------------------------
-    //! Connects the OWL representation of the two provided lanes.
+    //! Connects the OSI representation of the two provided lanes.
     //!
     //! @param[in]  currentLane         First lane to connect
     //! @param[in]  currentContactPoint Contact point of the first lane
@@ -202,11 +147,10 @@ private:
     //-----------------------------------------------------------------------------
     bool ConnectLaneToLane(RoadLaneInterface *currentLane,
                            ContactPointType currentContactPoint,
-                           RoadLaneInterface *otherLane,
-                           ContactPointType otherContactPoint);
+                           RoadLaneInterface *otherLane);
 
     //-----------------------------------------------------------------------------
-    //! Connects a lane to a lane section in OWL by connecting the predecessor and
+    //! Connects a lane to a lane section in OSI by connecting the predecessor and
     //! successor of the provided lane, which are in the provided lane section, to
     //! the provided line.
     //!
@@ -218,17 +162,12 @@ private:
     //-----------------------------------------------------------------------------
     bool ConnectLaneToSection(RoadLaneInterface *currentLane,
                               ContactPointType currentContactPoint,
-                              RoadLaneSectionInterface *otherLaneSection,
-                              ContactPointType otherContactPoint);
+                              RoadLaneSectionInterface *otherLaneSection);
 
     //-----------------------------------------------------------------------------
-    //! Connects a lane section to a lane section in OWL by first connecting all
+    //! Connects a lane section to a lane section in OSI by first connecting all
     //! lanes in the first section to the second section, then connecting all lanes
     //! in the second section to the first.
-    //!
-    //! Preconditions:
-    //! - A mapping from lane section objects to LINEAR_SECTION objects already
-    //!     exists
     //!
     //! Notes:
     //! - OpenDrive center lanes are skipped (width=0 by convention)
@@ -245,29 +184,8 @@ private:
                       ContactPointType secondContactPoint);
 
     //-----------------------------------------------------------------------------
-    //! Connects the lanes from two connected roads.
-    //!
-    //! Preconditions:
-    //! - A mapping from lane section objects to LINEAR_SECTION objects already
-    //!     exists
-    //!
-    //!
-    //! @param[in]  firstLaneSection    First lane section to connect
-    //! @param[in]  currentContactPoint Contact point of the first lane section
-    //! @param[in]  secondLaneSection   Lane section to connect
-    //! @return                         False, if an error occurred, true otherwise
-    //-----------------------------------------------------------------------------
-    bool ConnectExternalLanes(RoadLaneSectionInterface *firstLaneSection,
-                      ContactPointType firstContactPoint,
-                      RoadLaneSectionInterface *secondLaneSection,
-                      std::map<int,int> * laneIdMapping
-                              );
-
-
-
-    //-----------------------------------------------------------------------------
     //! Connects a road in the scenery to its predecessor and successor roads in
-    //! OWL by connecting their respective lane sections. Only connects roads with roadlinktype Road
+    //! OSI by connecting their respective lane sections. Only connects roads with roadlinktype Road
     //!
     //! @param[in]  road                Road which should be connected to its predecessors
     //!                                 and successors
@@ -275,9 +193,28 @@ private:
     //-----------------------------------------------------------------------------
     bool ConnectRoadExternalWithElementTypeRoad(RoadInterface *road);
 
+    //-----------------------------------------------------------------------------
+    //! Connects a road with another road by setting successor of road, section and lanes
+    //!
+    //! @param[in]  currentRoad         road which should be connected to its successor
+    //! @param[in]  otherRoad           successor of this currentRoad
+    //! @param[in]  otherSection        section on otherRoad to connect to
+    //! @return                         False, if an error occurred, true otherwise
+    //-----------------------------------------------------------------------------
+    bool ConnectExternalRoadSuccessor(RoadInterface *currentRoad, RoadInterface *otherRoad, RoadLaneSectionInterface *otherSection);
 
     //-----------------------------------------------------------------------------
-    //! Connects a road in the scenery internally in OWL by connecting all of its
+    //! Connects a road with another road by setting predecessor of road, section and lanes
+    //!
+    //! @param[in]  currentRoad         road which should be connected to its predecessor
+    //! @param[in]  otherRoad           predecessor of this currentRoad
+    //! @param[in]  otherSection        section on otherRoad to connect to
+    //! @return                         False, if an error occurred, true otherwise
+    //-----------------------------------------------------------------------------
+    bool ConnectExternalRoadPredecessor(RoadInterface *currentRoad, RoadInterface *otherRoad, RoadLaneSectionInterface *otherSection);
+
+    //-----------------------------------------------------------------------------
+    //! Connects a road in the scenery internally in OSI by connecting all of its
     //! stored lane sections with their predecessors and successors.
     //!
     //! @param[in]  road                Road in which the lanes and lane sections
@@ -286,57 +223,38 @@ private:
     //-----------------------------------------------------------------------------
     bool ConnectRoadInternal(RoadInterface *road);
 
+
     //-----------------------------------------------------------------------------
-    //! Connects OWL sections for all roads in the scenery internally and externally.
+    //!Connects the incoming and connecting roads of the junction
     //!
-    //! Precondition:
-    //! - Lanes in scenery are sorted within each laneSection with
-    //!   descending ids from left to right (in driving direction)
-    //!   (see comment in XfLinearSection.h, Rev. 5820)
+    //! @param[in]  junction            Junction which should be connected
+    //! @return                         False, if an error occurred, true otherwise
+    //-----------------------------------------------------------------------------
+    bool ConnectJunction(JunctionInterface *junction);
+
+    //-----------------------------------------------------------------------------
+    //! Connects a single path of a junction.
+    //! It only sets the connections into the path, because the connections of the path
+    //! itself are already set by ConnectRoadExternalWithElementTypeRoad
+    //!
+    //! @param[in]  incomingRoad            road going into the path
+    //! @param[in]  connectingRoad          connecting road == path
+    //! @param[in]  outgoingRoad            road going out of the path
+    //! @param[in]  incomingContactPoint    contactPoint on the path connected to the incomingRoad
+    //! @param[in]  outgoingContactPoint    contactPoint on the outgoing road connected to the path
+    //! @param[in]  laneIdMapping           mapping of the lane ids between the incoming road and the path
+    //! @return                         False, if an error occurred, true otherwise
+    //-----------------------------------------------------------------------------
+    void ConnectPathInJunction(RoadInterface *incomingRoad, RoadInterface *connectingRoad, RoadInterface*outgoingRoad,
+                               ContactPointType incomingContactPoint, ContactPointType outgoingContactPoint, std::map<int, int> laneIdMapping);
+
+    //-----------------------------------------------------------------------------
+    //! Connects OSI sections for all roads in the scenery internally and externally.
+    //!
     //!
     //! @return                         False, if an error occurred, true otherwise
     //-----------------------------------------------------------------------------
     bool ConnectRoads();
-
-    //-----------------------------------------------------------------------------
-    //! Adds a mapping from the lane sections in the provided OpenDrive road to OWL
-    //! linear sections to the stored mappings, then calls AddToSection for each section.
-    //!
-    //! @param[in]  road                OpenDrive road to be converted to linear
-    //!                                 sections
-    //! @return                         False, if an error occurred, true otherwise
-    //-----------------------------------------------------------------------------
-    bool CreateLinearSections(RoadInterface *road);
-
-
-    //-----------------------------------------------------------------------------
-    //! Adds mappings for all OpenDrive lane sections and lanes to their corresponding
-    //! OWL counterparts for all roads in the scenery. Calls CreateLinearSections
-    //! for each road.
-    //!
-    //! Precondition:
-    //! - Lanes in scenery are sorted within each laneSection with
-    //!   descending ids from left to right (in driving direction)
-    //!   (see comment in XfLinearSection.h, Rev. 5820)
-    //!
-    //! Notes:
-    //! - OpenDrive center lanes are skipped (width=0 by convention)
-    //!
-    //! @return                     False, if an error occurred, true otherwise
-    //-----------------------------------------------------------------------------
-    bool CreateSections();
-
-    SceneryInterface *scenery;
-    OWL::WorldData& worldData;
-
-    std::list<RoadInterface*> pendingCluster; // road cluster which is currently processed
-
-    constexpr static const double SAMPLING_RATE = 1.0; // 1m sampling rate of reference line
-
-    const CallbackInterface *callbacks;
-
-    int trafficObjectId = 0;
-    int trafficDeviceId = 0;
 
     //OSI Methods and Variables
     void CreateRoads();
@@ -366,11 +284,11 @@ private:
                         double length, double height, double width,
                         double yaw, double pitch, double roll);
 
-    int trafficSignCounter{0};
-
-    int laneCounter {0};
-
-    int objectCounter {0};
+    SceneryInterface *scenery;
+    OWL::Interfaces::WorldData& worldData;
+    WorldDataQuery worldDataQuery{worldData};
+    World::Localization::Cache& localizationCache;
+    const CallbackInterface *callbacks;
 };
 
 inline bool IsWithinLeftClosedInterval(double value, double start, double end)
@@ -383,3 +301,5 @@ inline bool HasSucceedingElement(std::vector<T, A> const& vector, size_t current
 {
     return vector.size() > currentIndex + 1;
 }
+
+

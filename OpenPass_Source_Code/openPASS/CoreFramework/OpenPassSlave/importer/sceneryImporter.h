@@ -1,16 +1,16 @@
-/******************************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH.
-* Copyright (c) 2018 in-tech GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* https://www.eclipse.org/legal/epl-2.0/
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-******************************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  sceneryImporter.h
+//! @file  SceneryImporter.h
 //! @brief This file contains the importer of the scenery configuration.
 //-----------------------------------------------------------------------------
 
@@ -19,13 +19,15 @@
 #include <map>
 #include <list>
 #include <QDomDocument>
-#include "worldInterface.h"
 #include "scenery.h"
+#include "utilities.h"
+#include "Interfaces/roadInterface/junctionInterface.h"
+#include "Interfaces/roadInterface/connectionInterface.h"
 
-namespace SimulationSlave
+using namespace Configuration;
+
+namespace Importer
 {
-
-class SceneryConverter;
 
 class SceneryImporter
 {
@@ -37,15 +39,16 @@ public:
     SceneryImporter& operator=(SceneryImporter&&) = delete;
     virtual ~SceneryImporter() = default;
 
+    static void LogAndThrowIfFalse(bool expression);
+
     //-----------------------------------------------------------------------------
     //! Imports data structures from the scenery configuration file e.g. OpenDrive file
     //!
     //! @param[in]  filename       path to OpenDrive file
-    //! @param[in]  world          the destination world, where the scenery will be created
     //! @return                    true on success
     //-----------------------------------------------------------------------------
     static bool Import(const std::string &filename,
-                       WorldInterface *world);
+                       Scenery *scenery);
 
     //-----------------------------------------------------------------------------
     //! @brief Parses roads into a scenery object.
@@ -61,7 +64,26 @@ public:
     //! @return                         False if an error occurred, true otherwise
     //-----------------------------------------------------------------------------
     static bool ParseRoads(QDomElement &documentRoot,
-                           Scenery &scenery);
+                           Scenery *scenery);
+
+    //-----------------------------------------------------------------------------
+    //! @brief Parses junctions into a scenery object.
+    //! @note  Use this entry point only for testing or within the class context
+    //!
+    //!
+    //! @param[in]  documentRoot        DOM element containing the OpenDRIVE road
+    //! @param[out] scenery             Scenery with the contents of the DOM element
+    //!
+    //! @return                         False if an error occurred, true otherwise
+    //-----------------------------------------------------------------------------
+    static bool ParseJunctions(QDomElement &documentRoot,
+                           Scenery *scenery);
+
+
+
+    static bool ParseJunctionConnections(QDomElement &junctionElement, JunctionInterface *junction);
+
+    static bool ParseJunctionConnectionLinks(QDomElement &connectionElement, ConnectionInterface *connection);
 
 
 private:
@@ -84,6 +106,7 @@ private:
     //-----------------------------------------------------------------------------
     static bool ParseLanes(QDomElement &rootElement,
                            RoadLaneSectionInterface *laneSection);
+
 
     //-----------------------------------------------------------------------------
     //! @brief Parses lane road mark elements into a road lane object.
@@ -168,6 +191,8 @@ private:
     //! @return                         False if an error occurred, true otherwise
     //-----------------------------------------------------------------------------
     static bool ParseRoadLanes(QDomElement &roadElement, RoadInterface *road);
+
+
 
     //-----------------------------------------------------------------------------
 
@@ -336,6 +361,6 @@ public:
     constexpr static const double SAMPLING_RATE = 1.0; // 1m sampling rate of reference line
 };
 
-} // namespace SimulationSlave
+} // namespace Importer
 
 

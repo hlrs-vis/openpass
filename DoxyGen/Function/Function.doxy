@@ -16,7 +16,7 @@
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           = "openPASS - PCM Function Description"
+PROJECT_NAME           = "openPASS"
 
 
 
@@ -62,11 +62,28 @@ HIDE_UNDOC_CLASSES     = NO
 # spaces.
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = . \
-						 $(SourceDir)/openPASS/Components_PCM \
+INPUT                  = $(OSDocumentationDir) \
+                        $(OSDocumentationDir)/Function/Markdown \
+                        $(OSDocumentationDir)/Function/Markdown/Simulation \
+                        $(OSDocumentationDir)/Function/Markdown/Simulation/Architecture \
+                        $(OSDocumentationDir)/Function/Markdown/Simulation/Development \
+                        $(OSDocumentationDir)/Function/Markdown/Simulation/Input_Output \
+                        $(OSDocumentationDir)/Function/Markdown/Simulation/Tests \
+                        $(SourceDir)
 
+FILE_PATTERNS          = *.md \
+						 *.c \
+                         *.cc \
+                         *.cxx \
+                         *.cpp \
+                         *.c++ \
+                         *.h \
+                         *.hh \
+                         *.hxx \
+                         *.hpp \
+                         *.h++
 
-FILE_PATTERNS          = *.cpp \
+LAYOUT_FILE            = Layout.xml
 
 # The EXCLUDE tag can be used to specify files and/or directories that should be
 # excluded from the INPUT source files. This way you can easily exclude a
@@ -77,13 +94,15 @@ FILE_PATTERNS          = *.cpp \
 
 #EXCLUDE                =  \
 
+EXCLUDE_PATTERNS        = */openpass-thirdpartylibraries/*
+
 
 
 # The IMAGE_PATH tag can be used to specify one or more files or directories
 # that contain images that are to be included in the documentation (see the
 # \image command).
 
-IMAGE_PATH             = ./images
+IMAGE_PATH             = $(OSDocumentationDir)
 
 
 
@@ -112,7 +131,7 @@ INLINE_SOURCES         = YES
 # written to the html output directory.
 # This tag requires that the tag GENERATE_HTMLHELP is set to YES.
 
-CHM_FILE               = openPASS_PCM_Function.chm
+CHM_FILE               = openPASS_Function_Docu.chm
 
 
 
@@ -134,7 +153,7 @@ CLASS_DIAGRAMS         = NO
 # set to NO
 # The default value is: NO.
 
-HAVE_DOT               = NO
+HAVE_DOT               = YES
 
 
 

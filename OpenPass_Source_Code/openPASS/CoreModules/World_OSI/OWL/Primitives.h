@@ -1,20 +1,15 @@
-/******************************************************************************
-* Copyright (c) 2018 in-tech GmbH
+/*******************************************************************************
+* Copyright (c) 2018, 2019 in-tech GmbH
 *
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* https://www.eclipse.org/legal/epl-2.0/
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-*
-* OSI     ^_^
-* World  /ò,ó \
-* Layer  |:::(|
-* ========w=w===
-*
-******************************************************************************/
-
+*******************************************************************************/
 #pragma once
+
+#include <cmath>
 
 namespace OWL {
 namespace Primitive {
@@ -35,6 +30,40 @@ struct AbsCoordinate
 
 struct AbsPosition
 {
+    AbsPosition() = default;
+    AbsPosition(const AbsPosition&) = default;
+
+    AbsPosition operator+(const AbsPosition& ref) const
+    {
+        return { x + ref.x,
+                 y + ref.y,
+                 z + ref.z
+               };
+    }
+
+    AbsPosition operator-(const AbsPosition& ref) const
+    {
+        return { x - ref.x,
+                 y - ref.y,
+                 z - ref.z
+               };
+    }
+
+    double distance() const
+    {
+        return std::hypot(x, std::hypot(y, z));
+    }
+
+    void RotateYaw(double angle)
+    {
+        double cosValue = std::cos(angle);
+        double sinValue = std::sin(angle);
+        double newX = x * cosValue - y * sinValue;
+        double newY = x * sinValue + y * cosValue;
+        x = newX;
+        y = newY;
+    }
+
     double x;
     double y;
     double z;

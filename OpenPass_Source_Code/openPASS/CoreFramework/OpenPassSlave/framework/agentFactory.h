@@ -1,15 +1,16 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  agentFactory.h
+//! @file  AgentFactory.h
 //! @brief This file contains the singleton which creates agent instances
 //!
 //! The agent instances are created based on the agent types which are given by
@@ -17,46 +18,37 @@
 //! simulation run by spawn points.
 //-----------------------------------------------------------------------------
 
-#ifndef AGENTFACTORY_H
-#define AGENTFACTORY_H
+#pragma once
 
 #include <map>
 #include <list>
-#include "runConfig.h"
-#include "worldInterface.h"
+
+#include "Interfaces/agentFactoryInterface.h"
+#include "Interfaces/eventNetworkInterface.h"
+#include "Interfaces/worldInterface.h"
 
 namespace SimulationSlave
 {
-
 class Agent;
 class AgentType;
 class ModelBinding;
-class FrameworkConfig;
 class Stochastics;
 class SpawnItemParameter;
-class ObservationNetwork;
+class ObservationNetworkInterface;
 
-class AgentFactory
+class AgentFactory : public AgentFactoryInterface
 {
 public:
-    AgentFactory(FrameworkConfig *frameworkConfig,
-                 ModelBinding *modelBinding,
+    AgentFactory(ModelBinding *modelBinding,
                  WorldInterface *world,
                  Stochastics *stochastics,
-                 ObservationNetwork *observationNetwork);
+                 ObservationNetworkInterface *observationNetwork,
+                 SimulationSlave::EventNetworkInterface *eventNetwork);
     AgentFactory(const AgentFactory&) = delete;
     AgentFactory(AgentFactory&&) = delete;
     AgentFactory& operator=(const AgentFactory&) = delete;
     AgentFactory& operator=(AgentFactory&&) = delete;
     virtual ~AgentFactory();
-
-    //-----------------------------------------------------------------------------
-    //! Clears the agent types and tries to reload them from the agent configuration
-    //! obained from the framework configuration.
-    //!
-    //! @return                         Flag if the reload was successful
-    //-----------------------------------------------------------------------------
-    bool ReloadAgentTypes();
 
     //-----------------------------------------------------------------------------
     //! Sets the ID of the last added agent to 0.
@@ -72,22 +64,16 @@ public:
     //! Creates a new agent based on the provided parameters, then adds it to the
     //! agent network in the world representation. Also adds agents during runtime.
     //!
-    //! @param[in]  agentSpawnItem      Agent as defined in the run configuration
-    //! @param[in]  spawnItemParameter  Parameters of the spawned item
-    //! @param[in]  spawnTime           Point of time at which the agent is spawned
+    //! @param[in]  agentBlueprint      agentBlueprint contains all necessary
+    //!                                 informations to create an agent
+    //! @param[in]  spawnTime           Spawn time in ms
     //!
     //! @return                         The added agent
     //-----------------------------------------------------------------------------
-    Agent *AddAgent(const AgentSpawnItem *agentSpawnItem,
-                    const SpawnItemParameter &spawnItemParameter,
+    Agent *AddAgent(AgentBlueprintInterface* agentBlueprint,
                     int spawnTime);
 
 private:
-    //-----------------------------------------------------------------------------
-    //! Deletes the stored agent types.
-    //-----------------------------------------------------------------------------
-    void ClearAgentTypes();
-
     //-----------------------------------------------------------------------------
     //! @brief Links all channels of the agent components.
     //!
@@ -112,28 +98,26 @@ private:
     //! accordingly.
     //!
     //! @param[in]  id                  Agent ID
-    //! @param[in]  agentSpawnItem      Agent as defined in the run configuration
-    //! @param[in]  spawnItemParameter  Parameters of the spawned item
-    //! @param[in]  spawnTime           Point of time at which the agent is spawned
+    //! @param[in]  agentBlueprint      agentBlueprint contains all necessary
+    //!                                 informations to create an agent
+    //! @param[in]  spawnTime           Spawn time in ms
     //!
     //! @return                         The created agent
     //-----------------------------------------------------------------------------
-    Agent *CreateAgent(int id,
-                       const AgentSpawnItem *agentSpawnItem,
-                       const SpawnItemParameter &spawnItemParameter,
+    Agent* CreateAgent(int id,
+                       AgentBlueprintInterface* agentBlueprint,
                        int spawnTime);
 
     int lastAgentId = 0;
-    FrameworkConfig *frameworkConfig;
     ModelBinding *modelBinding;
     WorldInterface *world;
     Stochastics *stochastics;
-    ObservationNetwork *observationNetwork;
-    std::map<int, const AgentType*> agentTypes;
+    ObservationNetworkInterface *observationNetwork;
+    EventNetworkInterface *eventNetwork;
 
     std::list<const Agent*> agentList;
 };
 
 } // namespace SimulationSlave
 
-#endif // AGENTFACTORY_H
+

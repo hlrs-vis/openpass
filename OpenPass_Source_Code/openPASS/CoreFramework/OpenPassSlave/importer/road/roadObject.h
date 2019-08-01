@@ -1,14 +1,25 @@
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2017, 2018 ITK Engineering GmbH
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+*******************************************************************************/
+
 #pragma once
 
-#include "roadInterface.h"
-#include "roadObjectInterface.h"
+#include "Interfaces/roadInterface/roadInterface.h"
+#include "Interfaces/roadInterface/roadObjectInterface.h"
 
 class RoadObject : public RoadObjectInterface
 {
 public:
-    RoadObject(RoadInterface *road, const RoadObjectSpecification object) :
-        road(road),
-        object(object)
+    RoadObject(RoadInterface* road, const RoadObjectSpecification object) :
+        road{road},
+        object{object}
     {}
 
     //-----------------------------------------------------------------------------
@@ -35,10 +46,9 @@ public:
     //-----------------------------------------------------------------------------
     double GetHdg() const;
 
-    // TODO: documentation, virtual?
-    double GetHeight() const;
-    double GetPitch() const;
-    double GetRoll() const;
+    virtual double GetHeight() const;
+    virtual double GetPitch() const;
+    virtual double GetRoll() const;
 
     //-----------------------------------------------------------------------------
     //! @brief Check, if road object is valid for provided lane id

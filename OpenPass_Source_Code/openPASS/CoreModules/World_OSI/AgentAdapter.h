@@ -1,12 +1,14 @@
-/******************************************************************************
-* Copyright (c) 2018 in-tech GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2018 AMFD GmbH
+*               2016 ITK Engineering GmbH
 *
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* https://www.eclipse.org/legal/epl-2.0/
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-******************************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
 //! @file  AgentAdapter.h
@@ -21,155 +23,83 @@
 #include <QtGlobal>
 #include <functional>
 
-#include "worldInterface.h"
-#include "Localization.h"
+#include "Interfaces/worldInterface.h"
+#include "Interfaces/trafficObjectInterface.h"
+#include "Localization/Localization.h"
+#include "Localization/LocalizationCache.h"
 #include "WorldData.h"
 #include "WorldObjectAdapter.h"
+
+constexpr double zeroBaseline = 1e-9;
 
 /*!
  * \brief The AgentAdapter class
  * This class is a adapter for the communication between the framework and world.
  */
-class AgentAdapter final : public AgentInterface
+class AgentAdapter final : public WorldObjectAdapter, public AgentInterface
 {
 public:
     const std::string MODULENAME = "AGENTADAPTER";
 
-    AgentAdapter(WorldInterface* world, const CallbackInterface* callbacks);
+    AgentAdapter(WorldInterface* world, const CallbackInterface* callbacks, World::Localization::Cache& localizationCache);
     AgentAdapter(const AgentAdapter&) = delete;
     AgentAdapter(AgentAdapter&&) = delete;
     AgentAdapter& operator=(const AgentAdapter&) = delete;
     AgentAdapter& operator=(AgentAdapter&&) = delete;
-    ~AgentAdapter() override;
+    ~AgentAdapter();
+
+    ObjectTypeOSI GetType() const override
+    {
+        return ObjectTypeOSI::Vehicle;
+    }
 
     bool InitAgentParameter(int id,
-                            int agentTypeId,
                             int spawnTime,
-                            const AgentSpawnItem *agentSpawnItem,
-                            const SpawnItemParameterInterface &spawnItemParameter) override;
+                            AgentBlueprintInterface* agentBlueprint) override;
 
-    void InitDrivingView();
+    //////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////
-
-    const OWL::MovingObject* GetBaseTrafficObject() const;
-
-    AreaOfInterest GetAgentAOI() const;
-
-    int GetAgentId() const override
+    int GetId() const override
     {
         return id;
     }
 
-    double GetHeight() const override
+    std::string GetVehicleModelType() const override
     {
-        return baseTrafficObject->GetDimension().height;
+        return vehicleModelType;
     }
 
-    double GetLength() const override
+    std::string GetScenarioName() const override
     {
-        return baseTrafficObject->GetDimension().length;
+        return objectName;
     }
 
-    double GetPositionX() const override
+    std::string GetDriverProfileName() const override
     {
-        return baseTrafficObject->GetAbsPosition().x;
-    }
-
-    double GetPositionY() const override
-    {
-        return baseTrafficObject->GetAbsPosition().y;
-    }
-
-    double GetWidth() const override
-    {
-        return baseTrafficObject->GetDimension().width;
-    }
-
-    double GetYawAngle() const override
-    {
-        return baseTrafficObject->GetAbsOrientation().yaw;
-    }
-
-    double GetVelocityAbsolute() const override
-    {
-        return baseTrafficObject->GetAbsVelocityDouble();
-    }
-
-    double GetVelocityLateral() override
-    {
-        // TODO
-        return 0.0;
-    }
-
-    double GetVelocityX() const override
-    {
-        OWL::Primitive::AbsOrientation orientation = baseTrafficObject->GetAbsOrientation();
-        Common::Vector2d orientationVec{1.0, 0};
-        orientationVec.Rotate(orientation.yaw);
-
-        OWL::Primitive::AbsVelocity velocity = baseTrafficObject->GetAbsVelocity();
-        Common::Vector2d velocityVec{velocity.vx, velocity.vy};
-
-        return velocityVec.Dot(orientationVec);
-    }
-
-    double GetVelocityY() const override
-    {
-        return 0.0;
-    }
-
-    double GetAccelerationAbsolute() const override
-    {
-        return baseTrafficObject->GetAbsAccelerationDouble();
-    }
-
-    double GetAccelerationX() const override
-    {
-        OWL::Primitive::AbsOrientation orientation = baseTrafficObject->GetAbsOrientation();
-        Common::Vector2d orientationVec{1.0, 0};
-        orientationVec.Rotate(orientation.yaw);
-
-        OWL::Primitive::AbsAcceleration acceleration = baseTrafficObject->GetAbsAcceleration();
-        Common::Vector2d accelerationVec{acceleration.ax, acceleration.ay};
-
-        return accelerationVec.Dot(orientationVec);
-    }
-
-    double GetAccelerationY() const override
-    {
-        return 0.0;
-    }
-
-    double GetYawVelocity() override
-    {
-        return yawVelocity;
-    }
-
-    double GetYawAcceleration() override
-    {
-        return yawAcceleration;
+        return driverProfileName;
     }
 
 
-    double GetDistanceCOGtoFrontAxle() const override
+    std::vector<CommonTrafficSign::Entity> GetTrafficSignsInRange(double searchDistance, int relativeLane = 0) const;
+
+    double GetSpeedGoalMin() const override
     {
-        return distanceCOGToFrontAxle;
+        return speedGoalMin;
     }
 
-    double GetDistanceCOGtoLeadingEdge() const override
-    {
-        return distanceCOGToLeadingEdge;
-    }
-
-    double GetWeight() const override
-    {
-        return weight;
-    }
-
-    int GetSpawnTime() const override
+    int GetSpawnTime() const
     {
         return spawnTime;
+    }
+
+    double GetDistanceReferencePointToFrontAxle() const override
+    {
+        return distanceReferencePointToFrontAxle;
+    }
+
+    double GetEngineSpeed() const override
+    {
+        return engineSpeed;
     }
 
     double GetHeightCOG() const override
@@ -209,12 +139,7 @@ public:
 
     double GetDistanceReferencePointToLeadingEdge() const override
     {
-        return distanceReferencePointToLeadingEdge;
-    }
-
-    double GetEngineSpeed() const override
-    {
-        return engineSpeed;
+        return GetBaseTrafficObject().GetDistanceReferencePointToLeadingEdge();
     }
 
     int GetGear() const override
@@ -232,6 +157,11 @@ public:
         return brakePedal;
     }
 
+    double GetSteeringWheelAngle() const override
+    {
+        return steeringWheelAngle;
+    }
+
     double GetMaxAcceleration() const override
     {
         return maxAcceleration;
@@ -242,9 +172,37 @@ public:
         return maxDeceleration;
     }
 
+    bool GetHeadLight() const override;
+
+    bool GetHighBeamLight() const override;
+
+    bool GetHorn() const override
+    {
+        return hornSwitch;
+    }
+
+    bool GetFlasher() const override
+    {
+        return flasherSwitch;
+    }
+
+    LightState GetLightState() const override;
+
     RoadPosition GetRoadPosition() const override
     {
-        return roadPos;
+        auto coor = GetBaseTrafficObject().GetRoadCoordinate();
+        RoadPosition pos;
+        pos.s = coor.s;
+        pos.t = coor.t;
+        pos.hdg = coor.hdg;
+        return pos;
+    }
+
+    void UpdateCollision(std::pair<ObjectTypeOSI, int> collisionPartner) override;
+
+    std::vector<std::pair<ObjectTypeOSI, int>> GetCollisionPartners() const override
+    {
+        return collisionPartners;
     }
 
     AgentVehicleType GetVehicleType() const override
@@ -252,374 +210,236 @@ public:
         return vehicleType;
     }
 
-    void UpdateCollision(int collisionPartnerId) override;
-
-    void UpdateCollision(int collisionPartnerId, int collisionDataId, void *collisionData) override;
-
-    std::vector<void *> GetCollisionData(int collisionPartnerId, int collisionDataId) const override;
-
-    std::vector<int> GetCollisionPartners() const override
+    VehicleModelParameters GetVehicleModelParameters() const override
     {
-        return idsCollisionPartners;
+        return vehicleModelParameters;
     }
 
-    void SetPositionX(double positionX) override
+    void SetPositionX(double value) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdatePositionX(arg);
-        },
-        positionX);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdatePositionX, this, value));
     }
 
-    void SetPositionY(double positionY) override
+    void SetPositionY(double value) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdatePositionY(arg);
-        },
-        positionY);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdatePositionY, this, value));
+    }
+
+
+    void SetVelocity(double value) override
+    {
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateVelocity, this, value));
+    }
+
+    void SetAcceleration(double value) override
+    {
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateAcceleration, this, value));
+    }
+
+    void SetYaw(double value) override
+    {
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateYaw, this, value));
+    }
+
+    void SetYawRate(double value) override
+    {
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateYawRate, this, value));
+    }
+
+    void SetDistanceTraveled(double distanceTraveled) override
+    {
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateDistanceTraveled, this, distanceTraveled));
     }
 
     void SetWidth(double width) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateWidth(arg);
-        },
-        width);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateWidth, this, width));
     }
 
     void SetLength(double length) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateLength(arg);
-        },
-        length);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateLength, this, length));
     }
 
     void SetHeight(double height) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateHeight(arg);
-        },
-        height);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateHeight, this, height));
     }
 
-    void SetVelocityX(double velocityX) override
+    void SetDistanceReferencePointToFrontAxle(double distanceReferencePointToFrontAxle) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateVelocityX(arg);
-        },
-        velocityX);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateDistanceReferencePointToFrontAxle, this,
+                                          distanceReferencePointToFrontAxle));
     }
 
-    void SetVelocityY(double velocityY) override
+    double GetWeight() const override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateVelocityY(arg);
-        },
-        velocityY);
-    }
-
-    void SetDistanceCOGtoFrontAxle(double distanceCOGtoFrontAxle) override
-    {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateDistanceCOGtoFrontAxle(arg);
-        },
-        distanceCOGtoFrontAxle);
+        return weight;
     }
 
     void SetWeight(double weight) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateWeight(arg);
-        },
-        weight);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateWeight, this, weight));
     }
 
     void SetHeightCOG(double heightCOG) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateHeightCOG(arg);
-        },
-        heightCOG);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateHeightCOG, this, heightCOG));
     }
 
     void SetWheelbase(double wheelbase) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateWheelbase(arg);
-        },
-        wheelbase);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateWheelbase, this, wheelbase));
     }
 
     void SetMomentInertiaRoll(double momentInertiaRoll) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateMomentInertiaRoll(arg);
-        },
-        momentInertiaRoll);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateMomentInertiaRoll, this, momentInertiaRoll));
     }
 
     void SetMomentInertiaPitch(double momentInertiaPitch) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateMomentInertiaPitch(arg);
-        },
-        momentInertiaPitch);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateMomentInertiaPitch, this, momentInertiaPitch));
     }
 
     void SetMomentInertiaYaw(double momentInertiaYaw) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateMomentInertiaYaw(arg);
-        },
-        momentInertiaYaw);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateMomentInertiaYaw, this, momentInertiaYaw));
     }
 
-    void SetEngineSpeed(double engineSpeed) override
+    void SetSteeringRatio(double steeringRatio) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateEngineSpeed(arg);
-        },
-        engineSpeed);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateSteeringRatio, this, steeringRatio));
     }
 
     void SetMaxAcceleration(double maxAcceleration) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateMaxAcceleration(arg);
-        },
-        maxAcceleration);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateMaxAcceleration, this, maxAcceleration));
+    }
+
+    void SetEngineSpeed(double engineSpeed) override
+    {
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateEngineSpeed, this, engineSpeed));
     }
 
     void SetMaxDeceleration(double maxDeceleration) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateMaxDeceleration(arg);
-        },
-        maxDeceleration);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateMaxDeceleration, this, maxDeceleration));
     }
 
     void SetFrictionCoeff(double frictionCoeff) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateFrictionCoeff(arg);
-        },
-        frictionCoeff);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateFrictionCoeff, this, frictionCoeff));
     }
 
     void SetTrackWidth(double trackWidth) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateTrackWidth(arg);
-        },
-        trackWidth);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateTrackWidth, this, trackWidth));
     }
 
-    void SetDistanceCOGtoLeadingEdge(double distanceCOGtoLeadingEdge) override
+    void SetDistanceReferencePointToLeadingEdge(double distanceReferencePointToLeadingEdge) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateDistanceCOGtoLeadingEdge(arg);
-        },
-        distanceCOGtoLeadingEdge);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateDistanceReferencePointToLeadingEdge, this,
+                                          distanceReferencePointToLeadingEdge));
     }
 
     void SetGear(int gear) override
     {
-        world->QueueAgentUpdate([this](int arg)
-        {
-            UpdateGear(arg);
-        },
-        gear);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateGear, this, gear));
     }
 
     void SetEffAccelPedal(double percent) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateAccelPedal(arg);
-        },
-        percent);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateAccelPedal, this, percent));
     }
 
     void SetEffBrakePedal(double percent) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateBrakePedal(arg);
-        },
-        percent);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateBrakePedal, this, percent));
     }
 
-    void SetAccelerationX(double accelerationX) override
+    void SetSteeringWheelAngle(double steeringWheelAngle) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateAccelerationX(arg);
-        },
-        accelerationX);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateSteeringWheelAngle, this, steeringWheelAngle));
     }
 
-    void SetAccelerationY(double accelerationY) override
+    void SetHeadLight(bool headLight) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateAccelerationY(arg);
-        },
-        accelerationY);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateHeadLight, this, headLight));
     }
 
-    void SetYawAngle(double yawAngle) override
+    void SetHighBeamLight(bool highBeam) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateYawAngle(arg);
-        },
-        yawAngle);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateHighBeamLight, this, highBeam));
     }
 
-    void SetYawVelocity(double yawVelocity) override
+    void SetHorn(bool horn) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateYawVelocity(arg);
-        },
-        yawVelocity);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateHorn, this, horn));
     }
 
-    void SetYawAcceleration(double yawAcceleration) override
+    void SetFlasher(bool flasher) override
     {
-        world->QueueAgentUpdate([this](double arg)
-        {
-            UpdateYawAcceleration(arg);
-        },
-        yawAcceleration);
+        world->QueueAgentUpdate(std::bind(&AgentAdapter::UpdateFlasher, this, flasher));
+    }
+
+    double GetYawRate() const override
+    {
+        return GetBaseTrafficObject().GetAbsOrientationRate().yawRate;
     }
 
     void UpdateWidth(double width)
     {
-        this->width = width;
-        OWL::Primitive::Dimension dimension = baseTrafficObject->GetDimension();
+        OWL::Primitive::Dimension dimension = baseTrafficObject.GetDimension();
         dimension.width = width;
-        baseTrafficObject->SetDimension(dimension);
+        GetBaseTrafficObject().SetDimension(dimension);
     }
 
     void UpdateLength(double length)
     {
-        this->length = length;
-        OWL::Primitive::Dimension dimension = baseTrafficObject->GetDimension();
+        OWL::Primitive::Dimension dimension = baseTrafficObject.GetDimension();
         dimension.length = length;
-        baseTrafficObject->SetDimension(dimension);
+        GetBaseTrafficObject().SetDimension(dimension);
     }
 
     void UpdateHeight(double height)
     {
-        this->height = height;
-        OWL::Primitive::Dimension dimension = baseTrafficObject->GetDimension();
+        OWL::Primitive::Dimension dimension = baseTrafficObject.GetDimension();
         dimension.height = height;
-        baseTrafficObject->SetDimension(dimension);
+        GetBaseTrafficObject().SetDimension(dimension);
     }
 
-    void UpdateVelocityX(double velocityX)
+    void UpdateVelocity(double velocity)
     {
-        this->velocityX = velocityX;
-        baseTrafficObject->SetAbsVelocity(velocityX);
+        if (std::abs(velocity) < zeroBaseline)
+        {
+            velocity = 0.0;
+        }
+        GetBaseTrafficObject().SetAbsVelocity(velocity);
     }
 
-    void UpdateAccelerationX(double accelerationX)
+    void UpdateAcceleration(double acceleration)
     {
-        this->accelerationX = accelerationX;
-        baseTrafficObject->SetAbsAcceleration(accelerationX);
+        if (std::abs(acceleration) < zeroBaseline)
+        {
+            acceleration = 0.0;
+        }
+        GetBaseTrafficObject().SetAbsAcceleration(acceleration);
     }
 
     void UpdatePositionX(double positionX)
     {
-        this->positionX = positionX;
-        baseTrafficObject->SetX(positionX);
+        GetBaseTrafficObject().SetX(positionX);
     }
 
     void UpdatePositionY(double positionY)
     {
-        this->positionY = positionY;
-        baseTrafficObject->SetY(positionY);
+        GetBaseTrafficObject().SetY(positionY);
     }
 
-    void UpdateVelocityY(double velocityY)
+    void UpdateDistanceTraveled(double distanceTraveled)
     {
-        this->velocityY = velocityY;
-        /* NOTE: not used now
-           TODO: map to OSI
-        OWL::Primitive::AbsVelocity velocity = baseTrafficObject->GetAbsVelocity();
-        velocity.vx = ...
-        velocity.vy = velocityY;
-        baseTrafficObject->SetAbsVelocity(velocity);
-        */
-    }
-
-    void UpdateAccelerationY(double accelerationY)
-    {
-        this->accelerationY = accelerationY;
-        /* NOTE: not used now
-           TODO: map to OSI
-        OWL::Primitive::AbsAcceleration acceleration = baseTrafficObject->GetAbsAcceleration();
-        acceleration.ay = accelerationY;
-        baseTrafficObject->SetAbsAcceleration(acceleration);
-        */
-    }
-
-    void UpdateYawAngle(double yawAngle)
-    {
-        this->yawAngle = yawAngle;
-        OWL::Primitive::AbsOrientation orientation = baseTrafficObject->GetAbsOrientation();
-        orientation.yaw = yawAngle;
-        baseTrafficObject->SetAbsOrientation(orientation);
-    }
-
-    void UpdateYawVelocity(double yawVelocity)
-    {
-        this->yawVelocity = yawVelocity;
-        OWL::Primitive::AbsOrientationRate orientationRate = baseTrafficObject->GetAbsOrientationRate();
-        orientationRate.yawRate = yawVelocity;
-        baseTrafficObject->SetAbsOrientationRate(orientationRate);
-    }
-
-    void UpdateYawAcceleration(double yawAcceleration)
-    {
-        this->yawAcceleration = yawAcceleration;
-    }
-
-    void UpdateAccelerationIntention(double accelerationIntention)
-    {
-        this->accelerationIntention = accelerationIntention;
-    }
-
-    void UpdateDecelerationIntention(double decelerationIntention)
-    {
-        this->decelerationIntention = decelerationIntention;
-    }
-
-    void UpdateAngleIntention(double angleIntention)
-    {
-        this->angleIntention = angleIntention;
+        this->distanceTraveled = distanceTraveled;
     }
 
     void UpdateGear(double gear)
@@ -629,27 +449,39 @@ public:
 
     void UpdateAccelPedal(double percent)
     {
+        if (std::abs(percent) < zeroBaseline)
+        {
+            percent = 0.0;
+        }
         this->accelPedal = percent;
     }
 
     void UpdateBrakePedal(double percent)
     {
+        if (std::abs(percent) < zeroBaseline)
+        {
+            percent = 0.0;
+        }
         this->brakePedal = percent;
+    }
+
+    void UpdateSteeringWheelAngle(double steeringWheelAngle)
+    {
+        if (std::abs(steeringWheelAngle) < zeroBaseline)
+        {
+            steeringWheelAngle = 0.0;
+        }
+        this->steeringWheelAngle = steeringWheelAngle;
     }
 
     void UpdateHeadLight(bool headLight)
     {
-        this->headLightSwitch = headLight;
+        GetBaseTrafficObject().SetHeadLight(headLight);
     }
 
     void UpdateHighBeamLight(bool highBeam)
     {
-        this->highBeamLightSwitch = highBeam;
-    }
-
-    void UpdateBrakeLight(bool brakeLightStatus)
-    {
-        this->brakeLight = brakeLightStatus;
+        GetBaseTrafficObject().SetHighBeamLight(highBeam);
     }
 
     void UpdateHorn(bool horn)
@@ -664,19 +496,24 @@ public:
 
     void UpdateYaw(double yawAngle)
     {
-        OWL::Primitive::AbsOrientation orientation = baseTrafficObject->GetAbsOrientation();
+        if (std::abs(yawAngle) < zeroBaseline)
+        {
+            yawAngle = 0.0;
+        }
+        OWL::Primitive::AbsOrientation orientation = baseTrafficObject.GetAbsOrientation();
         orientation.yaw = yawAngle;
-        baseTrafficObject->SetAbsOrientation(orientation);
+        GetBaseTrafficObject().SetAbsOrientation(orientation);
     }
 
-    void UpdateDistanceCOGtoFrontAxle(double distanceCOGtoFrontAxle)
+    void UpdateYawRate(double yawRate)
     {
-        this->distanceCOGToFrontAxle = distanceCOGtoFrontAxle;
-    }
-
-    void UpdateDistanceCOGtoLeadingEdge(double distanceCOGToLeadingEdge)
-    {
-        this->distanceCOGToLeadingEdge = distanceCOGToLeadingEdge;
+        if (std::abs(yawRate) < zeroBaseline)
+        {
+            yawRate = 0.0;
+        }
+        OWL::Primitive::AbsOrientationRate orientationRate = GetBaseTrafficObject().GetAbsOrientationRate();
+        orientationRate.yawRate = yawRate;
+        GetBaseTrafficObject().SetAbsOrientationRate(orientationRate);
     }
 
     void UpdateDistanceReferencePointToFrontAxle(double distanceReferencePointToFrontAxle)
@@ -701,51 +538,91 @@ public:
 
     void UpdateMomentInertiaRoll(double momentInertiaRoll)
     {
+        if (std::abs(momentInertiaRoll) < zeroBaseline)
+        {
+            momentInertiaRoll = 0.0;
+        }
         this->momentInertiaRoll = momentInertiaRoll;
     }
 
     void UpdateMomentInertiaPitch(double momentInertiaPitch)
     {
+        if (std::abs(momentInertiaPitch) < zeroBaseline)
+        {
+            momentInertiaPitch = 0.0;
+        }
         this->momentInertiaPitch = momentInertiaPitch;
     }
 
     void UpdateMomentInertiaYaw(double momentInertiaYaw)
     {
+        if (std::abs(momentInertiaYaw) < zeroBaseline)
+        {
+            momentInertiaYaw = 0.0;
+        }
         this->momentInertiaYaw = momentInertiaYaw;
     }
 
     void UpdateSteeringRatio(double steeringRatio)
     {
+        if (std::abs(steeringRatio) < zeroBaseline)
+        {
+            steeringRatio = 0.0;
+        }
         this->steeringRatio = steeringRatio;
     }
 
     void UpdateMaxVelocity(double maxVelocity)
     {
-       this->maxVelocity = maxVelocity;
+        if (std::abs(maxVelocity) < zeroBaseline)
+        {
+            maxVelocity = 0.0;
+        }
+        this->maxVelocity = maxVelocity;
     }
 
     void UpdateMaxCurvature(double maxCurvature)
     {
-       this->maxCurvature = maxCurvature;
+        if (std::abs(maxCurvature) < zeroBaseline)
+        {
+            maxCurvature = 0.0;
+        }
+        this->maxCurvature = maxCurvature;
     }
 
     void UpdateMaxAcceleration(double maxAcceleration)
     {
-       this->maxAcceleration = maxAcceleration;
+        if (std::abs(maxAcceleration) < zeroBaseline)
+        {
+            maxAcceleration = 0.0;
+        }
+        this->maxAcceleration = maxAcceleration;
     }
 
     void UpdateEngineSpeed(double engineSpeed)
     {
+        if (std::abs(engineSpeed) < zeroBaseline)
+        {
+            engineSpeed = 0.0;
+        }
         this->engineSpeed = engineSpeed;
     }
 
     void UpdateMaxDeceleration(double maxDeceleration)
     {
-       this->maxDeceleration = maxDeceleration;
+        if (std::abs(maxDeceleration) < zeroBaseline)
+        {
+            maxDeceleration = 0.0;
+        }
+        this->maxDeceleration = maxDeceleration;
     }
 
     void UpdateFrictionCoeff(double frictionCoeff)
     {
+        if (std::abs(frictionCoeff) < zeroBaseline)
+        {
+            frictionCoeff = 0.0;
+        }
         this->frictionCoeff = frictionCoeff;
     }
 
@@ -756,17 +633,14 @@ public:
 
     void UpdateDistanceReferencePointToLeadingEdge(double distanceReferencePointToLeadingEdge)
     {
-        this->distanceReferencePointToLeadingEdge = distanceReferencePointToLeadingEdge;
-    }
-
-    void UpdateCollisionState(bool collisionState)
-    {
-        this->collisionState = collisionState;
+        GetBaseTrafficObject().SetDistanceReferencPointToLeadingEdge(distanceReferencePointToLeadingEdge);
     }
 
     bool Locate() override;
 
-    bool Unlocate() override;
+    void Unlocate() override;
+
+    bool Update() override;
 
     // callback from model
     void RemoveAgent() override
@@ -780,227 +654,109 @@ public:
         return isValid;
     }
 
-    void SetBrakeLight(bool brakeLightStatus) override
-    {
-        world->QueueAgentUpdate([this](bool arg)
-        {
-            UpdateBrakeLight(arg);
-        },
-        brakeLightStatus);
-    }
+    void SetBrakeLight(bool brakeLightStatus) override;
 
-    bool GetBrakeLight() const override
-    {
-        return brakeLight;
-    }
+    bool GetBrakeLight() const override;
 
-    int GetAgentTypeId() const override
-    {
-        return agentTypeId;
-    }
+    AgentCategory GetAgentCategory() const override;
 
-    int GetAgentLaneId() const override
-    {
-        return frontMainLaneId;
-    }
-
-    int GetAgentLaneIdLeft() override
-    {
-        // TODO
-        return 0;
-    }
-
-    int GetAgentLaneIdRight() override
-    {
-        // TODO
-        return 0;
-    }
-
-    int GetAgentLaneNumber() override
-    {
-        // TODO
-        return 0;
-    }
-
-    void ReinitCarInQueue() override {} //dummy
-
-    bool IsAgentAtEndOfRoad() override
-    {
-        return false;
-    }
-
-    void ReenterAgentAtStart() override {} //dummy
-
-    Position GetPositionByDistance(double distance) const override
-    {
-        Q_UNUSED(distance);    //dummy
-        return Position();
-    }
+    std::string GetAgentTypeName() const override;
 
     void SetIndicatorState(IndicatorState indicatorState) override;
 
-    IndicatorState GetIndicatorState() override;
+    IndicatorState GetIndicatorState() const override;
 
-    int GetNumberOfLaneAssignments() const;
+    std::string GetRoadId(MeasurementPoint mp = MeasurementPoint::Front) const override;
 
-    bool IsAgentInWorld() override;
+    int GetMainLaneId(MeasurementPoint mp = MeasurementPoint::Front) const override;
+
+    virtual int GetLaneIdLeft() const override;
+
+    virtual int GetLaneIdRight() const override;
+
+    int GetLaneIdFromRelative(int relativeLaneId) const;
+
+    bool IsLeavingWorld() const override;
+
+    bool IsCrossingLanes() const override;
+
+    int GetNumberOfLanes() override;
+
+    bool IsAgentInWorld() const override;
 
     void SetPosition(Position pos) override;
 
-    double GetDistanceToStartOfRoad() const override;
+    double GetDistanceToStartOfRoad() const override
+    {
+        return WorldObjectInterface::GetDistanceToStartOfRoad();
+    }
 
     double GetDistanceToStartOfRoad(MeasurementPoint mp) const override;
 
-    double GetLaneWidth() override;
+    double GetLaneWidth(int relativeLane = 0, double distance = 0.0) const override;
 
-    double GetLaneWidthLeft() override;
+    double GetLaneWidthRightDrivingAndStopLane() override;
 
-    double GetLaneWidthRight() override;
+    double GetLaneCurvature(int relativeLane = 0, double distance = 0.0) override;
 
-    double GetCurvature() override;
+    bool IsEgoAgent() const override;
 
-    double GetCurvatureInDistance(double distance) override;
+    double GetDistanceToFrontTrafficObject() const;
 
-    bool IsSpecialAgent() const override;
+    std::vector<AgentInterface*> GetAllAgentsInFront() const override;
+
+    std::vector<const TrafficObjectInterface*> GetAllTrafficObjectsInFront() const;
+
+    std::vector<const WorldObjectInterface*> GetAllWorldObjectsInFront() const override;
 
     bool OnRoad(const OWL::Interfaces::Road& road) const;
     bool OnLane(const OWL::Interfaces::Lane& lane) const;
 
-    const AgentInterface* GetAgentInFront(int laneId) const override;
+    AgentInterface* GetAgentInFront(int laneId) const override;
 
-    double GetDistanceToFrontAgent(int laneId) override;
+    TrafficObjectInterface* GetTrafficObjectInFront(int laneId) const;
 
-    double GetDistanceToRearAgent(int laneId) override;
+    WorldObjectInterface* GetObjectInFront(double previewDistance, int relativeLaneId = 0) const override;
 
-    double GetDistanceToFrontAgent();
+    WorldObjectInterface* GetObjectBehind(double previewDistance, int relativeLaneId = 0) const override;
 
-    double GetDistanceFrontAgentToEgo() override
+    const AgentInterface* GetAgentBehind(int laneId) const override;
+
+    double GetDistanceToObject(const WorldObjectInterface* otherObject) const override;
+
+    bool ExistsLaneLeft() const override;
+
+    bool ExistsLaneRight() const override;
+
+    bool IsLaneStopLane(int laneId, double distance = 0.0) override;
+
+    bool IsLaneDrivingLane(int laneId, double distance = 0.0) override;
+
+    bool IsLaneExitLane(int laneId, double distance = 0.0) override;
+
+    bool IsLaneRamp(int laneId, double distance = 0.0) override;
+
+    double GetDistanceToEndOfLane(double sightDistance, int relativeLane = 0) const override;
+
+    double GetDistanceToEndOfExit(int laneID, double sightDistance) const override;
+
+    double GetDistanceToEndOfRamp(int laneId, double sightDistance) const override;
+
+    double GetVelocity(VelocityScope velocityScope = VelocityScope::Absolute) const override;
+
+    double  GetRelativeYaw() const override
     {
-        return 0.0; //dummy
+        return GetRoadPosition().hdg;
     }
 
-    bool HasTwoLeftLanes() override
+    double  GetDistanceTraveled() const override
     {
-        return false;   //dummy
+        return distanceTraveled;
     }
 
-    bool HasTwoRightLanes() override
-    {
-        return false;   //dummy
-    }
-
-    LaneChangeState EstimateLaneChangeState(double thresholdLooming) override
-    {
-        Q_UNUSED(thresholdLooming);    //dummy
-        return LaneChangeState::NoLaneChange;
-    }
-
-    std::list<AgentInterface *> GetAllAgentsInLane(int laneID,
-                                                   double minDistance,
-                                                   double maxDistance,
-                                                   double AccSensDist) override
-    {
-        Q_UNUSED(laneID);
-        Q_UNUSED(minDistance);
-        Q_UNUSED(maxDistance);
-        Q_UNUSED(AccSensDist);
-        std::list<AgentInterface *> dummy;
-        return dummy;
-    } //dummy
-
-    bool IsBicycle() const override
-    {
-        return false;   //dummy
-    }
-
-    double GetDistanceToAgent(AgentInterface* otherAgent) override;
-
-    double GetDistanceToSpecialAgent() override
-    {
-        return INFINITY;
-    }
-
-    bool IsObstacle() override
-    {
-        return false;
-    }
-
-    bool IsFirstCarInLane() const override
-    {
-        return false;   //dummy
-    }
-
-    bool PerceiveMinimumSpeedOfPlatoonInLaneLeft(double MesoscopicPreviewDistance,
-                                                 int &iLane,
-                                                 double &laneSpeedDifferential) const override
-    {
-        Q_UNUSED(MesoscopicPreviewDistance);
-        Q_UNUSED(iLane);
-        Q_UNUSED(laneSpeedDifferential);
-
-        return false;
-    }
-
-    bool PerceiveMinimumSpeedOfPlatoonInLaneRight(double MesoscopicPreviewDistance,
-                                                  int &iLane,
-                                                  double &laneSpeedDifferential) const override
-    {
-        Q_UNUSED(MesoscopicPreviewDistance);
-        Q_UNUSED(iLane);
-        Q_UNUSED(laneSpeedDifferential);
-
-        return false;
-    }
-
-    double GetLaneDepartureFromLeftLaneBoundary() override
-    {
-        return 0.0;   //dummy
-    }
-
-    double GetLaneDepartureFromRightLaneBoundary() override
-    {
-        return 0.0;   //dummy
-    }
-
-    std::vector<AgentInterface*> GetAllAgentsInFront() const;
-
-    AgentInterface *GetAgentBehind(int laneId) const override;
-
-    bool ExistLaneLeft() override;
-
-    bool ExistLaneRight() override;
-
-    void GetAgentsDirectlyInFront(double PeripheralPreviewDistance,
-                                  AgentInterface *&agentFront,
-                                  AgentInterface *&agentFrontLeft,
-                                  AgentInterface *&agentFrontRight) override;
-
-    double GetDistanceToEndOfLane(double sightDistance) const override;
-
-    void ObtainGroundTruthObjectLaneExistences(AreaOfInterest aoi,
-                                               AgentInterface *&agentAOI,
-                                               bool &hasRightLane,
-                                               bool &hasLeftLane,
-                                               double PreviewDistance,
-                                               double _carLengthEffective) override;
-
-    void SetCarInfo(CarInfo *carInfo) override;
-
-    CarInfo *GetCarInfo() const override;
-
-    double GetDistanceToEndOfRamp(int laneId) override;
+    const Obstruction GetObstruction(const WorldObjectInterface& worldObject) const override;
 
     double GetPositionLateral() const override;
-
-    void SetCarInfoExtra(void *extraInfo) override;
-
-    void *GetCarInfoExtra() override;
-
-    void AssignCarInfo(double accSensDist) override;
-
-    void AssignCarInfoExtra() override;
-
-    CarInfo *GenerateCarInfo() override;
 
     double GetLaneDirection() const override;
 
@@ -1008,267 +764,29 @@ public:
 
     double GetLaneRemainder(Side side) const override;
 
-    void RemoveSpecialAgentMarker() override {} //dummy
-    void SetSpecialAgentMarker() override {} //dummy
-    void SetObstacleFlag() override {} //dummy
+    GlobalRoadPosition GetBoundaryPoint(Side side) const override;
 
-    MarkType GetTypeOfNearestMark() const override
+    virtual const std::list<SensorParameter>& GetSensorParameters() const
+
     {
-        return MarkType::NONE;  //dummy
+        return sensorParameters;
     }
 
-    std::string GetTypeOfNearestMarkString() const override
+    virtual void SetSensorParameters(std::list<SensorParameter> sensorParameters)
     {
-        return "NONE";  //dummy
+        this->sensorParameters = sensorParameters;
     }
 
-    double GetDistanceToNearestMark(MarkType markType) const override
-    {
-        Q_UNUSED(markType);
-        return 0.0;     //dummy
-    }
+    virtual std::vector<const WorldObjectInterface*> GetObjectsInRange(int relativeLane, double backwardsRange,
+            double forwardRange, MeasurementPoint mp) const override;
 
-    double GetOrientationOfNearestMark(MarkType markType) const override
-    {
-        Q_UNUSED(markType);
-        return 0.0;    //dummy
-    }
+    virtual std::vector<const AgentInterface*> GetAgentsInRange(int relativeLane, double backwardsRange,
+            double forwardRange, MeasurementPoint mp) const override;
 
-    double GetViewDirectionToNearestMark(MarkType markType) const override
-    {
-        Q_UNUSED(markType);
-        return 0.0;    //dummy
-    }
+    virtual std::vector<const AgentInterface*> GetAgentsInRangeAbsolute(int laneId, double minDistance,
+            double maxDistance) const override;
 
-    AgentViewDirection GetAgentViewDirectionToNearestMark(MarkType markType) const override
-    {
-        Q_UNUSED(markType);
-        return AgentViewDirection::none;
-    }
-
-    double GetDistanceToNearestMarkInViewDirection(MarkType markType,
-                                                   AgentViewDirection agentViewDirection) const override
-    {
-        Q_UNUSED(markType);
-        Q_UNUSED(agentViewDirection);
-        return 0.0;     //dummy
-    }
-
-    double GetDistanceToNearestMarkInViewDirection(MarkType markType, double mainViewDirection) const override
-    {
-        Q_UNUSED(markType);
-        Q_UNUSED(mainViewDirection);
-        return 0.0;     //dummy
-    }
-
-    double GetOrientationOfNearestMarkInViewDirection(MarkType markType,
-                                                      AgentViewDirection agentViewDirection) const override
-    {
-        Q_UNUSED(markType);
-        Q_UNUSED(agentViewDirection);
-        return 0.0;     //dummy
-    }
-
-    double GetOrientationOfNearestMarkInViewDirection(MarkType markType,
-                                                      double mainViewDirection) const override
-    {
-        Q_UNUSED(markType);
-        Q_UNUSED(mainViewDirection);
-        return 0.0;     //dummy
-    }
-
-    double GetDistanceToNearestMarkInViewRange(MarkType markType, AgentViewDirection agentViewDirection,
-                                               double range) const override
-    {
-        Q_UNUSED(markType);
-        Q_UNUSED(agentViewDirection);
-        Q_UNUSED(range);
-        return 0.0;     //dummy
-    }
-
-    double GetDistanceToNearestMarkInViewRange(MarkType markType, double mainViewDirection,
-                                               double range) const override
-    {
-        Q_UNUSED(markType);
-        Q_UNUSED(mainViewDirection);
-        Q_UNUSED(range);
-        return 0.0;     //dummy
-    }
-
-    double GetOrientationOfNearestMarkInViewRange(MarkType markType,
-                                                  AgentViewDirection agentViewDirection, double range) const override
-    {
-        Q_UNUSED(markType);
-        Q_UNUSED(agentViewDirection);
-        Q_UNUSED(range);
-        return 0.0;     //dummy
-    }
-
-    double GetOrientationOfNearestMarkInViewRange(MarkType markType, double mainViewDirection,
-                                                  double range) const override
-    {
-        Q_UNUSED(markType);
-        Q_UNUSED(mainViewDirection);
-        Q_UNUSED(range);
-        return 0.0;     //dummy
-    }
-
-    double GetViewDirectionToNearestMarkInViewRange(MarkType markType,
-                                                    AgentViewDirection agentViewDirection, double range) const override
-    {
-        Q_UNUSED(markType);
-        Q_UNUSED(agentViewDirection);
-        Q_UNUSED(range);
-        return 0.0;     //dummy
-    }
-
-    double GetViewDirectionToNearestMarkInViewRange(MarkType markType, double mainViewDirection,
-                                                    double range) const override
-    {
-        Q_UNUSED(markType);
-        Q_UNUSED(mainViewDirection);
-        Q_UNUSED(range);
-        return 0.0;     //dummy
-    }
-
-    std::string GetTypeOfNearestObject(AgentViewDirection agentViewDirection,
-                                       double range) const override
-    {
-        Q_UNUSED(agentViewDirection);
-        Q_UNUSED(range);
-        return "NONE";     //dummy
-    }
-
-    std::string GetTypeOfNearestObject(double mainViewDirection,
-                                       double range) const override
-    {
-        Q_UNUSED(mainViewDirection);
-        Q_UNUSED(range);
-        return "NONE";     //dummy
-    }
-
-    double GetDistanceToNearestObjectInViewRange(ObjectType objectType,
-                                                 AgentViewDirection agentViewDirection,
-                                                 double range) const override
-    {
-        Q_UNUSED(objectType);
-        Q_UNUSED(agentViewDirection);
-        Q_UNUSED(range);
-        return 0.0;     //dummy
-    }
-
-    double GetDistanceToNearestObjectInViewRange(ObjectType objectType,
-                                                 double mainViewDirection,
-                                                 double range) const override
-    {
-        Q_UNUSED(objectType);
-        Q_UNUSED(mainViewDirection);
-        Q_UNUSED(range);
-        return 0.0;     //dummy
-    }
-
-    double GetViewDirectionToNearestObjectInViewRange(ObjectType objectType,
-                                                      AgentViewDirection agentViewDirection,
-                                                      double range) const override
-    {
-        Q_UNUSED(objectType);
-        Q_UNUSED(agentViewDirection);
-        Q_UNUSED(range);
-        return 0.0;     //dummy
-    }
-
-    double GetViewDirectionToNearestObjectInViewRange(ObjectType objectType,
-                                                      double mainViewDirection,
-                                                      double range) const override
-    {
-        Q_UNUSED(objectType);
-        Q_UNUSED(mainViewDirection);
-        Q_UNUSED(range);
-        return 0.0;     //dummy
-    }
-
-
-    int GetIdOfNearestAgent(AgentViewDirection agentViewDirection,
-                            double range) const override
-    {
-        Q_UNUSED(agentViewDirection);
-        Q_UNUSED(range);
-        return 0.0;     //dummy
-    }
-
-    int GetIdOfNearestAgent(double mainViewDirection,
-                            double range) const override
-    {
-        Q_UNUSED(mainViewDirection);
-        Q_UNUSED(range);
-        return 0.0;     //dummy
-    }
-
-    double GetDistanceToNearestAgentInViewRange(AgentViewDirection agentViewDirection,
-                                                double range) const override
-    {
-        Q_UNUSED(agentViewDirection);
-        Q_UNUSED(range);
-        return 0.0;     //dummy
-    }
-
-    double GetDistanceToNearestAgentInViewRange(double mainViewDirection,
-                                                double range) const override
-    {
-        Q_UNUSED(mainViewDirection);
-        Q_UNUSED(range);
-        return 0.0;     //dummy
-    }
-
-    double GetViewDirectionToNearestAgentInViewRange(AgentViewDirection agentViewDirection,
-                                                     double range) const override
-    {
-        Q_UNUSED(agentViewDirection);
-        Q_UNUSED(range);
-        return 0.0;     //dummy
-    }
-
-    double GetViewDirectionToNearestAgentInViewRange(double mainViewDirection,
-                                                     double range) const override
-    {
-        Q_UNUSED(mainViewDirection);
-        Q_UNUSED(range);
-        return 0.0;     //dummy
-    }
-
-    const std::vector<int>* GetTrajectoryTime() const override
-    {
-        return nullptr;     //dummy
-    }
-
-    const std::vector<double>* GetTrajectoryXPos() const override
-    {
-        return nullptr;     //dummy
-    }
-
-    const std::vector<double>* GetTrajectoryYPos() const override
-    {
-        return nullptr;     //dummy
-    }
-
-    const std::vector<double>* GetTrajectoryVelocity() const override
-    {
-        return nullptr;     //dummy
-    }
-
-    const std::vector<double>* GetTrajectoryAngle() const override
-    {
-        return nullptr;     //dummy
-    }
-
-    void SetAccelerationIntention(double accelerationIntention) override;
-    double GetAccelerationIntention() const override;
-    void SetDecelerationIntention(double decelerationIntention) override;
-    double GetDecelerationIntention() const override;
-    void SetAngleIntention(double angleIntention) override;
-    double GetAngleIntention() const override;
-    void SetCollisionState(bool collisionState) override;
-    bool GetCollisionState() const override;
+    std::list<int> GetSecondaryCoveredLanes() override;
 
 protected:
     //-----------------------------------------------------------------------------
@@ -1280,11 +798,11 @@ protected:
     //! @param[in]     message     Message to log
     //-----------------------------------------------------------------------------
     void Log(CbkLogLevel logLevel,
-             const char *file,
+             const char* file,
              int line,
-             const std::string &message) const
+             const std::string& message) const
     {
-        if(callbacks)
+        if (callbacks)
         {
             callbacks->Log(logLevel,
                            file,
@@ -1293,11 +811,364 @@ protected:
         }
     }
 
+public:
+    virtual int GetAgentId() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetVelocityX() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetVelocityY() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetDistanceCOGtoLeadingEdge() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetDistanceCOGtoFrontAxle() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetAccelerationX() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetAccelerationY() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual std::vector<void *> GetCollisionData(int collisionPartnerId,
+                                                 int collisionDataId) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual void SetVelocityX(double velocityX) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual void SetVelocityY(double velocityY) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual void SetDistanceCOGtoFrontAxle(double distanceCOGtoFrontAxle) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual void SetDistanceCOGtoLeadingEdge(double distanceCOGtoLeadingEdge) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual void SetAccelerationX(double accelerationX) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual void SetAccelerationY(double accelerationY) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual bool InitAgentParameter(int id,
+                                    int agentTypeId,
+                                    int spawnTime,
+                                    const AgentSpawnItem *agentSpawnItem,
+                                    const SpawnItemParameterInterface &spawnItemParameter) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual int GetAgentTypeId() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual bool IsAgentAtEndOfRoad() override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetDistanceToFrontAgent(int laneId) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetDistanceToRearAgent(int laneId) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual void SetSpecialAgentMarker() override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual void SetObstacleFlag() override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual void RemoveSpecialAgentMarker() override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetDistanceToSpecialAgent() override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual bool IsObstacle() override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetDistanceFrontAgentToEgo() override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual bool HasTwoLeftLanes() override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual bool HasTwoRightLanes() override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual LaneChangeState EstimateLaneChangeState(double thresholdLooming) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual std::list<AgentInterface *> GetAllAgentsInLane(int laneID,
+                                                           double minDistance,
+                                                           double maxDistance,
+                                                           double AccSensDist) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual bool IsBicycle() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual bool IsFirstCarInLane() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual MarkType GetTypeOfNearestMark() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual std::string GetTypeOfNearestMarkString() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetDistanceToNearestMark(MarkType markType) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetOrientationOfNearestMark(MarkType markType) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetViewDirectionToNearestMark(MarkType markType) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetDistanceToNearestMarkInViewDirection(MarkType markType,
+                                                           AgentViewDirection agentViewDirection) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetDistanceToNearestMarkInViewDirection(MarkType markType,
+                                                           double mainViewDirection) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetOrientationOfNearestMarkInViewDirection(MarkType markType,
+                                                              AgentViewDirection agentViewDirection)const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetOrientationOfNearestMarkInViewDirection(MarkType markType,
+                                                              double mainViewDirection) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetDistanceToNearestMarkInViewRange(MarkType markType,
+                                                       AgentViewDirection agentViewDirection, double range) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetDistanceToNearestMarkInViewRange(MarkType markType, double mainViewDirection,
+                                                       double range) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetOrientationOfNearestMarkInViewRange(MarkType markType,
+                                                          AgentViewDirection agentViewDirection, double range) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetOrientationOfNearestMarkInViewRange(MarkType markType, double mainViewDirection,
+                                                          double range) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetViewDirectionToNearestMarkInViewRange(MarkType markType,
+                                                            AgentViewDirection agentViewDirection, double range) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetViewDirectionToNearestMarkInViewRange(MarkType markType, double mainViewDirection,
+                                                            double range) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual std::string GetTypeOfNearestObject(AgentViewDirection agentViewDirection,
+                                               double range) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual std::string GetTypeOfNearestObject(double mainViewDirection,
+                                               double range) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetDistanceToNearestObjectInViewRange(ObjectType objectType,
+                                                         AgentViewDirection agentViewDirection,
+                                                         double range) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetDistanceToNearestObjectInViewRange(ObjectType objectType,
+                                                         double mainViewDirection,
+                                                         double range) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetViewDirectionToNearestObjectInViewRange(ObjectType objectType,
+                                                              AgentViewDirection agentViewDirection,
+                                                              double range) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetViewDirectionToNearestObjectInViewRange(ObjectType objectType,
+                                                              double mainViewDirection,
+                                                              double range) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual int GetIdOfNearestAgent(AgentViewDirection agentViewDirection,
+                                    double range) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual int GetIdOfNearestAgent(double mainViewDirection,
+                                    double range) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetDistanceToNearestAgentInViewRange(AgentViewDirection agentViewDirection,
+                                                        double range) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetDistanceToNearestAgentInViewRange(double mainViewDirection,
+                                                        double range) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetViewDirectionToNearestAgentInViewRange(AgentViewDirection agentViewDirection,
+                                                             double range) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetViewDirectionToNearestAgentInViewRange(double mainViewDirection,
+                                                             double range) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetVisibilityToNearestAgentInViewRange(double mainViewDirection,
+                                                        double range) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual AgentViewDirection GetAgentViewDirectionToNearestMark(MarkType markType) const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetYawAcceleration() override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual void SetYawAcceleration(double yawAcceleration) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual const std::vector<int> *GetTrajectoryTime() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual const std::vector<double> *GetTrajectoryXPos() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual const std::vector<double> *GetTrajectoryYPos() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual const std::vector<double> *GetTrajectoryVelocity() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual const std::vector<double> *GetTrajectoryAngle() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual void SetAccelerationIntention(double accelerationIntention) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetAccelerationIntention() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual void SetDecelerationIntention(double decelerationIntention) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetDecelerationIntention() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual void SetAngleIntention(double angleIntention) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetAngleIntention() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual void SetCollisionState(bool collisionState) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual bool GetCollisionState() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual double GetAccelerationAbsolute() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+
+
 private:
     WorldInterface* world;
-    OWL::WorldData* worldData;
-    const CallbackInterface *callbacks;
+    const CallbackInterface* callbacks;
+    OWL::Interfaces::WorldData* worldData;
     World::Localization::BaseTrafficObjectLocator locator;
+
+    OWL::Interfaces::MovingObject& GetBaseTrafficObject()
+    {
+        return *(static_cast<OWL::Interfaces::MovingObject*>(&baseTrafficObject));
+    }
+
+    OWL::Interfaces::MovingObject& GetBaseTrafficObject() const
+    {
+        return *(static_cast<OWL::Interfaces::MovingObject*>(&baseTrafficObject));
+    }
+
 
     //-----------------------------------------------------------------------------
     //! Initialize the ego vehicle object inside the drivingView.
@@ -1305,46 +1176,12 @@ private:
     void InitEgoVehicle();
 
     //-----------------------------------------------------------------------------
-    //! Initialize all dynamic views inside the drivingView.
-    //-----------------------------------------------------------------------------
-    void InitDynamicViews();
-
-    //-----------------------------------------------------------------------------
-    //! Initialize the route inside the drivingView.
-    //-----------------------------------------------------------------------------
-    void InitRouteView();
-
-    //-----------------------------------------------------------------------------
-    //! Initialize the section views inside the drivingView.
-    //-----------------------------------------------------------------------------
-    void InitSectionViews();
-
-    //-----------------------------------------------------------------------------
     //! Update the ego vehicle object inside the drivingView.
     //-----------------------------------------------------------------------------
     void UpdateEgoVehicle();
 
-    //-----------------------------------------------------------------------------
-    //! Update all dynamic views inside the drivingView.
-    //-----------------------------------------------------------------------------
-    void UpdateDynamicViews();
-
-    //-----------------------------------------------------------------------------
-    //! Update the route inside the drivingView.
-    //-----------------------------------------------------------------------------
-    void UpdateRouteView();
-
-    //-----------------------------------------------------------------------------
-    //! Update the section views inside the drivingView.
-    //-----------------------------------------------------------------------------
-    void UpdateSectionViews();
-
-    int frontMainLaneId = 0;
-    int rearMainLaneId = 0;
 
     std::map<int, Remainder> remainder;
-    std::map<int, double> frontLaneCoverages;
-    std::map<int, double> rearLaneCoverages;
 
     struct LaneObjParameters
     {
@@ -1357,7 +1194,7 @@ private:
         Common::Vector2d lowerRightCoord;
     };
 
-    std::vector<const AgentInterface*> GetAgentsInRange(int laneId, double minDistance, double maxDistance) const;
+    const WorldObjectInterface* GetNearestObjectInVector(std::vector<const WorldObjectInterface*> agents);
 
     double distanceReferencePointToFrontAxle = 0.0;
     double weight = 0.0;
@@ -1366,72 +1203,43 @@ private:
     double momentInertiaRoll = 0.0;
     double momentInertiaPitch = 0.0;
     double momentInertiaYaw = 0.0;
-    double steeringRatio = 0.0;
+    double steeringRatio = 0.0; //no getter
     double maxAcceleration = 0.0;
     double maxDeceleration = 0.0;
-    double maxVelocity = 0.0;
-    double maxCurvature = 0.0;
+    double maxVelocity = 0.0; //no getter
+    double maxCurvature = 0.0; //no getter
     double frictionCoeff = 0.0;
     double trackWidth = 0.0;
-    double distanceReferencePointToLeadingEdge = 0.0;
-
-    double distanceCOGToFrontAxle = 0.0;
-    double distanceCOGToLeadingEdge = 0.0;
-
-    double positionX = 0.0;
-    double positionY = 0.0;
-    double width = 0.0;
-    double length = 0.0;
-    double height = 0.0;
-    double velocityX = 0.0;
-    double velocityY = 0.0;
-    double accelerationX = 0.0;
-    double accelerationY = 0.0;
-
-    double yawAngle = 0.0;
-    double yawVelocity = 0.0;
-    double yawAcceleration = 0.0;
     int currentGear = 0;
     double accelPedal = 0.;
     double brakePedal = 0.;
+    double steeringWheelAngle = 0.0;
     double engineSpeed = 0.;
     bool hornSwitch = false;
-    bool headLightSwitch = false;
-    bool highBeamLightSwitch = false;
     bool flasherSwitch = false;
+    double distanceTraveled = 0.0;
 
-    bool brakeLight = false;
+    polygon_t boundingBox2D;
+    World::Localization::Result locateResult;
+    mutable std::vector<GlobalRoadPosition> boundaryPoints;
+    mutable World::Localization::Remainders remainders;
 
-    double accelerationIntention = 0.0;
-    double decelerationIntention = 0.0;
-    double angleIntention = 0.0;
-
-    bool collisionState = false;
-    std::vector<int> idsCollisionPartners;
-
-    RoadPosition roadPos; //localized position of agent reference point in road coordinate system
-
+    std::vector<std::pair<ObjectTypeOSI, int>> collisionPartners;
     bool isValid = true;
 
     int id{0};
-    int agentTypeId{-1};
-
+    AgentCategory agentCategory;
     std::string agentTypeName = "";
     std::string vehicleModelType = "";
     std::string driverProfileName = "";
     std::string objectName = "";
     AgentVehicleType vehicleType = AgentVehicleType::Undefined;
+    VehicleModelParameters vehicleModelParameters;
 
     double speedGoalMin;
     int spawnTime;
 
-    CarInfo *carInfo = nullptr;
-
     bool completlyInWorld = false;
-    AreaOfInterest aoi = AreaOfInterest::NumberOfAreaOfInterests;
 
-protected:
-    OWL::MovingObject* baseTrafficObject{nullptr};
-
-    double s{0.0};
+    std::list<SensorParameter> sensorParameters;
 };
