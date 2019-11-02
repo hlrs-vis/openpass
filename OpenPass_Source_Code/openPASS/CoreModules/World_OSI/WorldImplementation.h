@@ -1,24 +1,48 @@
-/******************************************************************************
-* Copyright (c) 2018 in-tech GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017 ITK Engineering GmbH
 *
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* https://www.eclipse.org/legal/epl-2.0/
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-******************************************************************************/
+*******************************************************************************/
 
 #pragma once
 
 #include <algorithm>
 #include <qglobal.h>
-#include "worldInterface.h"
+#include "Interfaces/worldInterface.h"
 #include "AgentNetwork.h"
 #include "SceneryConverter.h"
-#include "CommonSceneryHelper.h"
-#include "parameterInterface.h"
+#include "LocalizationCache.h"
+#include "Interfaces/parameterInterface.h"
 
 #include "WorldData.h"
+#include "WorldDataQuery.h"
+
+namespace osi3
+{
+class SensorView;
+class SensorViewConfiguration;
+}
+
+struct WorldParameterOSI
+{
+    void Reset()
+    {
+        timeOfDay = "";
+        visibilityDistance = 0;
+        friction = 0.0;
+        weather = "";
+    }
+
+    std::string timeOfDay {""};
+    int visibilityDistance {0};
+    double friction {0.0};
+    std::string weather {""};
+};
 
 #include "osi/osi_groundtruth.pb.h"
 
@@ -66,7 +90,7 @@ class WorldImplementation : public WorldInterface
 public:
     const std::string MODULENAME = "WORLD";
 
-    WorldImplementation(const CallbackInterface *callbacks);
+    WorldImplementation(const CallbackInterface* callbacks);
     WorldImplementation(const WorldImplementation&) = delete;
     WorldImplementation(WorldImplementation&&) = delete;
     WorldImplementation& operator=(const WorldImplementation&) = delete;
@@ -74,56 +98,179 @@ public:
 
     virtual ~WorldImplementation() override;
 
-    bool AddAgent(int id, AgentInterface *agent) override;
-    const AgentInterface *GetAgent(int id) const override;
-    const std::map<int, const AgentInterface*> &GetAgents() const override;
-    const std::list<const AgentInterface*> &GetRemovedAgents() const;
+    bool AddAgent(int id, AgentInterface* agent) override;
+    AgentInterface* GetAgent(int id) const override;
+    const std::vector<const WorldObjectInterface*>& GetWorldObjects() const;
+    const std::map<int, AgentInterface *> &GetAgents() const override;
+    const std::list<const AgentInterface*>& GetRemovedAgents() const;
+
+    const std::vector<const TrafficObjectInterface*>& GetTrafficObjects() const;
 
     // framework internal methods to access members without restrictions
+    void ExtractParameter(ParameterInterface* parameters);
+
+    void Reset();
     void Clear() override;
-    bool CreateGlobalDrivingView() override;
 
     // model callbacks
-    int GetTimeOfDay() const override;
+    std::string GetTimeOfDay() const override;
 
-    void* GetGlobalDrivingView() override;
-    void* GetGlobalObjects() override;
     void* GetWorldData() override;
-    void* GetOsiGroundTruth();
+    void* GetOsiGroundTruth() override;
 
-    void QueueAgentUpdate(std::function<void(double)> func, double val) override;
-    void QueueAgentRemove(const AgentInterface *agent) override;
+    void QueueAgentUpdate(std::function<void()> func) override;
+    void QueueAgentRemove(const AgentInterface* agent) override;
     void SyncGlobalData() override;
 
-    bool CreateScenery(SceneryInterface &scenery) override;
+    bool CreateScenery(SceneryInterface* scenery) override;
 
-    AgentInterface *CreateAgentAdapterForAgent() override;
+    AgentInterface* CreateAgentAdapterForAgent() override;
 
-    const AgentInterface *GetSpecialAgent() override;
+    AgentInterface* GetEgoAgent();
 
-    std::list<AgentInterface*> GetAgentsByGroupType(AgentCategory &agentCategory);
+    AgentInterface* GetAgentByName(std::string& scenarioName);
 
-    Position GetPositionByDistanceAndLane(double distance, int laneNumber) const override;
-    Position GetPositionByDistanceAndLaneWithOffset(double distanceOnLane, double offset, int laneId) const;
+    std::list<AgentInterface*> GetAgentsByGroupType(AgentCategory& agentCategory);
 
-    bool GetNextValidSOnLane(double distance, int laneNumber, double &nextValidSOnLane);
-    bool GetLastValidSOnLane(double distance, int laneNumber, double &lastValidSOnLane);
-    bool IsSValidOnLane(double distance, int laneNumber);
-    double GetDistanceToEndOfLane(double currentPosition, int laneId);
-    bool IntersectsWithAgent(double x, double y, double rotation, double length, double width, double center);
+    // Agent functions
+    AgentInterface* GetNextAgentInLane(std::string roadId, int laneId, double currentDistance) const override;
+    AgentInterface* GetLastAgentInLane(std::string roadId, int laneId, double currentDistance) const override;
+    AgentInterface* GetClosestAgentInUpstream(std::string roadId, int laneId, double initialSearchDistance) const override;
+    AgentInterface* GetFarthestAgentInUpstream(std::string roadId, int laneId, double initialSearchDistance) const override;
 
-    const AgentInterface* GetBicycle() const override;
-    const AgentInterface* GetLastCarInlane(int laneNumber) override;
+    // Obstacle functions
+    TrafficObjectInterface* GetNextTrafficObjectInLane(std::string roadId, int laneId,
+            double currentDistance) const override;
+    TrafficObjectInterface* GetLastTrafficObjectInLane(std::string roadId, int laneId,
+            double currentDistance) const override;
+    TrafficObjectInterface* GetClosestTrafficObjectInUpstream(std::string roadId, int laneId,
+            double currentDistance) const override;
+    TrafficObjectInterface* GetFarthestTrafficObjectInUpstream(std::string roadId, int laneId,
+            double currentDistance) const override;
 
-    Position RoadCoord2WorldCoord(RoadPosition roadCoord, std::string roadID) const;
+    // Generic functions
+    WorldObjectInterface* GetNextObjectInLane(std::string roadId, int laneId, double currentDistance) const override;
+    WorldObjectInterface* GetNextObjectInLane(std::string roadId, int laneId, double currentDistance,
+            double searchDistance) const override;
+    WorldObjectInterface* GetLastObjectInLane(std::string roadId, int laneId, double currentDistance) const override;
+    WorldObjectInterface* GetLastObjectInLane(std::string roadId, int laneId, double currentDistance,
+            double searchDistance) const override;
+    WorldObjectInterface* GetClosestObjectInUpstream(std::string roadId, int laneId, double currentDistance) const override;
+    WorldObjectInterface* GetClosestObjectInUpstream(std::string roadId, int laneId, double currentDistance,
+            double searchDistance) const override;
+    WorldObjectInterface* GetFarthestObjectInUpstream(std::string roadId, int laneId,
+            double currentDistance) const override;
 
-    bool CreateWorldScenario(const std::string& scenarioFilename) override;
-    bool CreateWorldScenery(const std::string& sceneryFilename) override;
-    Weekday GetWeekday() const override;
-    void SetTimeOfDay(int timeOfDay) override;
-    void SetWeekday(Weekday weekday) override;
-    void SetParameter(WorldParameter *worldParameter) override;
+    WorldObjectInterface* GetFirstObjectDownstream(uint64_t streamId) const override;
+    int GetLaneId(uint64_t streamId, double endDistance) const;
 
+    LaneQueryResult QueryLane(std::string roadId, int laneId, double distance) const;
+    std::list<LaneQueryResult> QueryLanes(std::string roadId, double startDistance, double endDistance) const;
+
+    std::vector<const AgentInterface*> GetAgentsInRange(std::string roadId, int laneId, double startDistance,
+            double endDistance) const override;
+    std::vector<const WorldObjectInterface*> GetObjectsInRange(std::string roadId, int laneId, double startDistance,
+            double endDistance) const override;
+
+    Position GetPositionByDistanceAndLane(double distanceOnLane, double offset, std::string roadId,
+                                          int laneId) const override;
+
+    std::vector<int> GetDrivingLanesAtDistance(std::string roadId, double distance) override;
+    std::vector<int> GetStopLanesAtDistance(std::string roadId, double distance) override;
+    std::vector<int> GetExitLanesAtDistance(std::string roadId, double distance) override;
+    std::vector<int> GetRampsAtDistance(std::string roadId, double distance) override;
+
+    bool GetLastValidSOnLane(std::string roadId, int laneId, double distance, double& nextValidS) override;
+    bool GetNextValidSOnLane(std::string roadId, int laneId, double distance, double& nextValidS) override;
+    bool IsSValidOnLane(std::string roadId, int laneId, double distance) override;
+    bool ExistsLaneLeft(std::string roadId, int laneId, double distance) override;
+    bool ExistsLaneRight(std::string roadId, int laneId, double distance) override;
+    int GetNumberOfLanes(std::string roadId, double distance) override;
+
+
+    double GetLaneCurvature(std::string roadId, int laneId, double distance) const override;
+    double GetLaneWidth(std::string roadId, int laneId, double distance) const override;
+    double GetLaneDirection(std::string roadId, int laneId, double distance) const override;
+
+    double GetDistanceToEndOfLane(std::string roadId, int laneId, double initialSearchDistance,
+                                  double maximumSearchLength) override;
+    double GetDistanceToEndOfDrivingLane(std::string roadId, int laneId, double initialSearchDistance,
+                                         double maximumSearchLength) override;
+    double GetDistanceToEndOfDrivingOrStopLane(std::string roadId, int laneId, double initialSearchDistance,
+            double maximumSearchLength) override;
+    double GetDistanceToEndOfRamp(std::string roadId, int laneId, double initialSearchDistance,
+                                  double maximumSearchLength) override;
+    double GetDistanceToEndOfExit(std::string roadId, int laneId, double initialSearchDistance,
+                                  double maximumSearchLength) override;
+
+    bool IntersectsWithAgent(double x, double y, double rotation, double length, double width, double center) override;
+
+    polygon_t GetBoundingBoxAroundAgent(AgentInterface* agent, double width, double length) override;
+
+    Position RoadCoord2WorldCoord(RoadPosition roadCoord, std::string roadID) const override;
+
+    double GetVisibilityDistance() const override;
+
+    std::pair<bool, double> GetLateralDistance(GlobalRoadPosition src, GlobalRoadPosition dst) const override;
+
+    std::vector<CommonTrafficSign::Entity> GetTrafficSignsInRange(std::string roadId, int laneId, double startDistance,
+            double searchRange) const override;
+
+    double GetFriction() const override;
+
+    virtual void *GetGlobalDrivingView() override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual void *GetGlobalObjects() override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual void SetTimeOfDay(int timeOfDay) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual void SetWeekday(Weekday weekday) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual Weekday GetWeekday() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual void SetParameter(WorldParameter *worldParameter) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual bool CreateGlobalDrivingView() override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual const AgentInterface *GetSpecialAgent() override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual const AgentInterface *GetLastCarInlane(int laneNumber) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual const AgentInterface *GetBicycle() const override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual void QueueAgentUpdate(std::function<void(double)> func,
+                                  double val) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual bool CreateWorldScenery(const  std::string &sceneryFilename) override
+    {
+        throw std::runtime_error("not implemented");
+    }
+    virtual bool CreateWorldScenario(const  std::string &scenarioFilename) override
+    {
+        throw std::runtime_error("not implemented");
+    }
 protected:
     //-----------------------------------------------------------------------------
     //! Provides callback to LOG() macro
@@ -134,11 +281,11 @@ protected:
     //! @param[in]     message     Message to log
     //-----------------------------------------------------------------------------
     void Log(CbkLogLevel logLevel,
-             const char *file,
+             const char* file,
              int line,
-             const std::string &message)
+             const std::string& message)
     {
-        if(callbacks)
+        if (callbacks)
         {
             callbacks->Log(logLevel,
                            file,
@@ -149,21 +296,30 @@ protected:
 
 private:
     void InitTrafficObjects();
-    void InitSectionViews();
+
+    LaneQueryResult BuildLaneQueryResult(OWL::CLane& lane) const;
 
     OWL::WorldData worldData;
+    WorldDataQuery worldDataQuery{worldData};
+    std::vector<const TrafficObjectInterface*> trafficObjects;
 
-    WorldParameter* worldParameter;
+    // world parameters
+    WorldParameterOSI worldParameter;
 
     AgentNetwork agentNetwork;
 
-    const CallbackInterface *callbacks;
+    const CallbackInterface* callbacks;
 
-    mutable std::vector<const AgentInterface*> worldObjects;
+    mutable std::vector<const WorldObjectInterface*> worldObjects;
     std::map<AgentInterface*, AgentAdapter*> agentList;
 
     const int stepSizeLookingForValidS = 100;
     SceneryInterface* scenery;
+
+    std::unordered_map<const OWL::Interfaces::MovingObject*, AgentInterface*> movingObjectMapping{{nullptr, nullptr}};
+    std::unordered_map<const OWL::Interfaces::MovingObject*, TrafficObjectInterface*> stationaryObjectMapping{{nullptr, nullptr}};
+
+    World::Localization::Cache localizationCache;
 };
 
-
+LaneQueryResult LaneQueryResultFromLane(OWL::CLane& lane, int laneId);

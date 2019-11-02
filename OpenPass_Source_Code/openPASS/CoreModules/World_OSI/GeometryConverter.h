@@ -1,13 +1,13 @@
-/******************************************************************************
-* Copyright (c) 2018 in-tech GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017 ITK Engineering GmbH
 *
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* https://www.eclipse.org/legal/epl-2.0/
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-******************************************************************************/
-
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
 //! @file  GeometryConverter.h
@@ -16,23 +16,22 @@
 
 #pragma once
 
-#include <list>
 #include <map>
-
-#include "sceneryInterface.h"
+#include <list>
+#include "Interfaces/sceneryInterface.h"
 #include "WorldData.h"
-#include "worldInterface.h"
+#include "Interfaces/worldInterface.h"
 
 //-----------------------------------------------------------------------------
 //! Class for the convertion of the road geometries in a section. First, the roads,
 //! lane sections and lanes have to be converted using SceneryConverter, which then
-//! provides the mappings from OpenDrive to OSI world for those elements.
+//! provides the mappings from OpenDrive to OSI of those elements.
 //-----------------------------------------------------------------------------
 class GeometryConverter
 {
 public:
     GeometryConverter(SceneryInterface *scenery,
-                      OWL::WorldData& worldData,
+                      OWL::Interfaces::WorldData& worldData,
                       const CallbackInterface *callbacks);
 
     GeometryConverter(const GeometryConverter&) = delete;
@@ -42,7 +41,11 @@ public:
     virtual ~GeometryConverter() = default;
 
     //-----------------------------------------------------------------------------
-    //! Converts OpenDrive road geometries to OWL
+    //! Converts OpenDrive road geometries to OSI
+    //!
+    //! Subdivides each OpenDrive road into OSI section objects.
+    //! Each section corresponds to an OpenDrive geometry (limited
+    //! to the borders of an OpenDrive laneSection.
     //!
     //! Notes:
     //! - OpenDrive center lanes are skipped (width=0 by convention)
@@ -241,26 +244,9 @@ private:
                          double roadGeometryStart,
                          double roadSectionStart);
 
-    //-----------------------------------------------------------------------------
-    //! Reverses geometries if section is opposite to global direction.
-    //!
-    //! This function is a part of the Convert function.
-    //! Reverse geometries if section is opposite to global direction.
-    //!
-    //-----------------------------------------------------------------------------
-    void ReverseGeometries();
 
     //-----------------------------------------------------------------------------
-    //! Calculates boundarie boxes.
-    //!
-    //! This function is a part of the Convert function.
-    //! Calculates boundarie boxes.
-    //!
-    //-----------------------------------------------------------------------------
-    void CalculateBoundarieBoxes();
-
-    //-----------------------------------------------------------------------------
-    //! Fills lanes according to OpenDrive geometry.
+    //! Fills OSI lanes according to OpenDrive geometry.
     //!
     //! @param[in]  side                 Side of road (1: left, -1: right)
     //! @param[in]  lanes                OpenDrive road lanes
@@ -285,13 +271,6 @@ private:
                         double roadSectionStart,
                         int index);
 
-    //-----------------------------------------------------------------------------
-    //! Calculates lane lengths.
-    //!
-    //! @param[in]  lane                OpenDrive road lane
-    //! @return                         True
-    //-----------------------------------------------------------------------------
-    bool CalculateLaneLength(RoadLaneInterface *lane);
 
     //-----------------------------------------------------------------------------
     //! Calculates the width of the provided lane.
@@ -300,7 +279,7 @@ private:
     //! @param[in]  sectionOffset       Offset within the OpenDrive section
     //! @return                         Lane width, 0.0 if no width was specified
     //-----------------------------------------------------------------------------
-    double CalculateLaneWidth(RoadLaneInterface* roadLane, double sectionOffset);
+    double CalculateLaneWidth(const RoadLaneInterface* roadLane, double sectionOffset);
 
     double CalculateLaneOffset(RoadInterface* road, double roadPosition);
 
@@ -340,11 +319,11 @@ private:
     //! @param[in] roadLane         the RoadLaneInterface input data
     //! @return                     relevant RoadLaneWidth
     //-----------------------------------------------------------------------------
-    const RoadLaneWidth* GetRelevantRoadLaneWidth(double sectionOffset, RoadLaneInterface *roadLane);
+    const RoadLaneWidth* GetRelevantRoadLaneWidth(double sectionOffset, const RoadLaneInterface* roadLane);
 
     const RoadLaneOffset* GetRelevantRoadLaneOffset(double roadOffset, RoadInterface* road);
 
-    const RoadLaneRoadMark* GetRelevantRoadLaneRoadMark(double sectionOffset, RoadLaneInterface* roadLane);
+    const RoadLaneRoadMark* GetRelevantRoadLaneRoadMark(double sectionOffset, const RoadLaneInterface* roadLane);
 
     //-----------------------------------------------------------------------------
     //! Tests if the provided values' difference is smaller than EPS
@@ -371,37 +350,10 @@ private:
     //-----------------------------------------------------------------------------
     osi3::LaneBoundary::Classification::Color ConvertRoadLaneRoadMarkColorToOsiLaneBoundaryColor(RoadLaneRoadMarkColor color);
 
-    //-----------------------------------------------------------------------------
-    //! Add OSI lane boundary to OSI lane
-    //!
-    //! @param[in] roadMark             OpenDRIVE road mark data
-    //! @param[in] location             OSI lane boundary location (left, right, free, other)
-    //! @param[out] laneBoundary        Already existing or newly created OSI lane boundary
-    //! @return                         true, if a new lane boundary element has been created, false if
-    //!                                 a pointer to an existing one was stored in laneBoundary parameter
-    //-----------------------------------------------------------------------------
-    //bool AddOsiLaneBoundary(osi3::Lane* osiLane, const RoadLaneRoadMark* roadMark, const osi3::LaneBoundary::BoundaryLocation location, osi3::LaneBoundary** laneBoundary);
-
-    //-----------------------------------------------------------------------------
-    //! Copy adjacent lane OSI lane boundaries to neighbour lanes
-    //!
-    //! Since OpenDRIVE only specifies one boundary lane marking, the OSI data is copied to the neighbour lane
-    //!
-    //! @return                         retuns always true
-    //-----------------------------------------------------------------------------
-    bool CopyAdjacentBoundaries();
-
-    //-----------------------------------------------------------------------------
-    //! Find an OSI lane by its id in the OpenDRIVE to OSI lane map
-    //!
-    //! @param[in] id                   OSI lane id
-    //! @return                         OSI lane pointer, if lane exists in map, nullptr otherwise
-    //-----------------------------------------------------------------------------
-    osi3::Lane* GetOsiLaneById(unsigned long id);
 
     SceneryInterface *scenery;
 
-    OWL::WorldData& worldData;
+    OWL::Interfaces::WorldData& worldData;
 
     constexpr static const double SAMPLING_RATE = 3.0; // 1m sampling rate of reference line
     constexpr static const double EPS = 1e-3;   // epsilon value for geometric comparisons

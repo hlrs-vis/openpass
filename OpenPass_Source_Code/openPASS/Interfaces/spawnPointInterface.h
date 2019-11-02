@@ -1,25 +1,27 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  spawnPointInterface.h
+//! @file  SpawnPointInterface.h
 //! @brief This file contains the interface of the spawn points to interact
 //!        with the framework.
 //-----------------------------------------------------------------------------
 
-#ifndef SPAWNPOINTINTERFACE_H
-#define SPAWNPOINTINTERFACE_H
+#pragma once
 
 #include <string>
-#include "parameterInterface.h"
-#include "stochasticsInterface.h"
+
+#include "Interfaces/parameterInterface.h"
+#include "Interfaces/callbackInterface.h"
+#include "Interfaces/agentBlueprintInterface.h"
 
 class WorldInterface;
 //-----------------------------------------------------------------------------
@@ -30,10 +32,10 @@ class SpawnItemParameterInterface
 {
 public:
     SpawnItemParameterInterface() = default;
-    SpawnItemParameterInterface(const SpawnItemParameterInterface &) = delete;
-    SpawnItemParameterInterface(SpawnItemParameterInterface &&) = delete;
-    SpawnItemParameterInterface &operator=(const SpawnItemParameterInterface &) = delete;
-    SpawnItemParameterInterface &operator=(SpawnItemParameterInterface &&) = delete;
+    SpawnItemParameterInterface(const SpawnItemParameterInterface&) = delete;
+    SpawnItemParameterInterface(SpawnItemParameterInterface&&) = delete;
+    SpawnItemParameterInterface& operator=(const SpawnItemParameterInterface&) = delete;
+    SpawnItemParameterInterface& operator=(SpawnItemParameterInterface&&) = delete;
     virtual ~SpawnItemParameterInterface() = default;
 
     //-----------------------------------------------------------------------------
@@ -53,37 +55,30 @@ public:
     //-----------------------------------------------------------------------------
     //! Sets the forward velocity of the agent to be spawned
     //!
-    //! @param[in]     velocityX    Forward velocity
+    //! @param[in]     velocity    Forward velocity
     //-----------------------------------------------------------------------------
-    virtual void SetVelocityX(double velocityX) = 0;
-
-    //-----------------------------------------------------------------------------
-    //! Sets the sideward velocity of the agent to be spawned
-    //!
-    //! @param[in]     velocityY    Sideward velocity
-    //-----------------------------------------------------------------------------
-    virtual void SetVelocityY(double velocityY) = 0;
+    virtual void SetVelocity(double velocity) = 0;
 
     //-----------------------------------------------------------------------------
     //! Sets the forward acceleration of the agent to be spawned
     //!
-    //! @param[in]     accelerationX    Forward acceleration
+    //! @param[in]     acceleration    Forward acceleration
     //-----------------------------------------------------------------------------
-    virtual void SetAccelerationX(double accelerationX) = 0;
+    virtual void SetAcceleration(double acceleration) = 0;
 
     //-----------------------------------------------------------------------------
-    //! Sets the sideward acceleration of the agent to be spawned
+    //! Sets the gear of the agent to be spawned
     //!
-    //! @param[in]     accelerationY    Sideward acceleration
+    //! @param[in]     gear    current/calculated gear
     //-----------------------------------------------------------------------------
-    virtual void SetAccelerationY(double accelerationY) = 0;
+    virtual void SetGear(double gear) = 0;
 
     //-----------------------------------------------------------------------------
     //! Sets the yaw angle of the agent to be spawned
     //!
     //! @param[in]     yawAngle    Agent orientation (0 points to east)
     //-----------------------------------------------------------------------------
-    virtual void SetYawAngle(double yawAngle) = 0;
+    virtual void SetYaw(double yawAngle) = 0;
 
     //-----------------------------------------------------------------------------
     //! Sets the next time when the agent will be spawned
@@ -100,19 +95,24 @@ public:
     //-----------------------------------------------------------------------------
     virtual void SetIndex(int index) = 0;
 
+    //-----------------------------------------------------------------------------
+    //! Sets the vehicle type of the agent to be spawned
+    //!
+    //! @param[in]     vehicleModel    vehicleModel of agent
+    //-----------------------------------------------------------------------------
+    virtual void SetVehicleModel(std::string vehicleModel) = 0;
+
     virtual double GetPositionX() const = 0;
 
     virtual double GetPositionY() const = 0;
 
-    virtual double GetVelocityX() const = 0;
+    virtual double GetVelocity() const = 0;
 
-    virtual double GetVelocityY() const = 0;
+    virtual double GetAcceleration() const = 0;
 
-    virtual double GetAccelerationX() const = 0;
+    virtual double GetYaw() const = 0;
 
-    virtual double GetAccelerationY() const = 0;
-
-    virtual double GetYawAngle() const = 0;
+    virtual std::string GetVehicleModel() const = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -120,43 +120,31 @@ public:
 //-----------------------------------------------------------------------------
 class SpawnPointInterface
 {
-public:
-    SpawnPointInterface(StochasticsInterface *stochastics,
-                        WorldInterface *world,
+public:    
+    SpawnPointInterface(WorldInterface *world,
                         const ParameterInterface *parameters,
                         const CallbackInterface *callbacks) :
-        stochastics(stochastics),
         world(world),
         parameters(parameters),
         callbacks(callbacks)
     {}
-    SpawnPointInterface(const SpawnPointInterface &) = delete;
-    SpawnPointInterface(SpawnPointInterface &&) = delete;
-    SpawnPointInterface &operator=(const SpawnPointInterface &) = delete;
-    SpawnPointInterface &operator=(SpawnPointInterface &&) = delete;
+    SpawnPointInterface(const SpawnPointInterface&) = delete;
+    SpawnPointInterface(SpawnPointInterface&&) = delete;
+    SpawnPointInterface& operator=(const SpawnPointInterface&) = delete;
+    SpawnPointInterface& operator=(SpawnPointInterface&&) = delete;
     virtual ~SpawnPointInterface() = default;
 
     //-----------------------------------------------------------------------------
-    //! Loads the spawn item (agent) into the spawn point which will be spawned next.
+    //! Fills all parameters of the agentBlueprint with with help of the agentsampler.
     //!
-    //! @param[out]    spawnItem agent configuration
-    //! @param[in]     maxIndex  maximum index of agent array configuration (spawn
-    //!                          point implementation must not exceed this index)
+    //! @param[out] agentBlueprint is used to create an agent.
+    //! @return     true if AgentBlueprint was filled out successfully
     //-----------------------------------------------------------------------------
-    virtual void SetSpawnItem(SpawnItemParameterInterface &spawnItem,
-                              int maxIndex) = 0;
+    virtual bool GenerateAgent(AgentBlueprintInterface* agentBlueprint) = 0;
+
+    //virtual void SetSpawnItem(SpawnItemParameterInterface &spawnItem, int maxIndex) = 0;
 
 protected:
-    //-----------------------------------------------------------------------------
-    //! Retrieves the stochastics functionality.
-    //!
-    //! @return                  Stochastics functionality of framework
-    //-----------------------------------------------------------------------------
-    StochasticsInterface *GetStochastics() const
-    {
-        return stochastics;
-    }
-
     //-----------------------------------------------------------------------------
     //! Retrieves the world.
     //!
@@ -190,7 +178,8 @@ protected:
              int line,
              const std::string &message)
     {
-        if (callbacks) {
+        if(callbacks)
+        {
             callbacks->Log(logLevel,
                            file,
                            line,
@@ -199,10 +188,9 @@ protected:
     }
 
 private:
-    StochasticsInterface *stochastics;    //!< References stochastics functionality of the framework
     WorldInterface *world;                //!< References the world of the framework
     const ParameterInterface *parameters; //!< References the configuration parameters
-    const CallbackInterface *callbacks;   //!< References the callback functions of the framework
+    const CallbackInterface *callbacks;   //!< References the callback functions of the framework    
 };
 
-#endif // SPAWNPOINTINTERFACE_H
+

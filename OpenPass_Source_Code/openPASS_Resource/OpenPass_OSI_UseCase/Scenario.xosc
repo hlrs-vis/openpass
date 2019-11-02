@@ -1,0 +1,158 @@
+<?xml version="1.0"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="0" revMinor="1" date="2018-12-03T10:00:00" description="openPASS default scenario" author="in-tech GmbH"/>
+    <ParameterDeclaration>
+        <Parameter name="OP_OSC_SchemaVersion" type="string" value="0.3.0"/>
+    </ParameterDeclaration>
+    <Catalogs>
+        <VehicleCatalog>
+            <Directory path="VehicleModelsCatalog.xosc"/>
+        </VehicleCatalog>
+        <PedestrianCatalog>
+            <Directory path="PedestrianModelsCatalog.xosc"/>
+        </PedestrianCatalog>
+        <PedestrianControllerCatalog>
+            <Directory path=""/>
+        </PedestrianControllerCatalog>
+        <DriverCatalog>
+            <Directory path=""/>
+        </DriverCatalog>
+        <ManeuverCatalog>
+            <Directory path=""/>
+        </ManeuverCatalog>
+        <MiscObjectCatalog>
+            <Directory path=""/>
+        </MiscObjectCatalog>
+        <EnvironmentCatalog>
+            <Directory path=""/>
+        </EnvironmentCatalog>
+        <TrajectoryCatalog>
+            <Directory path=""/>
+        </TrajectoryCatalog>
+        <RouteCatalog>
+            <Directory path=""/>
+        </RouteCatalog>
+    </Catalogs>
+    <RoadNetwork>
+        <Logics filepath="SceneryConfiguration.xodr"/>
+        <SceneGraph filepath=""/>
+    </RoadNetwork>
+    <Entities>
+        <Object name="Ego">
+            <CatalogReference catalogName="ProfilesCatalog.xml" entryName="EgoAgent"/>
+        </Object>
+        <Object name="TF">
+            <CatalogReference catalogName="ProfilesCatalog.xml" entryName="TFAgent"/>
+        </Object>
+        <Object name="S1">
+            <CatalogReference catalogName="ProfilesCatalog.xml" entryName="LuxuryClassCarAgent"/>
+        </Object>
+        <Object name="S2">
+            <CatalogReference catalogName="ProfilesCatalog.xml" entryName="LuxuryClassCarAgent"/>
+        </Object>
+        <Object name="S3">
+            <CatalogReference catalogName="ProfilesCatalog.xml" entryName="LuxuryClassCarAgent"/>
+        </Object>
+        <Selection name="ScenarioAgents">
+            <Members>
+                <ByEntity name="TF"/>
+                <ByEntity name="S1"/>
+                <ByEntity name="S2"/>
+                <ByEntity name="S3"/>
+            </Members>
+        </Selection>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <!-- initial position and velocity of agents  -->
+            <Actions>
+                <Private object="Ego">
+                    <Action>
+                        <Position>
+                            <Lane roadId="1" s="40" laneId="-2" offset="0.0"/>
+                            <!-- position  -->
+                        </Position>
+                    </Action>
+                </Private>
+                <Private object="TF">
+                    <Action>
+                        <Position>
+                            <Lane roadId="1" s="75.0" laneId="-1" offset="0.0"/>
+                            <!-- position  -->
+                        </Position>
+                    </Action>
+                </Private>
+                <Private object="S1">
+                    <Action>
+                        <Position>
+                            <Lane roadId="1" s="0" laneId="-1" offset="0.0"/>
+                            <!-- position  -->
+                        </Position>
+                    </Action>
+                    <Action>
+                        <Longitudinal>
+                            <Speed>
+                                <Dynamics rate="0.5" shape="linear"/>
+                                <Target>
+                                    <Absolute value="10.0"/>
+                                </Target>
+                            </Speed>
+                        </Longitudinal>
+                    </Action>
+                </Private>
+                <Private object="S2">
+                    <Action>
+                        <Position>
+                            <Lane roadId="1" s="75.0" laneId="-3" offset="0.0"/>
+                            <!-- position  -->
+                        </Position>
+                    </Action>
+                </Private>
+                <Private object="S3">
+                    <Action>
+                        <Position>
+                            <Lane roadId="1" s="100.0" laneId="-2" offset="0.0"/>
+                            <!-- position  -->
+                        </Position>
+                    </Action>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="StateChangeStory">
+            <Act name="Act1">
+                <Sequence name="StateChangeSequence" numberOfExecutions="1">
+                    <Actors>
+                        <Entity name="TF"/>
+                    </Actors>
+                    <Maneuver name="StateChangeManeuver">
+                        <Event name="StateChangeEvent" priority="overwrite">
+                            <Action name="ComponentStateChange">
+                                <UserDefined>
+                                    <Command>SetComponentState Dynamics_TrajectoryFollower Acting</Command>
+                                </UserDefined>
+                            </Action>
+                            <StartConditions>
+                                <ConditionGroup>
+                                    <Condition name="Conditional">
+                                        <ByValue>
+                                            <SimulationTime value="-1" rule="greater_than" />
+                                        </ByValue>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartConditions>
+                        </Event>
+                    </Maneuver>
+                </Sequence>
+            </Act>
+        </Story>
+        <EndConditions>
+            <ConditionGroup>
+                <Condition name="EndTime" delay="0" edge="rising">
+                    <ByValue>
+                        <SimulationTime value="30.0" rule="greater_than"/>
+                    </ByValue>
+                </Condition>
+            </ConditionGroup>
+        </EndConditions>
+    </Storyboard>
+</OpenSCENARIO>

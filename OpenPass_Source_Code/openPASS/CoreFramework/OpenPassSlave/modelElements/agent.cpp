@@ -1,12 +1,13 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 #include <algorithm>
 #include <map>
@@ -14,27 +15,28 @@
 #include <iostream>
 #include <QDomDocument>
 #include <QFile>
+
+#include "agent.h"
+#include "agentType.h"
 #include "channel.h"
 #include "componentType.h"
 #include "component.h"
-#include "agent.h"
-#include "agentType.h"
+#include "CoreFramework/CoreShare/log.h"
 #include "modelBinding.h"
-#include "parameters.h"
+#include "Interfaces/observationNetworkInterface.h"
+#include "CoreFramework/CoreShare/parameters.h"
 #include "spawnPoint.h"
-#include "observationNetwork.h"
-#include "log.h"
 
 namespace SimulationSlave
 {
 
 Agent::Agent(int id,
-             const AgentType *agentType,
+             AgentBlueprintInterface* agentBlueprint,
              int spawnTime,
              WorldInterface *world):
     spawnTime(spawnTime),
     id(id),
-    agentType(agentType),
+    agentBlueprint(agentBlueprint),
     world(world)
 {
     SetAgentAdapter(world->CreateAgentAdapterForAgent());
@@ -44,9 +46,9 @@ Agent::~Agent()
 {
     LOG_INTERN(LogLevel::DebugCore) << "deleting agent " << id;
 
-    for(std::pair<const int, Component*> &item : components)
+    for(std::pair<const std::string, ComponentInterface*> &item : components)
     {
-        Component *component = item.second;
+        ComponentInterface *component = item.second;
 
         if(!component->ReleaseFromLibrary())
         {
@@ -65,24 +67,22 @@ Agent::~Agent()
     channels.clear();
 }
 
-bool Agent::Instantiate(const AgentSpawnItem *agentSpawnItem,
-                        const SpawnItemParameter &spawnItemParameter,
+bool Agent::Instantiate(AgentBlueprintInterface* agentBlueprint,
                         ModelBinding *modelBinding,
                         StochasticsInterface *stochastics,
-                        ObservationNetwork *observationNetwork)
+                        ObservationNetworkInterface *observationNetwork,
+                        EventNetworkInterface *eventNetwork)
 {
     // setup
     if(!agentInterface->InitAgentParameter(id,
-                                         agentType->GetId(),
                                            spawnTime,
-                                         agentSpawnItem,
-                                         spawnItemParameter))
+                                           agentBlueprint))
     {
         return false;
     }
 
     // instantiate channels
-    for(int channelId : agentType->GetChannels())
+    for(int channelId : agentBlueprint->GetAgentType().GetChannels())
     {
         LOG_INTERN(LogLevel::DebugCore) << "- instantiate channel " << channelId;
 
@@ -105,26 +105,27 @@ bool Agent::Instantiate(const AgentSpawnItem *agentSpawnItem,
     }
 
     // instantiate components
-    for(const std::pair<const int, ComponentType*> &itemComponentType : agentType->GetComponents())
+    for(const std::pair<const std::string, std::shared_ptr<ComponentType>> &itemComponentType : agentBlueprint->GetAgentType().GetComponents())
     {
-        int componentId = itemComponentType.first;
-        ComponentType *componentType = itemComponentType.second;
+        std::string componentName = itemComponentType.first;
+        std::shared_ptr<ComponentType> componentType = itemComponentType.second;
 
-        LOG_INTERN(LogLevel::DebugCore) << "- instantiate component " << componentId;
+        LOG_INTERN(LogLevel::DebugCore) << "- instantiate component " << componentName;
 
-        Component *component = modelBinding->Instantiate(componentType,
-                                                         componentId,
+        ComponentInterface *component = modelBinding->Instantiate(componentType,
+                                                         componentName,
                                                          stochastics,
                                                          world,
                                                          observationNetwork,
-                                                         this);
+                                                         this,
+                                                         eventNetwork);
         if(!component)
         {
             LOG_INTERN(LogLevel::Error) << "agent could not be instantiated";
             return false;
         }
 
-        if(!AddComponent(componentId, component))
+        if(!AddComponent(componentName, component))
         {
             LOG_INTERN(LogLevel::Error) << "agent could not be instantiated";
             delete component;
@@ -134,7 +135,7 @@ bool Agent::Instantiate(const AgentSpawnItem *agentSpawnItem,
         // from here component will be deleted implicitely by agent destructor since it is linked into its container
 
         // instantiate inputs
-        for(std::pair<const int, int> &item : componentType->GetInputLinks())
+        for(const std::pair<const int, int> &item : componentType->GetInputLinks())
         {
             int linkId = item.first;
             int channelRef = item.second;
@@ -144,7 +145,7 @@ bool Agent::Instantiate(const AgentSpawnItem *agentSpawnItem,
             Channel *channel = GetChannel(channelRef);
             if(!channel)
             {
-                return false;
+                continue;
             }
 
             if(!component->AddInputLink(channel, linkId))
@@ -159,7 +160,7 @@ bool Agent::Instantiate(const AgentSpawnItem *agentSpawnItem,
         }
 
         // instantiate outputs
-        for(std::pair<const int, int> &item : componentType->GetOutputLinks())
+        for(const std::pair<const int, int> &item : componentType->GetOutputLinks())
         {
             int linkId = item.first;
             int channelRef = item.second;
@@ -197,9 +198,9 @@ void Agent::SetAgentAdapter(AgentInterface *agentAdapt)
     agentInterface = agentAdapt;
 }
 
-bool Agent::AddComponent(int id, Component *component)
+bool Agent::AddComponent(std::string name, ComponentInterface *component)
 {
-    if(!components.insert({id, component}).second)
+    if(!components.insert(std::make_pair<std::string&, ComponentInterface*&>(name, component)).second)
     {
         LOG_INTERN(LogLevel::Warning) << "components must be unique";
         return false;
@@ -219,11 +220,6 @@ bool Agent::AddChannel(int id, Channel *channel)
     return true;
 }
 
-int Agent::GetAgentPriority() const
-{
-    return agentType->GetAgentPriority();
-}
-
 Channel *Agent::GetChannel(int id) const
 {
     Channel *channel;
@@ -240,13 +236,13 @@ Channel *Agent::GetChannel(int id) const
     return channel;
 }
 
-Component *Agent::GetComponent(int id) const
+ComponentInterface *Agent::GetComponent(std::string name) const
 {
-    Component *component;
+    ComponentInterface *component;
 
     try
     {
-        component = components.at(id);
+        component = components.at(name);
     }
     catch(const std::out_of_range&)
     {
@@ -256,7 +252,7 @@ Component *Agent::GetComponent(int id) const
     return component;
 }
 
-const std::map<int, Component*> &Agent::GetComponents() const
+const std::map<std::string, ComponentInterface*> &Agent::GetComponents() const
 {
     return components;
 }

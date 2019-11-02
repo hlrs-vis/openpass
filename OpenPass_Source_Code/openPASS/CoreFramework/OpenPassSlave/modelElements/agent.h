@@ -1,21 +1,21 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  agent.h
+//! @file  Agent.h
 //! @brief This file contains the internal representation of an agent instance
 //!        during a simulation run.
 //-----------------------------------------------------------------------------
 
-#ifndef AGENT_H
-#define AGENT_H
+#pragma once
 
 #include <QtGlobal>
 #include <functional>
@@ -24,27 +24,26 @@
 #include <utility>
 #include <map>
 #include <list>
-#include "stochasticsInterface.h"
-#include "runConfig.h"
-#include "agentType.h"
-#include "agentInterface.h"
+
+#include "Interfaces/stochasticsInterface.h"
+#include "Interfaces/agentInterface.h"
+#include "Interfaces/componentInterface.h"
 
 namespace SimulationSlave
 {
 
-class Component;
 class Channel;
 class ModelBinding;
 class ModelParameters;
 class SpawnPoint;
-class ObservationNetwork;
+class ObservationNetworkInterface;
 class SpawnItemParameter;
 
 class Agent
 {
 public:
     Agent(int id,
-          const AgentType *agentType,
+          AgentBlueprintInterface* agentType,
           int spawnTime,
           WorldInterface *world);
     Agent(const Agent&) = delete;
@@ -54,26 +53,20 @@ public:
     virtual ~Agent();
 
     bool AddChannel(int id, Channel *channel);
-    bool AddComponent(int id, Component *component);
-    int GetAgentPriority() const;
+    bool AddComponent(std::string name, SimulationSlave::ComponentInterface *component);
     Channel *GetChannel(int id) const;
-    Component *GetComponent(int id) const;
-    const std::map<int, Component*> &GetComponents() const;
+    ComponentInterface *GetComponent(std::string name) const;
+    const std::map<std::string, ComponentInterface*> &GetComponents() const;
     int GetId() const
     {
         return id;
     }
 
-    const AgentType *GetAgentType() const
-    {
-        return agentType;
-    }
-
-    bool Instantiate(const AgentSpawnItem *agentSpawnItem,
-                     const SpawnItemParameter &spawnItemParameter,
+    bool Instantiate(AgentBlueprintInterface* agentBlueprint,
                      ModelBinding *modelBinding,
                      StochasticsInterface *stochastics,
-                     ObservationNetwork *observationNetwork);
+                     SimulationSlave::ObservationNetworkInterface *observationNetwork,
+                     EventNetworkInterface *eventNetwork);
 
     bool IsValid() const
     {
@@ -84,24 +77,19 @@ public:
 
     void SetAgentAdapter(AgentInterface *agentAdapt);
 
-    int GetAgentId() const
-    {
-        return agentInterface->GetAgentId();
-    }
-
 private:
     // framework parameters
     std::vector<int> idsCollisionPartners;
     int spawnTime;
     int id;
-    const AgentType *agentType = nullptr;
+    AgentBlueprintInterface* agentBlueprint = nullptr;
     WorldInterface *world = nullptr;
     std::map<int, Channel*> channels;
-    std::map<int, Component*> components;
+    std::map<std::string, ComponentInterface*> components;
 
     AgentInterface *agentInterface = nullptr;
 };
 
 } // namespace SimulationSlave
 
-#endif // AGENT_H
+

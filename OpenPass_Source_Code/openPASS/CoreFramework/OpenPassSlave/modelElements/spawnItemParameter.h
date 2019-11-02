@@ -1,23 +1,23 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  spawnItemParameter.h
+//! @file  SpawnItemParameter.h
 //! @brief This file contains the internal representation of parameter set of a
 //!        newly created agent spawn item.
 //-----------------------------------------------------------------------------
 
-#ifndef SPAWNITEMPARAMETER_H
-#define SPAWNITEMPARAMETER_H
+#pragma once
 
-#include "spawnPointInterface.h"
+#include "Interfaces/spawnPointInterface.h"
 
 namespace SimulationSlave
 {
@@ -42,27 +42,22 @@ public:
         this->positionY = positionY;
     }
 
-    void SetVelocityX(double velocityX)
+    void SetVelocity(double velocity)
     {
-        this->velocityX = velocityX;
+        this->velocity = velocity;
     }
 
-    void SetVelocityY(double velocityY)
+    void SetAcceleration(double acceleration)
     {
-        this->velocityY = velocityY;
+        this->acceleration = acceleration;
     }
 
-    void SetAccelerationX(double accelerationX)
+    void SetGear(double gear)
     {
-        this->accelerationX = accelerationX;
+        this->gear = gear;
     }
 
-    void SetAccelerationY(double accelerationY)
-    {
-        this->accelerationY = accelerationY;
-    }
-
-    void SetYawAngle(double yawAngle)
+    void SetYaw(double yawAngle)
     {
         this->yawAngle = yawAngle;
     }
@@ -77,6 +72,11 @@ public:
         this->index = index;
     }
 
+    void SetVehicleModel(std::string vehicleModel)
+    {
+        this->vehicleModel = vehicleModel;
+    }
+
     double GetPositionX() const
     {
         return positionX;
@@ -87,27 +87,17 @@ public:
         return positionY;
     }
 
-    double GetVelocityX() const
+    double GetVelocity() const
     {
-        return velocityX;
+        return velocity;
     }
 
-    double GetVelocityY() const
+    double GetAcceleration() const
     {
-        return velocityY;
+        return acceleration;
     }
 
-    double GetAccelerationX() const
-    {
-        return accelerationX;
-    }
-
-    double GetAccelerationY() const
-    {
-        return accelerationY;
-    }
-
-    double GetYawAngle() const
+    double GetYaw() const
     {
         return yawAngle;
     }
@@ -122,18 +112,25 @@ public:
         return index;
     }
 
+    std::string GetVehicleModel() const
+    {
+        return vehicleModel;
+    }
+
 private:
     double positionX = 0.0;
     double positionY = 0.0;
-    double velocityX = 0.0;
-    double velocityY = 0.0;
-    double accelerationX = 0.0;
-    double accelerationY = 0.0;
+    double velocity = 0.0;
+    double acceleration = 0.0;
+    double gear = 0.0;
     double yawAngle = 0.0;
+
     int nextTimeOffset = -1;
     int index = 0;
+
+    std::string vehicleModel = "";
 };
 
 } // namespace SimulationSlave
 
-#endif // SPAWNITEMPARAMETER_H
+

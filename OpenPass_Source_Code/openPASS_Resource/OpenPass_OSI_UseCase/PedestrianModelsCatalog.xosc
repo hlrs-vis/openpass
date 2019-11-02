@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenScenario>
+    <FileHeader revMajor="0" revMinor="1" date="2018-12-03T10:00:00" description="openPASS pedestrian models" author="in-tech GmbH"/>
+    <Catalog name="PedestrianCatalog">
+        <Pedestrian name="pedestrian_child" model="pedestrian_child" category="pedestrian" mass="30.0">
+            <ParameterDeclaration/>
+            <BoundingBox>
+                <Center x="0.0645" y="0.0" z="0.577"/>
+                <Dimension width="0.298" length="0.711" height="1.154"/>
+            </BoundingBox>
+            <Properties/>
+        </Pedestrian>
+        <Pedestrian name="pedestrian_adult" model="pedestrian_adult" category="pedestrian" mass="80.0">
+            <ParameterDeclaration/>
+            <BoundingBox>
+                <Center x="0.1" y="0.0" z="0.9"/>
+                <Dimension width="0.5" length="0.6" height="1.8"/>
+            </BoundingBox>
+            <Properties/>
+        </Pedestrian>
+    </Catalog>
+</OpenScenario>

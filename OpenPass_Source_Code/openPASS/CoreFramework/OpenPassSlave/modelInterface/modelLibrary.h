@@ -1,41 +1,40 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  modelLibrary.h
+//! @file  ModelLibrary.h
 //! @brief This file contains the internal representation of the library of a
 //!        model.
 //-----------------------------------------------------------------------------
 
-#ifndef MODELLIBRARY_H
-#define MODELLIBRARY_H
+#pragma once
 
 #include <list>
 #include <string>
 #include <QLibrary>
-#include "modelInterface.h"
+#include "Interfaces/modelInterface.h"
+#include "Interfaces/componentInterface.h"
+#include "Interfaces/observationNetworkInterface.h"
 
 namespace SimulationSlave
 {
 
-class Component;
 class Agent;
 class ComponentType;
-class Component;
-class ObservationNetwork;
 
 class ModelLibrary
 {
 public:    
     typedef const std::string &(*ModelInterface_GetVersion)();
-    typedef ModelInterface *(*ModelInterface_CreateInstanceType)(int componentId,
+    typedef ModelInterface *(*ModelInterface_CreateInstanceType)(std::string componentName,
                                                                  bool isInit,
                                                                  int priority,
                                                                  int offsetTime,
@@ -47,6 +46,19 @@ public:
                                                                  const std::map<int, ObservationInterface*> *observationLinks,
                                                                  AgentInterface *agent,
                                                                  const CallbackInterface *callbacks);
+    typedef ModelInterface *(*UnrestrictedEventModelInterface_CreateInstanceType)(std::string componentName,
+                                                                             bool isInit,
+                                                                             int priority,
+                                                                             int offsetTime,
+                                                                             int responseTime,
+                                                                             int cycleTime,
+                                                                             StochasticsInterface *stochastics,
+                                                                             WorldInterface *world,
+                                                                             const ParameterInterface *parameters,
+                                                                             const std::map<int, ObservationInterface*> *observationLinks,
+                                                                             AgentInterface *agent,
+                                                                             const CallbackInterface *callbacks,
+                                                                             const SimulationSlave::EventNetworkInterface *eventNetwork);
     typedef void (*ModelInterface_DestroyInstanceType)(ModelInterface *implementation);
     typedef bool (*ModelInterface_UpdateInputType)(ModelInterface *implementation,
                                                    int localLinkId,
@@ -84,7 +96,7 @@ public:
     //!
     //! @return     Flag if release was successful
     //-----------------------------------------------------------------------------
-    bool ReleaseComponent(Component *component);
+    bool ReleaseComponent(ComponentInterface *component);
 
     //-----------------------------------------------------------------------------
     //! @brief Creates a new agent component and its implementation and link all
@@ -98,19 +110,20 @@ public:
     //! component in the list of stored components and return it.
     //!
     //! @param[in]     componentType        Agent as defined in the agent config file
-    //! @param[in]     componentId          ID of the agent
+    //! @param[in]     componentName        Name of the component
     //! @param[in]     stochastics          The stochastics interface
     //! @param[in]     world                The world interface
     //! @param[in]     observationNetwork   Network of the observation modules
     //! @param[in]     agent                Agent instance
     //! @return
     //-----------------------------------------------------------------------------
-    Component *CreateComponent(ComponentType *componentType,
-                               int componentId,
+    ComponentInterface *CreateComponent(std::shared_ptr<ComponentType> componentType,
+                               std::string componentName,
                                StochasticsInterface *stochastics,
                                WorldInterface *world,
-                               ObservationNetwork *observationNetwork,
-                               Agent *agent);
+                               ObservationNetworkInterface *observationNetwork,
+                               Agent *agent,
+                               EventNetworkInterface *eventNetwork);
 
     //-----------------------------------------------------------------------------
     //! Calls the "update input" function pointer with the provided parameters and
@@ -173,17 +186,18 @@ private:
 
     std::string modelLibraryPath;
     std::string modelLibraryName;
-    std::list<Component*> components;
+    std::list<ComponentInterface*> components;
     CallbackInterface *callbacks;
     QLibrary *library = nullptr;
-    ModelInterface_GetVersion getVersionFunc;
-    ModelInterface_CreateInstanceType createInstanceFunc;
-    ModelInterface_DestroyInstanceType destroyInstanceFunc;
-    ModelInterface_UpdateInputType updateInputFunc;
-    ModelInterface_UpdateOutputType updateOutputFunc;
-    ModelInterface_TriggerType triggerFunc;
+    ModelInterface_GetVersion getVersionFunc{nullptr};
+    ModelInterface_CreateInstanceType createInstanceFunc{nullptr};
+    UnrestrictedEventModelInterface_CreateInstanceType createEventInstanceFunc{nullptr};
+    ModelInterface_DestroyInstanceType destroyInstanceFunc{nullptr};
+    ModelInterface_UpdateInputType updateInputFunc{nullptr};
+    ModelInterface_UpdateOutputType updateOutputFunc{nullptr};
+    ModelInterface_TriggerType triggerFunc{nullptr};
 };
 
 } // namespace SimulationSlave
 
-#endif // MODELLIBRARY_H
+

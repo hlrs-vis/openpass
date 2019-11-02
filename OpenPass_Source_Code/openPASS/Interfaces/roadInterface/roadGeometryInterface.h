@@ -1,12 +1,13 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
 //! @file  roadGeometryInterface.h
@@ -18,8 +19,8 @@
 #ifndef ROADGEOMETRYINTERFACE
 #define ROADGEOMETRYINTERFACE
 
-#include "roadInterface.h"
-#include "vector2d.h"
+#include "Common/vector2d.h"
+#include "Interfaces/roadInterface/roadInterface.h"
 
 //-----------------------------------------------------------------------------
 //! Abstract class representing the geometry of a road, i.e. the layout of the

@@ -1,6 +1,6 @@
 /*! 
 
-\mainpage openPASS PCM Developer Documentation (PCM)
+\mainpage openPASS Developer Documentation
 
 \tableofcontents
 
@@ -9,7 +9,7 @@
 The openPASS tool is intended for the simulation of interaction between traffic participants to evaluate 
 active safety systems. A simulation is based on a specific situation configuration and can contain 
 several simulation runs (=situations) which differ due to random parameters. \n
-This documentation is focused on simulating PCM cases and the neccessary components and modules.
+This documentation is focused on modules and components for scenario based simulations as well as simulating PCM cases. 
 
 \image html AgentEquipment_PCM.png Configuration of a PCM Simulation
 

@@ -1,160 +1,185 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 #include "agent.h"
-#include "component.h"
-#include "scheduleItem.h"
-#include "observationNetwork.h"
+#include "agentParser.h"
+#include "eventNetwork.h"
+#include "CoreFramework/CoreShare/log.h"
 #include "runResult.h"
-#include "collisionDetection.h"
-#include "schedulePolicy.h"
 #include "scheduler.h"
-#include "log.h"
+#include "spawnControl.h"
+//-----------------------------------------------------------------------------
+/** \file  Scheduler.cpp */
+//-----------------------------------------------------------------------------
 
-namespace SimulationSlave
-{
+namespace SimulationSlave {
 
-Scheduler::Scheduler(WorldInterface *world, SpawnPointNetwork *spawnPointNetwork, CollisionDetection *collisionDetection) :
-    schedulePolicy(spawnPointNetwork),
+Scheduler::Scheduler(WorldInterface* world,
+                     SpawnPointNetworkInterface* spawnPointNetwork,
+                     EventDetectorNetworkInterface* eventDetectorNetwork,
+                     ManipulatorNetworkInterface* manipulatorNetwork,
+                     ObservationNetworkInterface* observationNetwork) :
     world(world),
-    collisionDetection(collisionDetection)
-{}
-
-void Scheduler::Run(const std::function<bool(int, RunResult&)> &updateCallback,
-                    const std::function<bool()> &endCallback,
-                    int start,
-                    int end,
-                    RunResult &runResult)
+    spawnPointNetwork(spawnPointNetwork),
+    eventDetectorNetwork(eventDetectorNetwork),
+    manipulatorNetwork(manipulatorNetwork),
+    observationNetwork(observationNetwork)
 {
-    if(start > end)
+}
+
+SchedulerReturnState Scheduler::Run(
+    int startTime,
+    int endTime,
+    RunResult& runResult,
+    EventNetworkInterface* eventNetwork)
+{
+    if (startTime > endTime)
     {
         LOG_INTERN(LogLevel::Error) << "start time greater than end time";
-        return;
+        return SchedulerReturnState::AbortSimulation;
+    }
+    currentTime = startTime;
+
+    SpawnControl spawnControl(spawnPointNetwork, world, frameworkUpdateRate);
+    TaskBuilder taskBuilder(currentTime,
+                            runResult,
+                            frameworkUpdateRate,
+                            world,
+                            &spawnControl,
+                            observationNetwork,
+                            eventDetectorNetwork,
+                            manipulatorNetwork);
+
+    auto bootstrapTasks = taskBuilder.CreateBootstrapTasks();
+    auto commonTasks = taskBuilder.CreateCommonTasks();
+    auto finalizeRecurringTasks = taskBuilder.CreateFinalizeRecurringTasks();
+    auto finalizeTasks = taskBuilder.CreateFinalizeTasks();
+
+    taskList = std::unique_ptr<SchedulerTasks>(new SchedulerTasks(
+                   bootstrapTasks,
+                   commonTasks,
+                   finalizeRecurringTasks,
+                   finalizeTasks,
+                   frameworkUpdateRate));
+
+    if (ExecuteTasks(taskList->GetBootstrapTasks()) == false)
+    {
+        return ParseAbortReason(spawnControl, currentTime);
     }
 
-    if(!schedulePolicy.InitSchedule(start, end))
+    while (currentTime <= endTime)
     {
-        LOG_INTERN(LogLevel::Error) << "could not initialize schedule";
-        return;
-    }
-
-    if(!world->CreateGlobalDrivingView())
-    {
-        LOG_INTERN(LogLevel::Error) << "could not create global driving view";
-        return;
-    }
-
-    ScheduleItem *task;
-    int deltaTimeStep = 0;
-    int lastTime = schedulePolicy.GetTimeCurrent();
-
-    // update observation modules (observe initial time step)
-    if(!updateCallback(lastTime, runResult))
-    {
-        LOG_INTERN(LogLevel::Error) << "an error occurred when processing observation modules";
-        return;
-    }
-
-    while(!endCallback())
-    {
-        if(!schedulePolicy.GetTask(&task, runResult))
+        if (!ExecuteTasks(taskList->GetCommonTasks(currentTime)))
         {
-            return;
+            return ParseAbortReason(spawnControl, currentTime);
         }
 
-        if(task->GetValid())
+        UpdateAgents(spawnControl, world);
+
+        if (!ExecuteTasks(taskList->ConsumeNonRecurringTasks(currentTime)))
         {
-            LOG_INTERN(LogLevel::DebugAPI) << "*** currentTime: " << schedulePolicy.GetTimeCurrent() << "ms";
-
-            if(ScheduleItemType::ScheduleTriggerItemType == task->GetType())
-            {
-                LOG_INTERN(LogLevel::DebugAPI) << "    "
-                                               << (task->GetInit() ? "init " : "")
-                                               << "trigger task (agent instance "
-                                               << task->GetContentId()
-                                               << ", agent type "
-                                               << static_cast<ScheduleTaskItem*>(task)->GetAgent()->GetAgentType()->GetId()
-                                               << ", component " << static_cast<ScheduleTaskItem*>(task)->GetComponent()->GetId() << ")";
-            }
-            else if(ScheduleItemType::ScheduleUpdateItemType == task->GetType())
-            {
-                LOG_INTERN(LogLevel::DebugAPI) << "    "
-                                               << (task->GetInit() ? "init " : "")
-                                               << "update task (agent instance "
-                                               << task->GetContentId()
-                                               << ", agent type "
-                                               << static_cast<ScheduleTaskItem*>(task)->GetAgent()->GetAgentType()->GetId()
-                                               << ", component " << static_cast<ScheduleTaskItem*>(task)->GetComponent()->GetId() << ")";
-            }
-            else if(ScheduleItemType::ScheduleSpawnItemType == task->GetType())
-            {
-                LOG_INTERN(LogLevel::DebugAPI) << "    spawn task (spawn id "
-                                               << task->GetContentId() << ")";
-            }
-            else
-            {
-                LOG_INTERN(LogLevel::Error) << "    unknown task type";
-                return;
-            }
-
-            if(!task->Execute(&schedulePolicy))
-            {
-                LOG_INTERN(LogLevel::Error) << "an error occurred during the time loop";
-                return;
-            }
-
-            // task could have been invalidated during execution (e.g. single spawn items or removal of agent)
-            if(task->GetValid() && !schedulePolicy.ScheduleTask(task))
-            {
-                LOG_INTERN(LogLevel::Error) << "could not reschedule task";
-                return;
-            }
+            return ParseAbortReason(spawnControl, currentTime);
         }
 
-        lastTime = schedulePolicy.GetTimeCurrent(); // remember time before potential time step
-        deltaTimeStep = schedulePolicy.TimeStep();
-        if(0 < deltaTimeStep) // if time step occurred
+        if (!ExecuteTasks(taskList->GetRecurringTasks(currentTime)))
         {
-            runResult.Clear();
+            return ParseAbortReason(spawnControl, currentTime);
+        }
 
-            // update global data synchronously
-            world->SyncGlobalData();
+        currentTime = taskList->GetNextTimestamp(currentTime);
 
-            // calculate collision detection at each time step
-            bool isCollision;
-            if(!collisionDetection->HandleCollisionsInAgents(runResult, isCollision))
-            {
-                LOG_INTERN(LogLevel::Error) << "an error occurred during the collision detection";
-                return;
-            }
+        if (runResult.IsEndCondition())
+        {
+            LOG_INTERN(LogLevel::DebugCore) << "Scheduler: End of operation (end condition reached)";
+            return SchedulerReturnState::NoError;
+        }
 
-            if(!world->CreateGlobalDrivingView())
-            {
-                LOG_INTERN(LogLevel::Error) << "could not create global driving view";
-                return;
-            }
+        eventNetwork->ClearActiveEvents();
+    }
 
-            // update observation modules
-            if(!updateCallback(lastTime, runResult))
-            {
-                LOG_INTERN(LogLevel::Error) << "an error occurred when processing observation modules";
-                return;
-            }
+    if (!ExecuteTasks(taskList->GetFinalizeTasks()))
+    {
+        return ParseAbortReason(spawnControl, currentTime);
+    }
 
-            if(runResult.IsEndCondition())
-            {
-                LOG_INTERN(LogLevel::DebugCore) << "observation module indicated end of simulation run";
-                return;
-            }
+    LOG_INTERN(LogLevel::DebugCore) << "Scheduler: End of operation (end time reached)";
+    return SchedulerReturnState::NoError;
+}
+
+template<typename T>
+bool Scheduler::ExecuteTasks(T tasks)
+{
+    for (const auto& task : tasks)
+    {
+        if (task.func() == false)
+        {
+            failedTaskItem = &task;
+            return false;
         }
     }
+    return true;
+}
+
+SchedulerReturnState Scheduler::ParseAbortReason(const SpawnControl& spawnControl, int currentTime)
+{
+    LOG_INTERN(LogLevel::DebugCore) << "Scheduler (time = " << std::to_string(currentTime) << "): A task aborted execution "
+                                    << "[TaskType: " << std::to_string(failedTaskItem->taskType) << "] "
+                                    << "[AgentId: " << std::to_string(failedTaskItem->agentId) << "]";
+
+    if (spawnControl.GetError() == SpawnControlError::IncompleteScenario)
+    {
+        LOG_INTERN(LogLevel::Warning) << "Scheduler (time = " << std::to_string(currentTime) << "): "
+                                      << "Agent placement has some issues in the initialization phase";
+        return SchedulerReturnState::AbortInvocation;
+    }
+
+    if (spawnControl.GetError() == SpawnControlError::AgentGenerationError)
+    {
+        LOG_INTERN(LogLevel::Error) << "Scheduler (time = " << std::to_string(currentTime) << "): "
+                                    << "Agent generation error";
+        return SchedulerReturnState::AbortSimulation;
+    }
+
+    LOG_INTERN(LogLevel::Error) << "Scheduler (time = " << std::to_string(currentTime) << "): "
+                                << "An unspecific error occurred during the time loop";
+    return SchedulerReturnState::AbortSimulation;
+}
+
+void Scheduler::UpdateAgents(SpawnControlInterface& spawnControl, WorldInterface* world)
+{
+    for (const auto& agent : spawnControl.PullNewAgents())
+    {
+        ScheduleAgentTasks(*agent);
+    }
+
+    std::list<int> removedAgents;
+    for (const auto& agentMap : world->GetAgents())
+    {
+        AgentInterface* agent = agentMap.second;
+        if (!agent->IsValid())
+        {
+            removedAgents.push_back(agent->GetId());
+            world->QueueAgentRemove(agent);
+        }
+    }
+    taskList->DeleteAgentTasks(removedAgents);
+}
+
+void Scheduler::ScheduleAgentTasks(const Agent& agent)
+{
+    AgentParser agentParser(currentTime);
+    agentParser.Parse(agent);
+
+    taskList->ScheduleNewRecurringTasks(agentParser.GetRecurringTasks());
+    taskList->ScheduleNewNonRecurringTasks(agentParser.GetNonRecurringTasks());
 }
 
 } // namespace SimulationSlave

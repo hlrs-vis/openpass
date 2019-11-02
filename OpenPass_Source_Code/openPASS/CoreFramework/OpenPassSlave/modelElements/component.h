@@ -1,47 +1,44 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  component.h
+//! @file  Component.h
 //! @brief This file contains the internal representation of a model component
 //!        during a simulation run.
 //-----------------------------------------------------------------------------
 
-#ifndef COMPONENT_H
-#define COMPONENT_H
+#pragma once
 
 #include <map>
-#include "modelInterface.h"
-#include "observationInterface.h"
-#include "scheduleItem.h"
+#include "Interfaces/componentInterface.h"
+#include "Interfaces/modelInterface.h"
+#include "Interfaces/observationInterface.h"
 
-namespace SimulationSlave
-{
+namespace SimulationSlave {
 
 class Channel;
 class ModelLibrary;
 class Agent;
 class ChannelBuffer;
+class ObservationModule;
 
-class Component
+class Component : public ComponentInterface
 {
 public:
-    Component(int id,
-              Agent *agent,
-              WorldInterface *world) :
+    Component(std::string name,
+              Agent* agent) :
         agent(agent),
-        id(id),
+        name(name),
         modelLibrary(nullptr),
-        implementation(nullptr),
-        triggerTask(this, agent, world),
-        updateTask(this, agent, world)
+        implementation(nullptr)
     {}
     Component(const Component&) = delete;
     Component(Component&&) = delete;
@@ -59,14 +56,14 @@ public:
     //!
     //! @param[in]     implementation       Model interface implementation to set
     //-----------------------------------------------------------------------------
-    void SetImplementation(ModelInterface *implementation);
+    void SetImplementation(ModelInterface* implementation);
 
     //-----------------------------------------------------------------------------
     //! Returns the stored agent.
     //!
     //! @return                             Stored agent
     //-----------------------------------------------------------------------------
-    Agent *GetAgent() const;
+    Agent* GetAgent() const;
 
     //-----------------------------------------------------------------------------
     //! Adds the provided channel with the provided ID to the stored list of input
@@ -76,7 +73,7 @@ public:
     //! @param[in]     linkId               ID of the channel to add
     //! @return                             Flag if adding the channel was successful
     //-----------------------------------------------------------------------------
-    bool AddInputLink(Channel *input, int linkId);
+    bool AddInputLink(Channel* input, int linkId);
 
     //-----------------------------------------------------------------------------
     //! Adds the provided channel with the provided ID to the stored list of output
@@ -86,39 +83,35 @@ public:
     //! @param[in]     linkId               ID of the channel to add
     //! @return                             Flag if adding the channel was successful
     //-----------------------------------------------------------------------------
-    bool AddOutputLink(Channel *output, int linkId);
+    bool AddOutputLink(Channel* output, int linkId);
 
     //-----------------------------------------------------------------------------
-    //! Adds the provided observation module with the provided ID to the stored list
-    //! of output observation modules.
+    //! Sets the observation modules map of the component
     //!
-    //! @param[in]     observation          Observation module (as interface)to add
-    //! @param[in]     linkId               ID of the observation module to add
-    //! @return                             Flag if adding the observation module was
-    //!                                     successful
+    //! @param[in]     observations          Observation modules (as interface)to add
     //-----------------------------------------------------------------------------
-    bool AddObservationLink(ObservationInterface *observation, int linkId);
+    virtual void SetObservations(const std::map<int, ObservationModule*>& observations) override;
 
     //-----------------------------------------------------------------------------
     //! Returns the map of IDs to stored input channels.
     //!
     //! @return                             Map of IDs to stored input channels
     //-----------------------------------------------------------------------------
-    std::map<int, Channel*> &GetInputLinks();
+    std::map<int, Channel*>& GetInputLinks();
 
     //-----------------------------------------------------------------------------
     //! Returns the map of IDs to stored output channels.
     //!
     //! @return                             Map of IDs to stored output channels
     //-----------------------------------------------------------------------------
-    std::map<int, Channel*> &GetOutputLinks();
+    std::map<int, Channel*>& GetOutputLinks();
 
     //-----------------------------------------------------------------------------
     //! Returns the map of IDs to stored observation modules.
     //!
     //! @return                             Map of IDs to stored observation modules
     //-----------------------------------------------------------------------------
-    const std::map<int, ObservationInterface*> &GetObservationLinks() const;
+    const std::map<int, ObservationInterface*>& GetObservations() const;
 
     //-----------------------------------------------------------------------------
     //! Calls the Trigger method on the stored model library with the stored model
@@ -167,7 +160,7 @@ public:
     //! @param[in]     linkId               ID of the channel output buffer to create
     //! @return                             Created output channel buffer
     //-----------------------------------------------------------------------------
-    ChannelBuffer *CreateOutputBuffer(int linkId);
+    ChannelBuffer* CreateOutputBuffer(int linkId);
 
     //-----------------------------------------------------------------------------
     //! Insert the provided channel buffer with the provided ID in the list of stored
@@ -177,7 +170,7 @@ public:
     //! @param[in]     buffer               Channel input bufer to set
     //! @return                             False if an error occurred, true otherwise
     //-----------------------------------------------------------------------------
-    bool SetInputBuffer(int linkId, ChannelBuffer *buffer);
+    bool SetInputBuffer(int linkId, ChannelBuffer* buffer);
 
     //-----------------------------------------------------------------------------
     //! Returns if the stored model interface implementation is defined as init module.
@@ -233,7 +226,7 @@ public:
     //! @return                             False if library is already set, true
     //!                                     otherwise
     //-----------------------------------------------------------------------------
-    bool SetModelLibrary(ModelLibrary *modelLibrary);
+    bool SetModelLibrary(ModelLibrary* modelLibrary);
 
     //-----------------------------------------------------------------------------
     //! Releases this component from the stored library.
@@ -247,50 +240,27 @@ public:
     //!
     //! @return                             Stored model interface instance
     //-----------------------------------------------------------------------------
-    ModelInterface *GetImplementation() const;
+    ModelInterface* GetImplementation() const;
 
     //-----------------------------------------------------------------------------
     //! Returns the stored ID.
     //!
     //! @return                             Stored ID
     //-----------------------------------------------------------------------------
-    int GetId() const;
-
-    //-----------------------------------------------------------------------------
-    //! Returns a pointer to the schedule item trigger task.
-    //!
-    //! @return                             Schedule item trigger task
-    //-----------------------------------------------------------------------------
-    ScheduleItem *GetTriggerTask()
-    {
-        return &triggerTask;
-    }
-
-    //-----------------------------------------------------------------------------
-    //! Returns a pointer to the schedule item update task.
-    //!
-    //! @return                             Schedule item update task
-    //-----------------------------------------------------------------------------
-    ScheduleItem *GetUpdateTask()
-    {
-        return &updateTask;
-    }
+    std::string GetName() const;
 
 private:
-    Agent *agent;
-    int id;
+    Agent* agent;
+    std::string name;
     std::map<int, Channel*> inputs;
     std::map<int, Channel*> outputs;
-    std::map<int, ObservationInterface*> observations;
-    ModelLibrary *modelLibrary;
-    ModelInterface *implementation;
+    std::map<int, ObservationInterface*> observations {};
+    ModelLibrary* modelLibrary;
+    ModelInterface* implementation;
     std::map<int, ChannelBuffer*> inputChannelBuffers;
     std::map<int, ChannelBuffer*> outputChannelBuffers;
-
-    ScheduleTriggerItem triggerTask;
-    ScheduleUpdateItem updateTask;
 };
 
 } // namespace SimulationSlave
 
-#endif // COMPONENT_H
+

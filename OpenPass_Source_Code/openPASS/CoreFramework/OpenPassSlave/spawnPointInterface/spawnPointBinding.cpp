@@ -1,25 +1,20 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 #include "spawnPointBinding.h"
 #include "spawnPointLibrary.h"
-#include "spawnPointInterface.h"
-#include "runConfig.h"
-#include "frameworkConfig.h"
 
-namespace SimulationSlave
-{
+namespace SimulationSlave {
 
-SpawnPointBinding::SpawnPointBinding(const FrameworkConfig *frameworkConfig,
-                                     SimulationCommon::Callbacks *callbacks) :
-    frameworkConfig(frameworkConfig),
+SpawnPointBinding::SpawnPointBinding(CallbackInterface* callbacks) :
     callbacks(callbacks)
 {}
 
@@ -28,59 +23,43 @@ SpawnPointBinding::~SpawnPointBinding()
     Unload();
 }
 
-SpawnPoint *SpawnPointBinding::Instantiate(SimulationCommon::RunConfig::SpawnPointInstance *spawnPointInstance,
-                                           AgentFactory *agentFactory,
-                                           StochasticsInterface *stochastics,
-                                           WorldInterface *world)
+SpawnPoint* SpawnPointBinding::Instantiate(
+    std::string libraryPath,
+    AgentFactoryInterface* agentFactory,
+    WorldInterface* world,
+    AgentBlueprintProviderInterface* agentBlueprintProvider,
+    ParameterInterface* parameters,
+    const SamplerInterface& sampler,
+    ScenarioInterface* scenario)
 {
-    SpawnPointLibrary *library;
-
-    try
+    if (!library)
     {
-        library = libraries.at(spawnPointInstance->GetLibraryName());
-    }
-    catch(const std::out_of_range&)
-    {
-        library = nullptr;
-    }
-
-    if(!library)
-    {
-        library = new (std::nothrow) SpawnPointLibrary(frameworkConfig->GetLibraryPath(),
-                                                       spawnPointInstance->GetLibraryName(),
-                                                       callbacks);
-        if(!library)
+        library = new (std::nothrow) SpawnPointLibrary(libraryPath,
+                callbacks);
+        if (!library)
         {
             return nullptr;
         }
 
-        if(!library->Init())
-        {
-            delete library;
-            return nullptr;
-        }
-
-        if(!libraries.insert({spawnPointInstance->GetLibraryName(), library}).second)
+        if (!library->Init())
         {
             delete library;
             return nullptr;
         }
     }
 
-    return library->CreateSpawnPoint(spawnPointInstance,
+    return library->CreateSpawnPoint(parameters,
                                      agentFactory,
-                                     stochastics,
-                                     world);
+                                     world,
+                                     agentBlueprintProvider,
+                                     // Library boundary: hard to keep const reference
+                                     const_cast<SamplerInterface*>(&sampler),
+                                     scenario);
 }
 
 void SpawnPointBinding::Unload()
 {
-    for(std::pair<const std::string, SpawnPointLibrary*> &item : libraries)
-    {
-        delete item.second;
-    }
-
-    libraries.clear();
+    delete library;
 }
 
 } // namespace SimulationSlave

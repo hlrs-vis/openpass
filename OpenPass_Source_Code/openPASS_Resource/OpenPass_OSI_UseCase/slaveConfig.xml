@@ -1,0 +1,71 @@
+<slaveConfig SchemaVersion="0.6.0" id="544">
+    <ProfilesCatalog>ProfilesCatalog.xml</ProfilesCatalog>
+    <ExperimentConfig>
+        <ExperimentID>0</ExperimentID>
+        <NumberOfInvocations>1</NumberOfInvocations>
+        <RandomSeed>0</RandomSeed>
+        <Libraries>
+            <WorldLibrary>World_OSI</WorldLibrary>
+            <ObservationLibrary>Observation_Log</ObservationLibrary>
+            <SpawnPointLibrary>SpawnPoint_OSI</SpawnPointLibrary>
+        </Libraries>
+        <LoggingGroups>
+            <LoggingGroup>Trace</LoggingGroup>
+            <LoggingGroup>Visualization</LoggingGroup>
+            <LoggingGroup>RoadPosition</LoggingGroup>
+            <LoggingGroup>Sensor</LoggingGroup>
+            <LoggingGroup>Driver</LoggingGroup>
+        </LoggingGroups>
+    </ExperimentConfig>
+    <!-- ######################################################################################################### -->
+    <ScenarioConfig Name="Default Scenario">
+        <OpenScenarioFile>Scenario.xosc</OpenScenarioFile>
+    </ScenarioConfig>
+    <!-- ######################################################################################################### -->
+    <EnvironmentConfig Name="Default Environment">
+        <TimeOfDays>
+            <TimeOfDay Value="15" Probability="0.4"/>
+            <TimeOfDay Value="18" Probability="0.6"/>
+        </TimeOfDays>
+        <VisibilityDistances>
+            <VisibilityDistance Value="125" Probability="0.7"/>
+            <VisibilityDistance Value="250" Probability="0.3"/>
+        </VisibilityDistances>
+        <Frictions>
+            <Friction Value="1.0" Probability="1.0"/>
+        </Frictions>
+        <Weathers>
+            <Weather Value="Rainy" Probability="0.5"/>
+            <Weather Value="Snowy" Probability="0.5"/>
+        </Weathers>
+    </EnvironmentConfig>
+    <!-- ######################################################################################################### -->
+    <TrafficConfig Name="Default Traffic">
+        <TrafficParameter>
+            <TrafficVolumes>
+                <TrafficVolume Value="600" Probability="1"/>
+            </TrafficVolumes>
+            <PlatoonRates>
+                <PlatoonRate Value="0.5" Probability="0.3"/>
+                <PlatoonRate Value="0.55" Probability="0.7"/>
+            </PlatoonRates>
+            <Velocities>
+                <Velocity Value="40" Probability="1"/>
+            </Velocities>
+            <Homogenities>
+                <Homogenity Value="0.9" Probability="0.8"/>
+                <Homogenity Value="0.7" Probability="0.2"/>
+            </Homogenities>
+        </TrafficParameter>
+        <RegularLane>
+            <AgentProfile Probability="0.4" Name="LuxuryClassCarAgent"/>
+            <AgentProfile Probability="0.6" Name="MiddleClassCarAgent"/>
+            <AgentProfile Probability="0.0" Name="TruckAgent"/>
+        </RegularLane>
+        <RightMostLane>
+            <AgentProfile Probability="0.1" Name="LuxuryClassCarAgent"/>
+            <AgentProfile Probability="0.5" Name="MiddleClassCarAgent"/>
+            <AgentProfile Probability="0.4" Name="TruckAgent"/>
+        </RightMostLane>
+    </TrafficConfig>
+</slaveConfig>

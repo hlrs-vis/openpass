@@ -1,0 +1,13 @@
+<masterConfig>
+  <logLevel>0</logLevel>
+  <logFileMaster>OpenPassMaster.log</logFileMaster>
+  <slave>OpenPassSlave</slave>
+  <libraries>lib</libraries>
+  <slaveConfigs>
+    <slaveConfig>
+      <logFileSlave>OpenPassSlave.log</logFileSlave>
+      <configurations>configs</configurations>
+      <results>results</results>
+    </slaveConfig>
+  </slaveConfigs>
+</masterConfig>

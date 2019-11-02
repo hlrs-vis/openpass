@@ -14,5 +14,6 @@ set SourceDir=../../OpenPass_Source_Code
 )
 
 doxygen Developer.doxy -d markdown
-move /y html\openPASS_PCM_Delevoper.chm ../openPASS_PCM_Delevoper.chm
+
+move /y html\openPASS_Delevoper_Docu.chm ../openPASS_Delevoper_Docu.chm
 rmdir /s /q html

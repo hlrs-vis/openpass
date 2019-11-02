@@ -1,31 +1,36 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  runResult.h
+//! @file  RunResult.h
 //! @brief This file represents the result of a simulation run.
 //-----------------------------------------------------------------------------
 
-#ifndef RUNRESULT_H
-#define RUNRESULT_H
+#pragma once
 
 #include <list>
 #include <map>
 #include <tuple>
-#include "worldInterface.h"
-#include "observationInterface.h"
-#include "vector2d.h"
+#include "Interfaces/worldInterface.h"
+#include "Interfaces/observationInterface.h"
 
 namespace SimulationSlave
 {
 
+//-----------------------------------------------------------------------------
+/** \brief stores run results for output data
+*
+* 	\ingroup OpenPassSlave
+*/
+//-----------------------------------------------------------------------------
 class RunResult : public RunResultInterface
 {
 public:
@@ -36,33 +41,28 @@ public:
     RunResult& operator=(RunResult&&) = delete;
     virtual ~RunResult() = default;
 
-    void Clear();
-
-    bool AddCollision(const AgentInterface* agent,
-                      Common::Vector2d &positionAgent,
-                      double distanceOnBorderAgent,
-                      const AgentInterface* other,
-                      Common::Vector2d &positionOther,
-                      double distanceOnBorderOther);
-    void SetCollision()
-    {
-        result |= maskCollision;
-    }
+    /*!
+    * \brief AddCollisionId
+    *
+    * \details add agent id to list of collided agents
+    *
+    * @param[in]     int  id of collided agent
+    */
+    void AddCollisionId(const int agentId);
 
     void SetTimeOver()
     {
         result |= maskTimeOver;
     }
 
-    // model callbacks
     virtual void SetEndCondition()
     {
         result |= maskEndCondition;
     }
 
-    virtual const std::vector<Collision> *GetCollisions() const
+    virtual const std::list<int> *GetCollisionIds() const
     {
-        return &collisions;
+        return &collisionIds;
     }
 
     virtual bool IsCollision() const
@@ -86,9 +86,9 @@ private:
     const std::uint32_t maskEndCondition = 0x4;
 
     std::uint32_t result = 0;
-    std::vector<Collision> collisions;
+    std::list<int> collisionIds;
 };
 
 } // namespace SimulationSlave
 
-#endif // RUNRESULT_H
+

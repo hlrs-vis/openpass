@@ -1,59 +1,60 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  runInstantiator.h
+//! @file  RunInstantiator.h
 //! @brief This file contains the component which triggers the simulation runs.
 //-----------------------------------------------------------------------------
 
-#ifndef RUNINSTANTIATOR_H
-#define RUNINSTANTIATOR_H
+#pragma once
 
 #include <string>
 #include <map>
 #include <QMutex>
-#include "collisionDetection.h"
-#include "spawnPointNetwork.h"
-#include "world.h"
+#include "Interfaces/agentFactoryInterface.h"
+#include "Interfaces/configurationContainerInterface.h"
+#include "frameworkModules.h"
+#include "Interfaces/frameworkModuleContainerInterface.h"
+#include "Interfaces/observationNetworkInterface.h"
+#include "Interfaces/stochasticsInterface.h"
 
-namespace SimulationSlave
-{
-
-class FrameworkConfig;
-class AgentFactory;
-class Stochastics;
-class ObservationNetwork;
+namespace SimulationSlave {
 
 class RunInstantiator
 {
-public:    
-    RunInstantiator(FrameworkConfig *frameworkConfig,
-                    ObservationNetwork *observationNetwork,
-                    AgentFactory *agentFactory,
-                    World* world,
-                    SpawnPointNetwork *spawnPointNetwork,
-                    Stochastics *stochastics,
-                    CollisionDetection *collisionDetection) :
-        frameworkConfig(frameworkConfig),
-        observationNetwork(observationNetwork),
-        agentFactory(agentFactory),
-        world(world),
-        spawnPointNetwork(spawnPointNetwork),
-        stochastics(stochastics),
-        collisionDetection(collisionDetection)
+public:
+    RunInstantiator(std::string outputDir,
+                    ConfigurationContainerInterface& configurationContainer,
+                    FrameworkModuleContainerInterface& frameworkModuleContainer,
+                    FrameworkModules& frameworkModules) :
+        outputDir(outputDir),
+        configurationContainer(configurationContainer),
+        observationNetwork(frameworkModuleContainer.GetObservationNetwork()),
+        agentFactory(frameworkModuleContainer.GetAgentFactory()),
+        agentBlueprintProvider(frameworkModuleContainer.GetAgentBlueprintProvider()),
+        eventNetwork(frameworkModuleContainer.GetEventNetwork()),
+        world(frameworkModuleContainer.GetWorld()),
+        sampler(frameworkModuleContainer.GetSampler()),
+        spawnPointNetwork(frameworkModuleContainer.GetSpawnPointNetwork()),
+        stochastics(frameworkModuleContainer.GetStochastics()),
+        eventDetectorNetwork(frameworkModuleContainer.GetEventDetectorNetwork()),
+        manipulatorNetwork(frameworkModuleContainer.GetManipulatorNetwork()),
+        frameworkModules{frameworkModules}
     {}
+
     RunInstantiator(const RunInstantiator&) = delete;
     RunInstantiator(RunInstantiator&&) = delete;
     RunInstantiator& operator=(const RunInstantiator&) = delete;
     RunInstantiator& operator=(RunInstantiator&&) = delete;
-    virtual ~RunInstantiator() = default;
+    ~RunInstantiator() = default;
 
     //-----------------------------------------------------------------------------
     //! @brief Executes the run by preparing the stochastics, world and observation
@@ -83,21 +84,33 @@ public:
     //-----------------------------------------------------------------------------
     //! Stops the current run.
     //-----------------------------------------------------------------------------
-    void StopRun();
+    //void StopRun();
 
 private:
+    bool InitializeFrameworkModules(ExperimentConfig& experimentConfig,
+                                    ScenarioInterface* scenario);
+
+    void ClearRun();
+
     QMutex stopMutex;
     bool stopped = true;
 
-    FrameworkConfig *frameworkConfig;
-    ObservationNetwork *observationNetwork;
-    AgentFactory *agentFactory;
-    World* world;
-    SpawnPointNetwork *spawnPointNetwork;
-    Stochastics *stochastics;
-    CollisionDetection *collisionDetection;
+    const std::string outputDir;
+
+    ConfigurationContainerInterface& configurationContainer;
+    ObservationNetworkInterface* observationNetwork {nullptr};
+    AgentFactoryInterface* agentFactory {nullptr};
+    AgentBlueprintProviderInterface* agentBlueprintProvider {nullptr};
+    EventNetworkInterface* eventNetwork {nullptr};
+    WorldInterface* world {nullptr};
+    const SamplerInterface& sampler;
+    SpawnPointNetworkInterface* spawnPointNetwork {nullptr};
+    StochasticsInterface* stochastics {nullptr};
+    EventDetectorNetworkInterface* eventDetectorNetwork {nullptr};
+    ManipulatorNetworkInterface* manipulatorNetwork {nullptr};
+    FrameworkModules& frameworkModules;
 };
 
 } // namespace SimulationSlave
 
-#endif // RUNINSTANTIATOR_H
+

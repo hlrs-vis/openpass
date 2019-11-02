@@ -1,21 +1,22 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 #include <cassert>
 #include <cmath>
 #include <algorithm>
-#include "scenery.h"
-#include "vector2d.h"
-#include "log.h"
 
-namespace SimulationSlave
+#include "CoreFramework/CoreShare/log.h"
+#include "scenery.h"
+
+namespace Configuration
 {
 
 Scenery::~Scenery()
@@ -50,6 +51,25 @@ RoadInterface *Scenery::AddRoad(const std::string &id)
     }
 
     return road;
+}
+
+JunctionInterface *Scenery::AddJunction(const std::string &id)
+{
+    Junction *junction = new (std::nothrow) Junction(id);
+
+    if(!junction)
+    {
+        return nullptr;
+    }
+
+    if(!junctions.insert({id, junction}).second)
+    {
+        LOG_INTERN(LogLevel::Error) << "junctions must be unique";
+        delete junction;
+        return nullptr;
+    }
+
+    return junction;
 }
 
 } // namespace SimulationSlave

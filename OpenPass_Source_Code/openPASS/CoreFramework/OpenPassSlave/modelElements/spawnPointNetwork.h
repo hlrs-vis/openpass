@@ -1,65 +1,65 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  spawnPointNetwork.h
+//! @file  SpawnPointNetwork.h
 //! @brief This file implements a container of the spawn points during a
 //!        simulation run.
 //-----------------------------------------------------------------------------
 
-#ifndef SPAWNPOINTNETWORK_H
-#define SPAWNPOINTNETWORK_H
+#pragma once
 
 #include <memory>
 #include <map>
 #include <list>
-#include "runConfig.h"
-#include "worldInterface.h"
 
-namespace SimulationSlave
-{
+#include "Interfaces/worldInterface.h"
+#include "Interfaces/agentBlueprintProviderInterface.h"
+#include "Interfaces/samplerInterface.h"
+#include "Interfaces/scenarioInterface.h"
+#include "Interfaces/spawnPointNetworkInterface.h"
 
+namespace SimulationSlave {
 class SpawnPoint;
-class AgentFactory;
 class SpawnPointBinding;
-class Stochastics;
 
-class SpawnPointNetwork
+class SpawnPointNetwork : public SpawnPointNetworkInterface
 {
-public:    
-    SpawnPointNetwork(SpawnPointBinding *spawnPointBinding, WorldInterface *world);
+public:
+    SpawnPointNetwork(SpawnPointBinding* spawnPointBinding, WorldInterface* world);
     SpawnPointNetwork(const SpawnPointNetwork&) = delete;
     SpawnPointNetwork(SpawnPointNetwork&&) = delete;
     SpawnPointNetwork& operator=(const SpawnPointNetwork&) = delete;
     SpawnPointNetwork& operator=(SpawnPointNetwork&&) = delete;
     virtual ~SpawnPointNetwork();
 
-    bool Instantiate(const std::list<SimulationCommon::RunConfig::SpawnPointInstance*> &spawnPointInstance,
-                     const std::list<const AgentSpawnItem*> &agentSpawnItems,
-                     AgentFactory *agentFactory,
-                     Stochastics *stochastics);
+    bool Instantiate(std::string libraryPath,
+                     AgentFactoryInterface* agentFactory,
+                     AgentBlueprintProviderInterface* agentBlueprintProvider,
+                     ParameterInterface* parameters,
+                     const SamplerInterface& sampler,
+                     ScenarioInterface* scenario);
+
     void Clear();
-    std::map<int, SpawnPoint*> &GetSpawnPoints()
+
+    SpawnPoint* GetSpawnPoint()
     {
-        return spawnPoints;
+        return spawnPoint;
     }
 
-    std::list<const AgentSpawnItem*> *GetAgentSpawnItem(int spawnPointId);
-
 private:
-    SpawnPointBinding *spawnPointBinding;
-    WorldInterface *world;
-    std::map<int, SpawnPoint*> spawnPoints; // map spawn point id to spawn point instance
-    std::map<int, std::list<const AgentSpawnItem*>*> agentSpawnItemMap; // map spawn point id to agent instance parameters
+    SpawnPointBinding* spawnPointBinding;
+    WorldInterface* world;
+    SpawnPoint* spawnPoint {nullptr};
 };
 
 } // namespace SimulationSlave
 
-#endif // SPAWNPOINTNETWORK_H

@@ -1,27 +1,27 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
+#include "agent.h"
+#include "CoreFramework/CoreShare/callbacks.h"
+#include "componentType.h"
 #include "modelBinding.h"
 #include "modelLibrary.h"
-#include "callbacks.h"
-#include "agent.h"
-#include "componentType.h"
-#include "observationNetwork.h"
-#include "frameworkConfig.h"
+#include "Interfaces/observationNetworkInterface.h"
 
 namespace SimulationSlave
 {
 
-ModelBinding::ModelBinding(const FrameworkConfig *frameworkConfig,
-                           SimulationCommon::Callbacks *callbacks):
-    frameworkConfig(frameworkConfig),
+ModelBinding::ModelBinding(const std::string libraryPath,
+                           CallbackInterface *callbacks):
+    libraryPath(libraryPath),
     callbacks(callbacks)
 {}
 
@@ -30,12 +30,13 @@ ModelBinding::~ModelBinding()
     Unload();
 }
 
-Component *ModelBinding::Instantiate(ComponentType *componentType,
-                                     int componentId,
+ComponentInterface *ModelBinding::Instantiate(std::shared_ptr<ComponentType>componentType,
+                                     std::string componentName,
                                      StochasticsInterface *stochastics,
                                      WorldInterface *world,
-                                     ObservationNetwork *observationNetwork,
-                                     Agent *agent)
+                                     ObservationNetworkInterface *observationNetwork,
+                                     Agent *agent,
+                                     EventNetworkInterface *eventNetwork)
 {
     const std::string name = componentType->GetModelLibrary();
 
@@ -51,7 +52,7 @@ Component *ModelBinding::Instantiate(ComponentType *componentType,
 
     if(!modelLibrary)
     {
-        modelLibrary = new (std::nothrow) ModelLibrary(frameworkConfig->GetLibraryPath(),
+        modelLibrary = new (std::nothrow) ModelLibrary(libraryPath,
                                                        name,
                                                        callbacks);
         if(!modelLibrary)
@@ -73,11 +74,12 @@ Component *ModelBinding::Instantiate(ComponentType *componentType,
     }
 
     return modelLibrary->CreateComponent(componentType,
-                                         componentId,
+                                         componentName,
                                          stochastics,
                                          world,
                                          observationNetwork,
-                                         agent);
+                                         agent,
+                                         eventNetwork);
 }
 
 void ModelBinding::Unload()

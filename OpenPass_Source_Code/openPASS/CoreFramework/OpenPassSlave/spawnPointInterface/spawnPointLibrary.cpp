@@ -1,24 +1,24 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 #include <iostream>
 #include <algorithm>
 #include <QLibrary>
 #include <sstream>
-#include "spawnPointLibrary.h"
-#include "spawnPointInterface.h"
-#include "observationBinding.h"
-#include "runConfig.h"
+
 #include "agentFactory.h"
+#include "CoreFramework/CoreShare/log.h"
+#include "observationBinding.h"
 #include "spawnPoint.h"
-#include "log.h"
+#include "spawnPointLibrary.h"
 
 namespace SimulationSlave
 {
@@ -68,8 +68,8 @@ bool SpawnPointLibrary::Init()
         return false;
     }
 
-    setSpawnItemFunc = (SpawnPointInterface_SetSpawnItemType)library->resolve(DllSetSpawnItemId.c_str());
-    if(!setSpawnItemFunc)
+    generateAgentFunc = (SpawnPointInterface_GenerateAgentType)library->resolve(DllGenerateAgentId.c_str());
+    if(!generateAgentFunc)
     {
         return false;
     }
@@ -104,7 +104,7 @@ SpawnPointLibrary::~SpawnPointLibrary()
     {
         if(library->isLoaded())
         {
-            LOG_INTERN(LogLevel::DebugCore) << "unloading library " << libraryName;
+            LOG_INTERN(LogLevel::DebugCore) << "unloading library " << libraryPath;
             library->unload();
         }
 
@@ -147,10 +147,12 @@ bool SpawnPointLibrary::ReleaseSpawnPoint(SpawnPoint *spawnPoint)
     return true;
 }
 
-SpawnPoint *SpawnPointLibrary::CreateSpawnPoint(SimulationCommon::RunConfig::SpawnPointInstance *spawnPointInstance,
-                                                AgentFactory *agentFactory,
-                                                StochasticsInterface *stochastics,
-                                                WorldInterface *world)
+SpawnPoint *SpawnPointLibrary::CreateSpawnPoint(ParameterInterface *parameters,
+                                                AgentFactoryInterface *agentFactory,
+                                                WorldInterface *world,
+                                                AgentBlueprintProviderInterface* agentBlueprintProvider,
+                                                SamplerInterface *sampler,
+                                                ScenarioInterface *scenario)
 {
     if(!library)
     {
@@ -168,10 +170,12 @@ SpawnPoint *SpawnPointLibrary::CreateSpawnPoint(SimulationCommon::RunConfig::Spa
     SpawnPointInterface *spawnPointInterface = nullptr;
     try
     {
-        spawnPointInterface = createInstanceFunc(stochastics,
-                                                 world,
-                                                 &spawnPointInstance->GetSpawnPointParameters(),
-                                                 callbacks);
+        spawnPointInterface = createInstanceFunc(world,
+                                                 parameters,
+                                                 callbacks,
+                                                 agentBlueprintProvider,
+                                                 sampler,
+                                                 scenario);
     }
     catch(std::runtime_error const &ex)
     {
@@ -189,11 +193,9 @@ SpawnPoint *SpawnPointLibrary::CreateSpawnPoint(SimulationCommon::RunConfig::Spa
         return nullptr;
     }
 
-    SpawnPoint *spawnPoint = new (std::nothrow) SpawnPoint(spawnPointInstance,
-                                                           agentFactory,
+    SpawnPoint *spawnPoint = new (std::nothrow) SpawnPoint(agentFactory,
                                                            spawnPointInterface,
-                                                           this,
-                                                           world);
+                                                           this);
     if(!spawnPoint)
     {
         return nullptr;

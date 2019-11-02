@@ -1,5 +1,6 @@
 # /*********************************************************************
-# * Copyright (c) 2017 ITK Engineering GmbH
+# * Copyright (c) 2017, 2018, 2019 in-tech GmbH
+# *               2016, 2017 ITK Engineering GmbH
 # *
 # * This program and the accompanying materials are made
 # * available under the terms of the Eclipse Public License 2.0
@@ -9,43 +10,21 @@
 # **********************************************************************/
 
 #-----------------------------------------------------------------------------
-# \file  Stochastic.pro
+# \file  Stochastics.pro
 # \brief This file contains the information for the QtCreator-project of the
-#         Stochastic modul
+#        module Stochastics
 #-----------------------------------------------------------------------------/
 
-include(../../../Global.pri)
-QT       -= gui
-
-win32 {
-QMAKE_CXXFLAGS += -std=c++11 -DWIN32
-LIBS += -lws2_32
-} else {
-QMAKE_CXXFLAGS += -std=c++11 -Dunix
-}
-
-TARGET = Stochastics
-TEMPLATE = lib
-
 DEFINES += STOCHASTICS_LIBRARY
-
-# accumulate list of files for given directories (first parameter)
-# according to file name ending (second parameter)
-defineReplace(getFiles) {
-    variable = $$1
-    files = $$eval($$variable)
-    result =
-    for(file, files) {
-        result += $$files($$file/*.$$2)
-    }
-    return($$result)
-}
+CONFIG += OPENPASS_LIBRARY
+include(../../../global.pri)
 
 SUBDIRS +=  . \
-            ../../Interfaces
 
 INCLUDEPATH += $$SUBDIRS \
-    ..
+            ../../Common \
+            ../../Interfaces
+            ..
 
 SOURCES += \
     $$getFiles(SUBDIRS, cpp) \

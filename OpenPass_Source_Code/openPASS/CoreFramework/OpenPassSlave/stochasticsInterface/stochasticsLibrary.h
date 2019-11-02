@@ -1,29 +1,28 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  stochasticsLibrary.h
+//! @file  StochasticsLibrary.h
 //! @brief This file contains the internal representation of the library of a
 //!        stochasticsInterface.
 //-----------------------------------------------------------------------------
 
-#ifndef STOCHASTICSLIBRARY_H
-#define STOCHASTICSLIBRARY_H
+#pragma once
 
 #include <string>
 #include <QLibrary>
 #include "stochasticsBinding.h"
-#include "stochasticsInterface.h"
+#include "Interfaces/stochasticsInterface.h"
 #include "stochastics.h"
-#include "runConfig.h"
-#include "callbackInterface.h"
+#include "Interfaces/callbackInterface.h"
 
 namespace SimulationSlave
 {
@@ -36,11 +35,9 @@ public:
             const CallbackInterface *callbacks);
     typedef void (*StochasticsInterface_DestroyInstanceType)(StochasticsInterface *implementation);
 
-    StochasticsLibrary(const std::string &stochasticsLibraryPath,
-                      const std::string &libraryName,
-                      CallbackInterface *callbacks) :
-        stochasticsLibraryPath(stochasticsLibraryPath),
-        libraryName(libraryName),
+    StochasticsLibrary(const std::string libraryPath,
+                       CallbackInterface *callbacks):
+        libraryPath(libraryPath),
         callbacks(callbacks)
     {}
     StochasticsLibrary(const StochasticsLibrary&) = delete;
@@ -85,16 +82,15 @@ private:
     const std::string DllCreateInstanceId = "OpenPASS_CreateInstance";
     const std::string DllDestroyInstanceId = "OpenPASS_DestroyInstance";
 
-    std::string stochasticsLibraryPath;
-    std::string libraryName;
+    std::string libraryPath;
     StochasticsInterface *stochasticsInterface = nullptr;
     QLibrary *library = nullptr;
     CallbackInterface *callbacks;
-    StochasticsInterface_GetVersion getVersionFunc;
-    StochasticsInterface_CreateInstanceType createInstanceFunc;
-    StochasticsInterface_DestroyInstanceType destroyInstanceFunc;
+    StochasticsInterface_GetVersion getVersionFunc{nullptr};
+    StochasticsInterface_CreateInstanceType createInstanceFunc{nullptr};
+    StochasticsInterface_DestroyInstanceType destroyInstanceFunc{nullptr};
 };
 
 } // namespace SimulationSlave
 
-#endif // STOCHASTICSLIBRARY_H
+

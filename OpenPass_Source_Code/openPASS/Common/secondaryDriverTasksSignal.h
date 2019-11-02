@@ -1,13 +1,13 @@
-/******************************************************************************
-* Copyright (c) 2018 AMFD GmbH
-* Copyright (c) 2018 in-tech GmbH
+/*******************************************************************************
+* Copyright (c) 2018, 2019 in-tech GmbH
+*               2018 AMFD GmbH
 *
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* https://www.eclipse.org/legal/epl-2.0/
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-******************************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
 //! @file  secondaryDriverTasksSignal.h
@@ -18,7 +18,7 @@
 //-----------------------------------------------------------------------------
 #pragma once
 
-#include "modelInterface.h"
+#include "Interfaces/modelInterface.h"
 
 class SecondaryDriverTasksSignal : public ComponentStateSignalInterface
 {
@@ -28,10 +28,9 @@ public:
     //-----------------------------------------------------------------------------
     //! Constructor
     //-----------------------------------------------------------------------------
-    SecondaryDriverTasksSignal(int senderID)
+    SecondaryDriverTasksSignal()
     {
         componentState = ComponentState::Disabled;
-        this->senderID = senderID;
     }
 
     //-----------------------------------------------------------------------------
@@ -43,7 +42,6 @@ public:
             bool headLightSwitch,
             bool highBeamLightSwitch,
             bool flasher,
-            int senderId,
             ComponentState componentState
             ):
         indicatorState(indicatorState),
@@ -52,7 +50,6 @@ public:
         highBeamLightSwitch(highBeamLightSwitch),
         flasherSwitch(flasher)
     {
-        this->senderID = senderId;
         this->componentState = componentState;
     }
 
@@ -65,7 +62,6 @@ public:
                                                      other.headLightSwitch,
                                                      other.highBeamLightSwitch,
                                                      other.flasherSwitch,
-                                                     other.senderID,
                                                      other.componentState)
 
     {

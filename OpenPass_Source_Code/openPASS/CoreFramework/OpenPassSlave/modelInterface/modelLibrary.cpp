@@ -1,30 +1,30 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 #include <iostream>
 #include <algorithm>
 #include <sstream>
 #include <stdexcept>
 #include <QLibrary>
-#include "modelLibrary.h"
-#include "component.h"
-#include "modelBinding.h"
-#include "agent.h"
-#include "componentType.h"
-#include "component.h"
-#include "observationNetwork.h"
-#include "observationModule.h"
-#include "log.h"
 
-namespace SimulationSlave
-{
+#include "agent.h"
+#include "component.h"
+#include "componentType.h"
+#include "CoreFramework/CoreShare/log.h"
+#include "modelBinding.h"
+#include "modelLibrary.h"
+#include "Interfaces/observationNetworkInterface.h"
+#include "observationModule.h"
+
+namespace SimulationSlave {
 
 bool ModelLibrary::Init()
 {
@@ -60,6 +60,12 @@ bool ModelLibrary::Init()
 
     createInstanceFunc = (ModelInterface_CreateInstanceType)library->resolve(DllCreateInstanceId.c_str());
     if(!createInstanceFunc)
+    {
+        return false;
+    }
+
+    createEventInstanceFunc = (UnrestrictedEventModelInterface_CreateInstanceType)library->resolve(DllCreateInstanceId.c_str());
+    if(!createEventInstanceFunc)
     {
         return false;
     }
@@ -128,14 +134,14 @@ ModelLibrary::~ModelLibrary()
     }
 }
 
-bool ModelLibrary::ReleaseComponent(Component *component)
+bool ModelLibrary::ReleaseComponent(ComponentInterface* component)
 {
     if(!library)
     {
         return false;
     }
 
-    std::list<Component*>::iterator findIter = std::find(components.begin(), components.end(), component);
+    std::list<ComponentInterface*>::iterator findIter = std::find(components.begin(), components.end(), component);
     if(components.end() == findIter)
     {
         LOG_INTERN(LogLevel::Warning) << "model doesn't belong to library";
@@ -164,12 +170,13 @@ bool ModelLibrary::ReleaseComponent(Component *component)
     return true;
 }
 
-Component *ModelLibrary::CreateComponent(ComponentType *componentType,
-                                         int componentId,
+ComponentInterface* ModelLibrary::CreateComponent(std::shared_ptr<ComponentType> componentType,
+        std::string componentName,
                                          StochasticsInterface *stochastics,
                                          WorldInterface *world,
-                                         ObservationNetwork *observationNetwork,
-                                         Agent *agent)
+        ObservationNetworkInterface* observationNetwork,
+        Agent* agent,
+        EventNetworkInterface* eventNetwork)
 {
     if(!library)
     {
@@ -181,7 +188,7 @@ Component *ModelLibrary::CreateComponent(ComponentType *componentType,
         return nullptr;
     }
 
-    std::unique_ptr<Component> component(new (std::nothrow) Component(componentId, agent, world));
+    std::unique_ptr<ComponentInterface> component(new (std::nothrow) Component(componentName, agent));
     if(!component)
     {
         return nullptr;
@@ -192,37 +199,32 @@ Component *ModelLibrary::CreateComponent(ComponentType *componentType,
         return nullptr;
     }
 
-    // link observations
-    for(std::pair<const int, int> &item : componentType->GetObservationLinks())
-    {
-        int linkId = item.first;
-        int observationRef = item.second;
+    // TODO: This is a workaround, as the OSI use case only imports a single observation library -> implement new observation concept
+    component->SetObservations(observationNetwork->GetObservationModules());
 
-        LOG_INTERN(LogLevel::DebugCore) << "  * link to observation " << observationRef << " (linkId " << linkId << ")";
+    ModelInterface* implementation = nullptr;
 
-        // resolve reference
-        std::map<int, ObservationModule*> &observationModules = observationNetwork->GetObservationModules();
-        ObservationModule* observationModule;
         try
         {
-            observationModule = observationModules.at(observationRef);
-        }
-        catch(const std::out_of_range&)
+        if (modelLibraryName == "ComponentController")
         {
-            LOG_INTERN(LogLevel::Error) << "observation reference configuration not valid";
-            return nullptr;
+            implementation = createEventInstanceFunc(componentName,
+                                                     componentType->GetInit(),
+                                                     componentType->GetPriority(),
+                                                     componentType->GetOffsetTime(),
+                                                     componentType->GetResponseTime(),
+                                                     componentType->GetCycleTime(),
+                                                     stochastics,
+                                                     world,
+                                                     componentType->GetModelParameters(),
+                                                     &component->GetObservations(),
+                                                     agent->GetAgentAdapter(),
+                                                     callbacks,
+                                                     eventNetwork);
         }
-
-        if(!component->AddObservationLink(observationModule->GetImplementation(), linkId))
+        else
         {
-            return nullptr;
-        }
-    }
-
-    ModelInterface *implementation = nullptr;
-    try
-    {
-        implementation = createInstanceFunc(componentId,
+            implementation = createInstanceFunc(componentName,
                                             componentType->GetInit(),
                                             componentType->GetPriority(),
                                             componentType->GetOffsetTime(),
@@ -230,10 +232,11 @@ Component *ModelLibrary::CreateComponent(ComponentType *componentType,
                                             componentType->GetCycleTime(),
                                             stochastics,
                                             world,
-                                            &componentType->GetModelParameters(),
-                                            &component->GetObservationLinks(),
+                                                componentType->GetModelParameters(),
+                                                &component->GetObservations(),
                                             agent->GetAgentAdapter(),
                                             callbacks);
+    }
     }
     catch(std::runtime_error const &ex)
     {
@@ -253,7 +256,7 @@ Component *ModelLibrary::CreateComponent(ComponentType *componentType,
 
     component->SetImplementation(implementation);
 
-    Component *componentPtr = component.release();
+    ComponentInterface* componentPtr = component.release();
     components.push_back(componentPtr);
 
     return componentPtr;

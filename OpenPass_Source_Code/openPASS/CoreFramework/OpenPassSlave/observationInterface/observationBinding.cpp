@@ -1,25 +1,21 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 #include "observationBinding.h"
+#include "Interfaces/observationInterface.h"
 #include "observationLibrary.h"
-#include "observationInterface.h"
-#include "runConfig.h"
-#include "frameworkConfig.h"
 
-namespace SimulationSlave
-{
+namespace SimulationSlave {
 
-ObservationBinding::ObservationBinding(const FrameworkConfig *frameworkConfig,
-                                       SimulationCommon::Callbacks *callbacks) :
-    frameworkConfig(frameworkConfig),
+ObservationBinding::ObservationBinding(CallbackInterface* callbacks) :
     callbacks(callbacks)
 {}
 
@@ -28,57 +24,41 @@ ObservationBinding::~ObservationBinding()
     Unload();
 }
 
-ObservationModule *ObservationBinding::Instantiate(SimulationCommon::RunConfig::ObservationInstance *observationInstance,
-                                                   StochasticsInterface *stochastics,
-                                                   WorldInterface *world)
+ObservationModule* ObservationBinding::Instantiate(const std::string libraryPath,
+        ParameterInterface* parameters,
+        StochasticsInterface* stochastics,
+        WorldInterface* world,
+        EventNetworkInterface* eventNetwork)
 {
-    ObservationLibrary *library;
-
-    try
+    if (!library)
     {
-        library = libraries.at(observationInstance->GetLibraryName());
-    }
-    catch(const std::out_of_range&)
-    {
-        library = nullptr;
-    }
-
-    if(!library)
-    {
-        library = new (std::nothrow) ObservationLibrary(frameworkConfig->GetLibraryPath(),
-                                                        observationInstance->GetLibraryName(),
-                                                        callbacks);
-        if(!library)
+        library = new (std::nothrow) ObservationLibrary(libraryPath,
+                callbacks);
+        if (!library)
         {
             return nullptr;
         }
 
-        if(!library->Init())
-        {
-            delete library;
-            return nullptr;
-        }
-
-        if(!libraries.insert({observationInstance->GetLibraryName(), library}).second)
+        if (!library->Init())
         {
             delete library;
             return nullptr;
         }
     }
 
-    return library->CreateObservationModule(observationInstance,
+    return library->CreateObservationModule(parameters,
                                             stochastics,
-                                            world);
+                                            world,
+                                            eventNetwork);
 }
 
 void ObservationBinding::Unload()
 {
-    for(std::pair<const std::string, ObservationLibrary*> &item : libraries)
+    if (library != nullptr)
     {
-        delete item.second;
+        delete library;
+        library = nullptr;
     }
-
-    libraries.clear();
 }
 
 } // namespace SimulationSlave

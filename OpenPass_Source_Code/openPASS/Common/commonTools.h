@@ -1,12 +1,14 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2018 AMFD GmbH
+*               2016, 2017, 2018, 2019 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 #ifndef COMMONTOOLS
 #define COMMONTOOLS
@@ -260,6 +262,129 @@ public:
         const T &high)
     {
         return (value < low) ? low : ((value < high) ? value : high);
+    }
+
+    //-----------------------------------------------------------------------------
+    //! @brief Calculates if two agents will collide during braking
+    //!
+    //! /details    validates if cars crash during brake phase
+    //!             if velocity and acceleration of agents will be the same.
+    //!
+    //! @param [in]   sDelta     distance between both agents
+    //! @param [in]   vEgo       velocity ego
+    //! @param [in]   aEgo       acceleration ego
+    //! @param [in]   vFront     velocity front
+    //! @param [in]   aFront     acceleration front
+    //!
+    //! @return true if collision would happen
+    //-----------------------------------------------------------------------------
+    static bool WillCrashDuringBrake(double sDelta, double vEgo, double aEgo, double vFront, double aFront)
+    {
+        //Calculate the intersection of the vehicles trajactory (quadratic functions)
+
+        auto stopTime = - vEgo / aEgo;   //timepoint where ego stops
+        bool frontStopsEarlier = false;
+        double frontTravelDistance;
+
+        if (aFront < 0)
+        {
+            auto stopTimeFront = - vFront / aFront;
+            if (stopTimeFront < stopTime) //special case: FrontVehicle stops earlier than Ego
+            {
+                frontStopsEarlier = true;
+                frontTravelDistance = - 0.5 * vFront * vFront / aFront;
+            }
+        }
+
+        // acceleration equal -> difference of trajectories is linear
+        if (aEgo == aFront)
+        {
+
+            // velocity is equal: distance constant -> no crash
+            if(vEgo == vFront)
+            {
+                return false;
+            }
+
+            // intersection of lines
+            auto intersectionTime = sDelta / (vEgo - vFront);
+            if (0 <= intersectionTime && intersectionTime <= stopTime)
+            {
+                if (frontStopsEarlier)
+                {
+                    auto  travelDistance = - 0.5 * stopTime * stopTime * aEgo;
+                    if (travelDistance < sDelta + frontTravelDistance)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        // intersection of quadratic functions
+        auto discriminant = (vEgo - vFront) * (vEgo - vFront) + 2 * (aEgo - aFront) * sDelta;
+
+        if (discriminant < 0)
+        {
+            return false;
+        }
+
+
+        auto intersectionPoint1 = ((vFront - vEgo) + std::sqrt(discriminant)) / (aEgo - aFront);
+        auto intersectionPoint2 = ((vFront - vEgo) - std::sqrt(discriminant)) / (aEgo - aFront);
+
+        if ((0 <= intersectionPoint1 && intersectionPoint1 <= stopTime) ||
+            (0 <= intersectionPoint2 && intersectionPoint2 <= stopTime))
+        {
+            if (frontStopsEarlier)
+            {
+                auto travelDistance = - 0.5 * stopTime * stopTime * aEgo;
+                if (travelDistance < sDelta + frontTravelDistance)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    //-----------------------------------------------------------------------------
+    //! @brief Calculates if two agents will collide during braking
+    //!
+    //! \details validates if two cars crash within time to brake
+    //!             if velocity and acceleration of agents will be the same.
+    //!             Triggers WillCrashDuringBrake
+    //!
+    //! @param [in]   sDelta       distance between both agents
+    //! @param [in]   vEgo         velocity rear agent (ego)
+    //! @param [in]   aEgo         acceleration rear agent (ego)
+    //! @param [in]   vFront       velocity front
+    //! @param [in]   aFront       acceleratin front
+    //! @param [in]   assumedTtb   assumed time to brake
+    //!
+    //! @return true if collision would happen
+    //-----------------------------------------------------------------------------
+    static bool WillCrash(double sDelta, double vEgo, double assumedBrakeAccelerationEgo, double vFront, double aFront, double assumedTtb)
+    {
+        auto sEgoAtTtb = vEgo * assumedTtb;
+
+        // estimate values for front vehicle at t=ttb
+        auto stopTimeFront = aFront < 0 ? -vFront/aFront : std::numeric_limits<double>::max();
+        auto tFront = std::min(stopTimeFront, assumedTtb);
+        auto sFrontAtTtb = sDelta + vFront*tFront + aFront*tFront*tFront/2;
+        auto vFrontAtTtb = stopTimeFront < assumedTtb ? 0 : vFront + aFront*assumedTtb;
+        auto aFrontAtTtb = stopTimeFront < assumedTtb ? 0 : aFront;
+
+        if(sFrontAtTtb <= sEgoAtTtb) {
+            return true;
+        }
+
+        return WillCrashDuringBrake(sFrontAtTtb - sEgoAtTtb, vEgo, assumedBrakeAccelerationEgo, vFrontAtTtb, aFrontAtTtb);
     }
 };
 

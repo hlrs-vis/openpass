@@ -1,12 +1,13 @@
-/******************************************************************************
-* Copyright (c) 2018 in-tech GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* https://www.eclipse.org/legal/epl-2.0/
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-******************************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
 //! @file  AgentNetwork.h
@@ -22,9 +23,9 @@
 #include <algorithm>
 #include <utility>
 #include <map>
-#include "agentInterface.h"
+#include "Interfaces/agentInterface.h"
 #include "AgentAdapter.h"
-#include "worldInterface.h"
+#include "Interfaces/worldInterface.h"
 
 
 /*!
@@ -67,7 +68,7 @@ public:
      * \param[in] func      function which is to stored to be executed later
      * \param[in] val       value for the function
      */
-    void QueueAgentUpdate(std::function<void(double)> func, double val);
+    void QueueAgentUpdate(std::function<void()> func);
 
     /*!
      * \brief QueueAgentRemove
@@ -91,7 +92,7 @@ public:
      * \param[in] id        Agent id
      * \return              Agent reference
      */
-    const AgentInterface *GetAgent(int id) const;
+    AgentInterface *GetAgent(int id) const;
 
     /*!
      * \brief GetAgents
@@ -99,7 +100,7 @@ public:
      *
      * \return              Mapping of ids to agents
      */
-    virtual const std::map<int, const AgentInterface *> &GetAgents() const;
+    virtual const std::map<int, AgentInterface *> &GetAgents() const;
 
     /*!
      * \brief GetRemovedAgents
@@ -134,9 +135,9 @@ protected:
 
 private:    
     WorldInterface *world;
-    std::map<int, const AgentInterface*> agents;
+    std::map<int, AgentInterface*> agents;
     std::list<const AgentInterface*> removedAgents;
-    std::list<std::tuple<std::function<void(double)>, double>> updateQueue;
+    std::list<std::function<void()>> updateQueue;
     std::list<const AgentInterface*> removeQueue;
 
     const CallbackInterface *callbacks;

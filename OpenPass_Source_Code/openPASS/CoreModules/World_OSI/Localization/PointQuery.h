@@ -1,20 +1,19 @@
-/******************************************************************************
-* Copyright (c) 2018 in-tech GmbH
+/*******************************************************************************
+* Copyright (c) 2018, 2019 in-tech GmbH
 *
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* https://www.eclipse.org/legal/epl-2.0/
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-******************************************************************************/
-
+*******************************************************************************/
 #pragma once
 
 #include "OWL/DataTypes.h"
-#include "vector2d.h"
+#include "Common/vector2d.h"
 
-namespace OWL
-{
+namespace World {
+namespace Localization {
 
 class PointQuery
 {
@@ -28,7 +27,7 @@ public:
     /// \param[in] point    2D point
     /// \return true, if point is within (or at the boundaries) of the element
     ///
-    static bool IsWithin(const Primitive::LaneGeometryElement& element, const Common::Vector2d& point);
+    static bool IsWithin(const OWL::Primitive::LaneGeometryElement& element, const Common::Vector2d& point);
 
 private:
 
@@ -52,14 +51,15 @@ private:
 
 
     static bool WithinBarycentricCoords(double dot00,
-                               double dot02,
-                               double dot01,
-                               double dot11,
-                               double dot12);
+                                        double dot02,
+                                        double dot01,
+                                        double dot11,
+                                        double dot12);
 
-    static bool OnEdge(const Common::Vector2d &A,
-                       const Common::Vector2d &B,
-                       const Common::Vector2d &P);
+    static bool OnEdge(const Common::Vector2d& A,
+                       const Common::Vector2d& B,
+                       const Common::Vector2d& P);
 };
 
-}
+} // namespace Localization
+} // namespace World

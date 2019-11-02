@@ -13,6 +13,9 @@ set SourceDir=../../Source
 set SourceDir=../../OpenPass_Source_Code
 )
 
+set OSDocumentationDir=../
+
 doxygen Function.doxy -d markdown
-move /y html\openPASS_PCM_Function.chm ../openPASS_PCM_Function.chm
+
+move /y html\openPASS_Function_Docu.chm ../openPASS_Function_Docu.chm
 rmdir /s /q html

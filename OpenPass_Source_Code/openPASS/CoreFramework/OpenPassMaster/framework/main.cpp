@@ -1,12 +1,13 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2019 in-tech GmbH
+*               2016, 2017, 2018, 2019 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //! @file  main.cpp
 //! @brief This file contains the main entry point.
@@ -32,140 +33,131 @@
 #include <QCommandLineParser>
 #include <sstream>
 #include <QLibrary>
-#include "frameworkConfigImporter.h"
-#include "frameworkConfig.h"
+#include <memory>
+#include <string>
+#include <utility>
+#include "masterConfigImporter.h"
+#include "masterConfig.h"
 #include "log.h"
 #include "processManager.h"
 
 using namespace SimulationMaster;
 
-#ifndef OPENPASSMASTERLIBRARY
-int run(int argc, char *argv[])
-#else
-extern "C" Q_DECL_EXPORT int run(int argc, char *argv[])
-#endif //OPENPASSMASTERLIBRARY
-{
-    QString frameworkConfigFile = QCoreApplication::applicationDirPath() + "/frameworkConfiguration.xml";
-    for (int i = 1; i < argc; i++)
-    {
-        QString arg = argv[i];
-        if (arg == "--frameworkConfigFile")
-        {
-            if (++i < argc)
-            {
-                frameworkConfigFile = argv[i];
-            }
-        }
-    }
+using Arguments = std::list<std::pair<std::string, std::string>>;
 
-    FrameworkConfig *frameworkConfig = FrameworkConfigImporter::Import(
-                                           frameworkConfigFile.toStdString());
+//-----------------------------------------------------------------------------
+//! \brief Parses command line arguments for the masterConfig file.
+//! \param[in] arguments The list of command line arguments to parse.
+//! \returns The supplied masterConfig file name.
+//-----------------------------------------------------------------------------
+static QString ParseArguments(const QStringList& arguments);
 
-    if (!frameworkConfig)
-    {
-        exit(EXIT_FAILURE);
-    }
+//-----------------------------------------------------------------------------
+//! \brief Creates the directories necessary to make the resultPath valid, if
+//! 	   they don't currently exist.
+//! \param[in] resultPath A string representing the desired path to results.
+//-----------------------------------------------------------------------------
+static void CreateResultPathIfNecessary(const std::string& resultPath);
 
-    QString slavePath =  QString::fromStdString(frameworkConfig->GetSlavePath());
+//-----------------------------------------------------------------------------
+//! \brief Initializes application logging.
+//! \param[in] logPath The path identifying where to write the logs.
+//! \param[in] logLevel The log reporting level.
+//! \returns a std::string representing the path to the log file
+//-----------------------------------------------------------------------------
+std::string InitLogging(const std::string& logPath, int logLevel);
 
-    QDir baseDir = QCoreApplication::applicationDirPath();
-    QString logFile = baseDir.absoluteFilePath(QString::fromStdString(
-                                                   frameworkConfig->GetLogFileMaster()));
-    logFile = baseDir.cleanPath(logFile);
-
-    LogOutputPolicy::SetFile(logFile.toStdString());
-    LogFile::ReportingLevel() = static_cast<LogLevel>(frameworkConfig->GetLogLevel());
-
-    LOG_INTERN(LogLevel::DebugCore) << std::endl << std::endl << "### master start ##";
-    LOG_INTERN(LogLevel::DebugCore) << "log file Master: " << frameworkConfig->GetLogFileMaster();
-    LOG_INTERN(LogLevel::DebugCore) << "log level: " << std::to_string(frameworkConfig->GetLogLevel());
-    LOG_INTERN(LogLevel::DebugCore) << "slave path: " << slavePath.toStdString();
-    LOG_INTERN(LogLevel::DebugCore) << "number of slaves: " <<
-                                    frameworkConfig->GetSlaveConfigList().size();
-
-#ifdef USESLAVELIBRARY
-    QLibrary slaveLib(slavePath + ".dll");
-    if (!slaveLib.load())
-    {
-        LOG_INTERN(LogLevel::Error) << " OpenPassSlave.dll could not be loaded: " <<
-                                    slaveLib.errorString().toStdString();
-        exit(EXIT_FAILURE);
-    }
-
-    typedef int (*SlaveRunFunction)(int argc, char *argv[]);
-    SlaveRunFunction SlaveRunFunc = (SlaveRunFunction)slaveLib.resolve("run");
-
-    if (SlaveRunFunc == nullptr)
-    {
-        LOG_INTERN(LogLevel::Error) << " OpenPassSlave.dll run function could not be resolved ";
-        exit(EXIT_FAILURE);
-    }
-#endif // USESLAVELIBRARY
-
-    foreach (SlaveConfig slaveConfig, frameworkConfig->GetSlaveConfigList())
-    {
-        LOG_INTERN(LogLevel::DebugCore) << "library path: " << slaveConfig.GetLibraryPath();
-        LOG_INTERN(LogLevel::DebugCore) << "agent configuration: " << slaveConfig.GetAgentConfigFile();
-        LOG_INTERN(LogLevel::DebugCore) << "observation result path: " <<
-                                        slaveConfig.GetObservationResultPath();
-        LOG_INTERN(LogLevel::DebugCore) << "run configuration: " << slaveConfig.GetRunConfigFile();
-        LOG_INTERN(LogLevel::DebugCore) << "scenery configuration: " <<
-                                        slaveConfig.GetSceneryConfigFile();
-        LOG_INTERN(LogLevel::DebugCore) << "openScenario configuration: " <<
-                                        slaveConfig.GetOpenScenarioConfigFile();
-        LOG_INTERN(LogLevel::DebugCore) << "log file Slave: " << slaveConfig.GetLogFileSlave();
-
-        // create folders for files which are generated during runtime
-        if (!QDir(QString::fromStdString(slaveConfig.GetObservationResultPath())).exists())
-        {
-            LOG_INTERN(LogLevel::DebugCore) << "created folder";
-            QDir().mkpath(QString::fromStdString(slaveConfig.GetObservationResultPath()));
-        }
-
-        QStringList arguments;
-        arguments << "--libraryPath" << slaveConfig.GetLibraryPath().c_str()
-                  << "--agentConfiguration" << slaveConfig.GetAgentConfigFile().c_str()
-                  << "--observationResultPath" << slaveConfig.GetObservationResultPath().c_str()
-                  << "--runConfiguration" << slaveConfig.GetRunConfigFile().c_str()
-                  << "--sceneryConfiguration" << slaveConfig.GetSceneryConfigFile().c_str()
-                  << "--openScenarioConfiguration" << slaveConfig.GetOpenScenarioConfigFile().c_str()
-                  << "--logFile" << slaveConfig.GetLogFileSlave().c_str()
-                  << "--logLevel" << QString::number(frameworkConfig->GetLogLevel());
+//-----------------------------------------------------------------------------
+//! \brief Parses the master configuration file for master configuration
+//! 	   details.
+//! 	   Throws if the configuration import fails.
+//! \param[in] masterConfigFile The file contatining the configuration details.
+//! \returns A Configuration::MasterConfig object containing the master
+//! 	     configuration details.
+//-----------------------------------------------------------------------------
+Configuration::MasterConfig ParseMasterConfig(const QString& masterConfigFile);
 
 #ifndef USESLAVELIBRARY
+//-----------------------------------------------------------------------------
+//! \brief Retrieve the name of the slaves executable
+//-----------------------------------------------------------------------------
+std::string GetExecutable(std::string slave);
+#else
+typedef int (*SlaveRunFunction)(int argc, char* argv[]);
 
-        if (slavePath.split(".").last() != "exe")
-        {
-            slavePath += ".exe";
-        }
+//-----------------------------------------------------------------------------
+//! \brief Retrieve the run function of the slave
+//-----------------------------------------------------------------------------
+SlaveRunFunction GetExecutable(std::string slave);
+#endif // USESLAVELIBRARY
 
-        if (!ProcessManager::getInstance().StartProcess(slavePath, arguments))
+#ifndef OPENPASSMASTERLIBRARY
+//-----------------------------------------------------------------------------
+//! \brief Main entry point called by main
+//! \param[in] argc		argument counter
+//! \param[in] argv[]   argument vector
+//-----------------------------------------------------------------------------
+int run(int argc, char* argv[])
+#else
+//-----------------------------------------------------------------------------
+//! \brief Main entry point, called by external program
+//! \param[in] argc		argument counter
+//! \param[in] argv[]   argument vector
+//-----------------------------------------------------------------------------
+extern "C" Q_DECL_EXPORT int run(int argc, char* argv[])
+#endif //OPENPASSMASTERLIBRARY
+{
+    QCoreApplication app(argc, argv);
+    QString masterConfigFile = ParseArguments(app.arguments());
+
+    auto masterConfig = ParseMasterConfig(masterConfigFile);
+    auto logFile = InitLogging(masterConfig.logFileMaster, masterConfig.logLevel);
+    auto slave =  GetExecutable(masterConfig.slave);
+
+    LOG_INTERN(LogLevel::DebugCore) << "\n\n## master start ##";
+    LOG_INTERN(LogLevel::DebugCore) << "log level: " << masterConfig.logLevel;
+    LOG_INTERN(LogLevel::DebugCore) << "log file master: " << logFile;
+    LOG_INTERN(LogLevel::DebugCore) << "slave: " << slave;
+    LOG_INTERN(LogLevel::DebugCore) << "libraries: " << masterConfig.libraries;
+    LOG_INTERN(LogLevel::DebugCore) << "number of slaves: " << masterConfig.slaveConfigs.size();
+
+    for (const auto& slaveConfig : masterConfig.slaveConfigs)
+    {
+        CreateResultPathIfNecessary(slaveConfig.results);
+
+        Arguments arguments
         {
-            LOG_INTERN(LogLevel::Error) << slavePath.toStdString() << " not started, check path.";
-            exit(EXIT_FAILURE);
+            { "--logLevel", std::to_string(masterConfig.logLevel) },
+            { "--logFile",  slaveConfig.logFile },
+            { "--lib",      masterConfig.libraries },
+            { "--configs",  slaveConfig.configs },
+            { "--results",  slaveConfig.results }
+        };
+
+        #ifndef USESLAVELIBRARY
+
+        if (ProcessManager::getInstance().StartProcess(slave, arguments))
+        {
+            std::stringstream strStream;
+            for (const auto& [command, value] : arguments)
+            {
+                strStream << command << " " << value << "\n";
+            }
+            LOG_INTERN(LogLevel::Info) << slave << " started with \n" << strStream.str() << std::endl;
         }
         else
         {
-            QString arglist;
-            foreach (QString arc, arguments)
-            {
-                arglist.append(arc);
-                arglist.append("\n");
-            }
-            LOG_INTERN(LogLevel::Info)
-                    << slavePath.toStdString()
-                    << " started with \n"
-                    << arglist.toStdString() << "\n";
+            LOG_INTERN(LogLevel::Error) << slave << " not started, check path.";
+            exit(EXIT_FAILURE);
         }
-
     }
     ProcessManager::getInstance().WaitAndClear();
 
-#else
-        QtConcurrent::run([arguments, &argv, &SlaveRunFunc]
+        #else
+        QtConcurrent::run([arguments, &argv, &slave]
         {
             int i = 0;
-            char *argumentsValue[arguments.size() + 1 ];
+            char* argumentsValue[arguments.size() + 1 ];
             argumentsValue[i++] = argv[0];
 
             for (QString value : arguments)
@@ -174,27 +166,108 @@ extern "C" Q_DECL_EXPORT int run(int argc, char *argv[])
                 strcpy(argumentsValue[i], value.toLocal8Bit().constData());
                 i++;
             }
-            SlaveRunFunc(i, argumentsValue);
+            slave(i, argumentsValue);
         });
 
     }
     QThreadPool::globalInstance()->waitForDone();
+        #endif // USESLAVELIBRARY
 
-#endif // USESLAVELIBRARY
-
-    delete frameworkConfig;
-    frameworkConfig = nullptr;
-
-    LOG_INTERN(LogLevel::DebugCore) << std::endl << std::endl << "### master finished ##";
-
+    LOG_INTERN(LogLevel::DebugCore) << "## master finished ##";
     return 0;
 }
 
-#ifndef OPENPASSMASTERLIBRARY
-int main(int argc, char *argv[])
+std::string InitLogging(const std::string& logPath, int logLevel)
 {
-    QCoreApplication app(argc, argv);
+    QDir baseDir = QCoreApplication::applicationDirPath();
+    QString logFile = baseDir.absoluteFilePath(QString::fromStdString(logPath));
+    logFile = baseDir.cleanPath(logFile);
 
+    LogOutputPolicy::SetFile(logFile.toStdString());
+    LogFile::ReportingLevel() = static_cast<LogLevel>(logLevel);
+    return logFile.toStdString();
+}
+
+QString ParseArguments(const QStringList& arguments)
+{
+    QCommandLineParser commandLineParser;
+    commandLineParser.addHelpOption();
+
+    QCommandLineOption optionMasterConfigFile(
+        QStringList() << "c" << "config",
+        "configuration <masterConfig.xml>",
+        "masterConfig",
+        QCoreApplication::applicationDirPath() + "/masterConfig.xml");
+
+    commandLineParser.addOption(optionMasterConfigFile);
+    commandLineParser.process(arguments);
+
+    return commandLineParser.value(optionMasterConfigFile);
+}
+
+void CreateResultPathIfNecessary(const std::string& resultPath)
+{
+    auto qResultPath = QString::fromStdString(resultPath);
+    if (!QDir(qResultPath).exists())
+    {
+        LOG_INTERN(LogLevel::DebugCore) << "created result folder " << resultPath;
+        QDir().mkpath(qResultPath);
+    }
+}
+
+Configuration::MasterConfig ParseMasterConfig(const QString& masterConfigFile)
+{
+    try
+    {
+        return Configuration::MasterConfigImporter::Import(masterConfigFile);
+    }
+    catch (const std::runtime_error& e)
+    {
+        std::cerr << "Configuration related error: " << e.what() << std::endl;
+        exit(EXIT_FAILURE);
+    }
+}
+
+#ifndef USESLAVELIBRARY
+std::string GetExecutable(std::string slave)
+{
+    #ifndef USESLAVELIBRARY
+
+    #if WIN32
+    if (QString::fromStdString(slave).split(".").last() != "exe")
+    {
+        slave += ".exe";
+    }
+    #endif
+
+    #endif // USESLAVELIBRARY
+    return slave;
+}
+#else
+SlaveRunFunction GetExecutable(std::string slave)
+{
+    QLibrary slaveLib(QString::fromStdString(slave));
+    if (!slaveLib.load())
+    {
+        LOG_INTERN(LogLevel::Error) << " failed to load library " << slave << " " << slaveLib.errorString().toStdString();
+        exit(EXIT_FAILURE);
+    }
+
+    SlaveRunFunction SlaveRunFunc = (SlaveRunFunction)slaveLib.resolve("run");
+
+    if (!SlaveRunFunc)
+    {
+        LOG_INTERN(LogLevel::Error) << " unable to resolve run function in library " << slave;
+        exit(EXIT_FAILURE);
+    }
+
+    return SlaveRunFunc;
+}
+#endif // USESLAVELIBRARY
+
+#ifndef OPENPASSMASTERLIBRARY
+int main(int argc, char* argv[])
+{
     return run(argc, argv);
 }
 #endif //OPENPASSMASTERLIBRARY

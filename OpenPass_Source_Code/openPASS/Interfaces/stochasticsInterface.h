@@ -1,37 +1,38 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2018 AMFD GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 //-----------------------------------------------------------------------------
-//! @file  stochasticsInterface.h
+//! @file  StochasticsInterface.h
 //! @brief This file provides the interface of the stochastic algorithms to
 //!        custom libraries.
 //-----------------------------------------------------------------------------
 
-#ifndef STOCHASTICSINTERFACE_H
-#define STOCHASTICSINTERFACE_H
+#pragma once
 
 #include <string>
 #include <vector>
-#include "callbackInterface.h"
+#include "Interfaces/callbackInterface.h"
 
 //-----------------------------------------------------------------------------
 //! Provides access to the stochastics functionality of the framework
 //-----------------------------------------------------------------------------
 class StochasticsInterface
 {
-public:
+public:    
     StochasticsInterface() = default;
-    StochasticsInterface(const StochasticsInterface &) = delete;
-    StochasticsInterface(StochasticsInterface &&) = delete;
-    StochasticsInterface &operator=(const StochasticsInterface &) = delete;
-    StochasticsInterface &operator=(StochasticsInterface &&) = delete;
+    StochasticsInterface(const StochasticsInterface&) = delete;
+    StochasticsInterface(StochasticsInterface&&) = delete;
+    StochasticsInterface& operator=(const StochasticsInterface&) = delete;
+    StochasticsInterface& operator=(StochasticsInterface&&) = delete;
     virtual ~StochasticsInterface() = default;
 
     //-----------------------------------------------------------------------------
@@ -42,6 +43,15 @@ public:
     //! @return                value drawn
     //-----------------------------------------------------------------------------
     virtual double GetUniformDistributed(double a, double b) = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Draw from uniform distribution.
+    //!
+    //! @param[in]     upperRangeNum     maximum value (min value is 0)
+    //! @param[in]     probSuccess       probability of success
+    //! @return                          value drawn
+    //-----------------------------------------------------------------------------
+    virtual int GetBinomialDistributed(int upperRangeNum, double probSuccess) = 0;
 
     //-----------------------------------------------------------------------------
     //! Draw from normal distribution.
@@ -89,6 +99,27 @@ public:
                                          std::vector<double> args) = 0;
 
     //-----------------------------------------------------------------------------
+    //! Get the cdf value of a random draw from log-normal distribution.
+    //!
+    //! @param[in]     mean         mean value
+    //! @param[in]     stdDeviation standard deviation from mean value
+    //! @return                     value cdf
+    //-----------------------------------------------------------------------------
+    virtual double GetRandomCdfLogNormalDistributed(double mean,
+                                                 double stdDeviation) = 0;
+
+    //-----------------------------------------------------------------------------
+    //! Draw value from log-normal distribution according to percentile / quantile.
+    //!
+    //! @param[in]     mean         mean value
+    //! @param[in]     stdDeviation standard deviation from mean value
+    //! @param[in]     probability  percentile / quantile probability
+    //! @return                     value drawn
+    //-----------------------------------------------------------------------------
+    virtual double GetPercentileLogNormalDistributed(double mean, double stdDeviation,
+                                                  double probability) = 0;
+
+    //-----------------------------------------------------------------------------
     //! Retrieves seed.
     //!
     //! @return                     seed
@@ -109,6 +140,8 @@ public:
     //! @return
     //-----------------------------------------------------------------------------
     virtual void InitGenerator(std::uint32_t seed) = 0;
+
+    virtual bool Instantiate(std::string) {return false;}
 };
 
-#endif // STOCHASTICSINTERFACE_H
+

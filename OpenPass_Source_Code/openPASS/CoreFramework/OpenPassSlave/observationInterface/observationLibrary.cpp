@@ -1,26 +1,26 @@
-/*********************************************************************
-* Copyright (c) 2017 ITK Engineering GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
+*               2016, 2017, 2018 ITK Engineering GmbH
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
 * which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
+*******************************************************************************/
 
 #include <iostream>
 #include <algorithm>
 #include <QLibrary>
 #include <sstream>
-#include "observationLibrary.h"
-#include "observationInterface.h"
-#include "observationBinding.h"
-#include "runConfig.h"
-#include "observationModule.h"
-#include "log.h"
 
-namespace SimulationSlave
-{
+#include "CoreFramework/CoreShare/log.h"
+#include "observationBinding.h"
+#include "Interfaces/observationInterface.h"
+#include "observationLibrary.h"
+#include "observationModule.h"
+
+namespace SimulationSlave {
 
 bool ObservationLibrary::Init()
 {
@@ -92,7 +92,7 @@ bool ObservationLibrary::Init()
     }
 
     slaveUpdateHookFunc = (ObservationInterface_SlaveUpdateHook)library->resolve(DllSlaveUpdateHookId.c_str());
-    if(!slaveUpdateHookFunc)
+    if (!slavePreRunHookFunc)
     {
         return false;
     }
@@ -145,7 +145,7 @@ ObservationLibrary::~ObservationLibrary()
     {
         if(library->isLoaded())
         {
-            LOG_INTERN(LogLevel::DebugCore) << "unloading library " << libraryName;
+            LOG_INTERN(LogLevel::DebugCore) << "unloading observation library";
             library->unload();
         }
 
@@ -161,7 +161,8 @@ bool ObservationLibrary::ReleaseObservationModule(ObservationModule *observation
         return false;
     }
 
-    std::list<ObservationModule*>::iterator findIter = std::find(observationModules.begin(), observationModules.end(), observationModule);
+    std::list<ObservationModule*>::iterator findIter = std::find(observationModules.begin(), observationModules.end(),
+            observationModule);
     if(observationModules.end() == findIter)
     {
         LOG_INTERN(LogLevel::Warning) << "observation module doesn't belong to library";
@@ -188,9 +189,10 @@ bool ObservationLibrary::ReleaseObservationModule(ObservationModule *observation
     return true;
 }
 
-ObservationModule *ObservationLibrary::CreateObservationModule(SimulationCommon::RunConfig::ObservationInstance *observationInstance,
+ObservationModule* ObservationLibrary::CreateObservationModule(ParameterInterface* parameters,
                                                                StochasticsInterface *stochastics,
-                                                               WorldInterface *world)
+        WorldInterface* world,
+        EventNetworkInterface* eventNetwork)
 {
     if(!library)
     {
@@ -210,7 +212,8 @@ ObservationModule *ObservationLibrary::CreateObservationModule(SimulationCommon:
     {
         observationInterface = createInstanceFunc(stochastics,
                                                   world,
-                                                  &observationInstance->GetObservationParameters(),
+                               eventNetwork,
+                               parameters,
                                                   callbacks);
     }
     catch(std::runtime_error const &ex)
@@ -229,7 +232,7 @@ ObservationModule *ObservationLibrary::CreateObservationModule(SimulationCommon:
         return nullptr;
     }
 
-    ObservationModule *observationModule = new (std::nothrow) ObservationModule(observationInstance, observationInterface, this);
+    ObservationModule* observationModule = new (std::nothrow) ObservationModule(observationInterface, this);
     if(!observationModule)
     {
         return nullptr;

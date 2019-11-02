@@ -1,60 +1,70 @@
-/******************************************************************************
-* Copyright (c) 2018 in-tech GmbH
+/*******************************************************************************
+* Copyright (c) 2017, 2018, 2019 in-tech GmbH
 *
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* https://www.eclipse.org/legal/epl-2.0/
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
 *
 * SPDX-License-Identifier: EPL-2.0
-******************************************************************************/
-
+*******************************************************************************/
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
 #endif
 #include <cmath>
 #include "GeometryProcessor.h"
+namespace World {
+namespace Localization {
 
-bool OWL::GeometryProcessor::Match(const Common::Vector2d &point) const
+bool GeometryProcessor::Match(const Common::Vector2d& point) const
 {
-    return PointQuery::IsWithin(laneGeometryElement, point);
+    return PointQuery::IsWithin(*laneGeometryElement, point);
 }
 
-double OWL::GeometryProcessor::getS(const Common::Vector2d &point) const
+double GeometryProcessor::GetS(const Common::Vector2d& point) const
 {
-    const Common::Vector2d vectorPointToMiddle = getVectorPointToReference(point);
-    return laneGeometryElement.joints.current.projectionAxes.sOffset + getProjectedVectorLength(vectorPointToMiddle, vectorAlongMiddle);
+    const Common::Vector2d vectorPointToMiddle = GetVectorPointToReference(point);
+    return laneGeometryElement->joints.current.projectionAxes.sOffset + GetProjectedVectorLength(vectorPointToMiddle,
+            vectorAlongMiddle);
 }
 
-double OWL::GeometryProcessor::getT(const Common::Vector2d &point) const
+double GeometryProcessor::GetT(const Common::Vector2d& point) const
 {
-    const Common::Vector2d vectorPointToMiddle = getVectorPointToReference(point);
+    const Common::Vector2d vectorPointToMiddle = GetVectorPointToReference(point);
 
     if (std::abs(vectorLeftToMiddle.x) < 1e-6 &&
-            std::abs(vectorLeftToMiddle.y) < 1e-6) {
-        return getProjectedVectorLength(vectorPointToMiddle, getOrthogonalMiddleVector());
+            std::abs(vectorLeftToMiddle.y) < 1e-6)
+    {
+        return GetProjectedVectorLength(vectorPointToMiddle, GetOrthogonalMiddleVector());
     }
 
-    return getProjectedVectorLength(vectorPointToMiddle, vectorLeftToMiddle);
+    return GetProjectedVectorLength(vectorPointToMiddle, vectorLeftToMiddle);
 }
 
-double OWL::GeometryProcessor::getYaw(double hdg) const {
-    return std::fmod(hdg - laneGeometryElement.joints.current.projectionAxes.sHdg, M_PI);
+double GeometryProcessor::GetYaw(double hdg) const
+{
+    // Updated for direction awareness - might be an issue, when cars try to turn around
+    return std::fmod((hdg - laneGeometryElement->joints.current.projectionAxes.sHdg + 3 * M_PI), (2 * M_PI)) - M_PI;
 }
 
-double OWL::GeometryProcessor::getProjectedVectorLength(const Common::Vector2d &vectorToProject, const Common::Vector2d &directionVector) const
+double GeometryProcessor::GetProjectedVectorLength(const Common::Vector2d& vectorToProject,
+        const Common::Vector2d& directionVector) const
 {
     return vectorToProject.Dot(directionVector) / directionVector.Length();
 }
 
-const Common::Vector2d OWL::GeometryProcessor::getVectorPointToReference(Common::Vector2d point) const
+const Common::Vector2d GeometryProcessor::GetVectorPointToReference(Common::Vector2d point) const
 {
-    const Common::Vector2d refCoord = laneGeometryElement.joints.current.points.reference;
+    const Common::Vector2d refCoord = laneGeometryElement->joints.current.points.reference;
     return point - refCoord;
 }
 
-const Common::Vector2d OWL::GeometryProcessor::getOrthogonalMiddleVector() const
+const Common::Vector2d GeometryProcessor::GetOrthogonalMiddleVector() const
 {
     Common::Vector2d vectorForRotation(vectorAlongMiddle);
     vectorForRotation.Rotate(M_PI_2);
     return vectorForRotation;
 }
+
+} // namespace Localization
+} // namespace World
+
